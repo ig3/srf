@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>srf</title>
+  <style>
+    {{{noteType.css}}}
+  </style>
+  <style>
+    body,html {
+      height: 100%;
+    }
+    .card {
+      min-height: 100%;
+    }
+  </style>
+</head>
+<body>
+  {{{body}}}
+  <script>
+    document.addEventListener("keypress", keyCapt, false);
+    function keyCapt (e) {
+      console.log('keyCode ', e.keyCode);
+      if (e.keyCode === 32) {
+        let el = document.getElementsByClassName('default_action')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 106) { // j
+        let el = document.getElementsByClassName('shortcut_j')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 107) { // k
+        let el = document.getElementsByClassName('shortcut_k')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 108) { // l
+        let el = document.getElementsByClassName('shortcut_l')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 59) { // ;
+        let el = document.getElementsByClassName('shortcut_semicolon')[0].click();
+        if (el) el.click();
+      }
+    }
+  </script>
+</body>
+</html>

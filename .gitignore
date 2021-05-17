@@ -1,0 +1,10 @@
+*~
+*.swp
+*.swo
+xtq.js
+node_modules
+npm-debug.log
+~*
+dump*
+srf.db*
+media/
