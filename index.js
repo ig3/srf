@@ -17,13 +17,12 @@ Mustache.escape = function (text) {
 };
 const app = express();
 const db = require('better-sqlite3')('srf.db');
-const crt = getCreationTime();
-console.log('crt: ', crt);
-const crtDate = new Date(crt * 1000);
-console.log('crtDate: ', crtDate);
-let dueCards = getDueCards(crtDate);
+let dueCards = getDueCards();
 console.log('dueCards length ', dueCards.length);
+let card;
 let note;
+let startTime;
+let cardsViewed = 0;
 
 const expressHandlebars = require('express-handlebars');
 
@@ -32,42 +31,82 @@ app.set('view engine', 'handlebars');
 app.use(express.static('media'));
 
 app.get('/', (req, res) => {
-  dueCards = getDueCards(crtDate);
-  const card = dueCards.shift();
-  note = getNote(card);
-  res.render('home', note);
+  if (!dueCards || !dueCards.length) {
+    console.log('load dueCards');
+    dueCards = getDueCards();
+  }
+  if (dueCards && dueCards.length) {
+    card = dueCards.shift();
+    note = getNote(card);
+    startTime = new Date();
+    cardsViewed++;
+    res.render('home', note);
+  } else {
+    res.send('All done for now');
+  }
 });
 
 app.get('/back', (req, res) => {
+  if (!note) {
+    return res.redirect('/');
+  }
   res.render('back', note);
 });
 
 app.get('/again', (req, res) => {
-  console.log('record that this card was again');
-  const card = dueCards.shift();
-  note = getNote(card);
-  res.render('home', note);
+  if (card) {
+    console.log('again');
+    const newFactor = 4000;
+    // ivl is time to next view in seconds
+    const newInterval = 60;
+    const newDue = Math.floor(new Date() / 1000) + newInterval;
+    db.prepare('update cards set factor = ?, ivl = ?, due = ? where id = ?')
+    .run(newFactor, newInterval, newDue, card.id);
+    logReview(card, 1, newInterval, newFactor, newDue);
+  }
+  res.redirect('/');
 });
 
 app.get('/hard', (req, res) => {
-  console.log('record that this card was hard');
-  const card = dueCards.shift();
-  note = getNote(card);
-  res.render('home', note);
+  if (card) {
+    console.log('hard');
+    const newFactor = card.factor - 50;
+    // ivl is time to next view in seconds
+    const newInterval = Math.max(60, Math.floor(newFactor / 1000 * card.ivl));
+    const newDue = Math.floor(new Date() / 1000) + newInterval;
+    db.prepare('update cards set factor = ?, ivl = ?, due = ? where id = ?')
+    .run(newFactor, newInterval, newDue, card.id);
+    logReview(card, 2, newInterval, newFactor, newDue);
+  }
+  res.redirect('/');
 });
 
 app.get('/good', (req, res) => {
-  console.log('record that this card was good');
-  const card = dueCards.shift();
-  note = getNote(card);
-  res.render('home', note);
+  if (card) {
+    console.log('good');
+    const newFactor = card.factor + 50;
+    // ivl is time to next view in seconds
+    const newInterval = Math.max(60, Math.floor(newFactor / 1000 * card.ivl));
+    const newDue = Math.floor(new Date() / 1000) + newInterval;
+    db.prepare('update cards set factor = ?, ivl = ?, due = ? where id = ?')
+    .run(newFactor, newInterval, newDue, card.id);
+    logReview(card, 3, newInterval, newFactor, newDue);
+  }
+  res.redirect('/');
 });
 
 app.get('/easy', (req, res) => {
-  console.log('record that this card was good');
-  const card = dueCards.shift();
-  note = getNote(card);
-  res.render('home', note);
+  if (card) {
+    console.log('easy');
+    const newFactor = card.factor + 200;
+    // ivl is time to next view in seconds
+    const newInterval = Math.max(60*60*24, Math.floor(newFactor / 1000 * card.ivl));
+    const newDue = Math.floor(new Date() / 1000) + newInterval;
+    db.prepare('update cards set factor = ?, ivl = ?, due = ? where id = ?')
+    .run(newFactor, newInterval, newDue, card.id);
+    logReview(card, 4, newInterval, newFactor, newDue);
+  }
+  res.redirect('/');
 });
 
 const server = app.listen(8000, () => {
@@ -82,11 +121,12 @@ function getCreationTime () {
   return (row.crt);
 }
 
-function getDueCards (crtDate) {
-  const now = new Date();
-  const days = Math.floor((now - crtDate) / 1000 / 60 / 60 / 24);
-  console.log('elapsed days', days);
-  const cards = db.prepare('select * from cards where queue = 2 and due < ?').all(days+1);
+function getDueCards () {
+  const now = Math.floor(new Date() / 1000);
+  console.log('now ', now);
+  const count = db.prepare('select count() from cards where queue = 2 and due < ?').get(now);
+  console.log(count, ' cards due');
+  const cards = db.prepare('select * from cards where queue = 2 and due < ? order by due limit 10').all(now);
   return(cards);
 }
 
@@ -112,8 +152,10 @@ function getNote (card) {
     fieldData[field.name] = tmpFieldValues[field.ord];
   });
 
+  note.fieldData = fieldData;
 
   const front = Mustache.render(note.template.front, fieldData);
+  fieldData.FrontSide = front;
   const back = Mustache.render(note.template.back, fieldData);
   
   note.front = front;
@@ -206,5 +248,35 @@ function parseNoteTypeConfig (str) {
     } else {
       throw new Error('Something else');
     }
+  }
+}
+
+function logReview (card, ease, newInterval, newFactor, newDue) {
+  const now = new Date()/1;
+  let elapsed = Math.floor(now - startTime);
+  if (elapsed > 120000) {
+    elapsed = 120000;
+  }
+  console.log(cardsViewed, now, card.id, ease, card.due, formatDue(newDue), newInterval, card.ivl, newFactor, elapsed);
+  db.prepare('insert into revlog (id, cid, usn, ease, ivl, lastivl, factor, time, type) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+  .run(now, card.id, -1, ease, newInterval, card.ivl, newFactor, elapsed, 2);
+}
+
+function formatDue (due) {
+  const now = new Date()/1000;
+  const interval = due - now + 10;
+  if (interval < 3600) {
+    return(Math.floor(interval/60) + ' min');
+  } else if (interval < 3600 * 24) {
+    return(Math.floor(interval/3600) + ':' + Math.floor((interval % 3600) / 60));
+  } else {
+    const d = new Date(due * 1000);
+    let month = '' + (d.getMonth() + 1);
+    let day = '' + d.getDate();
+    let year = d.getFullYear();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+    return([year, month, day].join('-'));
   }
 }
