@@ -1,13 +1,87 @@
 # srf
 Spaced Repetition Flashcards.
 
-I have been using Anki, which I quite like, but it has fixed new cards per
-day. I wrote an add-on to adjust new cards automatically but Anki is
-increasingly being migrated to rust and the rust based component don't
-support hooks or monkey patching. As the scheduler migration to rust
-progressing, it will be increasingly difficult to maintain the add-on, and
-there is a new scheduler now in development, likely to be significantly
-different. It is a moving target.
+## Why?
+
+Yet another flashcard program, because I am too stupid, lazy and stubborn
+to find and adapt to an existing one (there are many).
+
+I used [Anki](https://apps.ankiweb.net/) desktop for a couple of years. 
+It is quite good, with many decks available and a good feature set. But
+there were a bugs in timezone handling that affected me and I wanted a
+somewhat different scheduler. I created submitted patches and created
+add-ons to fix bugs and add some of the features I wanted, but became
+increasingly frustrated by the complexity of the build environment, the
+frequency of changes to the scheduler api and internals, lack of
+documentation of the internals and add-on apis, the inscrutable rust back
+end and blobs in the database.
+
+What I really wanted to do was to write my own scheduler, but with so many
+rapidly changing hooks into it from various parts of the code, doing so was
+impractical.
+
+## Pros
+
+* Pure JavaScript on Node
+* Browser based
+* Simple scheduler without the complexity of Anki queues
+* SQLite3 database
+* No obscure collation function
+* card templates compatible with Anki templates for simple fields
+
+## Cons
+
+* Very much alpha code - just an experiment at this point
+* No configuration interface, not even a configuration file - edit the code
+* No reports - just rudimentary stats to the browser or server console
+* No deck import
+* Not well tested
+* No support for cloze cards
+
+## Getting Started
+
+```
+$ git clone https://github.com/ig3/srf.git
+$ cd srv
+$ npm install
+$ node index.js
+```
+
+The server listens on port 8000 by default. But the server won't work until
+you have a database.
+
+I started with a copy of my Anki database. I had to remove the collation in
+order to work with it. To do so, you can run the Perl script:
+
+```
+$ perl removeCollation.pl > removeCollation.sql
+```
+
+This will produce SQL code that you can run against your database:
+
+```
+$ sqlite3 srf.db <removeCollation.sql
+$ sqlite3 srf.db reindex
+```
+
+The only change to the database structure thus far is addition of column
+`seen` to table cards.
+
+The following might work but I haven't tested it. I used DB Browser for
+SQLite.
+
+```
+$ sqlite3 srf.db 'alter table cards add column seen integer NOT NULL'
+```
+
+While the table structures are otherwise unaltered from Anki, the use of
+columns in the cards and revlogs tables are different. While you can just
+start browsing cards, you might to better to reset them all by setting due
+to 0 for all cards in queues other than 0 then setting queue and seen to 0
+for all cards.
+
+
+## Notes
 
 I have also wanted to experiment with the scheduler algorithm but the way
 it is tied into code makes it difficult. There is not a simple API to the
