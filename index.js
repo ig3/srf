@@ -23,6 +23,13 @@ let card;
 let note;
 let startTime;
 let cardsViewed = 0;
+const secondsPerDay = 60 * 60 * 24;
+const startOfDay = Math.floor(new Date() / (1000 * secondsPerDay))
+  * secondsPerDay * 1000;
+console.log('startOfDay ', startOfDay);
+let cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
+console.log('cardsViewedToday ', cardsViewedToday);
+
 
 const expressHandlebars = require('express-handlebars');
 
@@ -40,6 +47,7 @@ app.get('/', (req, res) => {
     note = getNote(card);
     startTime = new Date();
     cardsViewed++;
+    cardsViewedToday++;
     res.render('home', note);
   } else {
     res.send('All done for now');
@@ -85,6 +93,7 @@ app.get('/good', (req, res) => {
   if (card) {
     console.log('good');
     const newFactor = card.factor + 50;
+    const now = new Date()/1;
     // ivl is time to next view in seconds
     const newInterval = Math.max(60, Math.floor(newFactor / 1000 * card.ivl));
     const newDue = Math.floor(new Date() / 1000) + newInterval;
@@ -257,7 +266,7 @@ function logReview (card, ease, newInterval, newFactor, newDue) {
   if (elapsed > 120000) {
     elapsed = 120000;
   }
-  console.log(cardsViewed, now, card.id, ease, card.due, formatDue(newDue), newInterval, card.ivl, newFactor, elapsed);
+  console.log(cardsViewed, cardsViewedToday, now, card.id, ease, formatDue(card.due), formatDue(newDue), newInterval, card.ivl, newFactor, elapsed);
   db.prepare('insert into revlog (id, cid, usn, ease, ivl, lastivl, factor, time, type) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
   .run(now, card.id, -1, ease, newInterval, card.ivl, newFactor, elapsed, 2);
 }
@@ -265,7 +274,20 @@ function logReview (card, ease, newInterval, newFactor, newDue) {
 function formatDue (due) {
   const now = new Date()/1000;
   const interval = due - now + 10;
-  if (interval < 3600) {
+  if (interval < -3600 * 24) {
+    const d = new Date(due * 1000);
+    let month = '' + (d.getMonth() + 1);
+    let day = '' + d.getDate();
+    let year = d.getFullYear();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+    return([year, month, day].join('-'));
+  } else if (interval < -3600) {
+    return('-' + Math.floor(-interval/3600) + ':' + Math.floor((-interval % 3600) / 60));
+  } else if (interval < 0) {
+    return('-' + Math.floor(-interval/60) + ' min');
+  } else if (interval < 3600) {
     return(Math.floor(interval/60) + ' min');
   } else if (interval < 3600 * 24) {
     return(Math.floor(interval/3600) + ':' + Math.floor((interval % 3600) / 60));
