@@ -89,12 +89,12 @@ app.get('/', (req, res) => {
     const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
     console.log('nextDue ', nextDue);
     const timeToNextDue = (nextDue - now) < 1000 * 60 ?
-      Math.floor((nextDue - now)/1000) + ' seconds' :
+      Math.ceil((nextDue - now)/1000) + ' seconds' :
       (nextDue - now) < 1000 * 60 * 60 ?
-        Math.floor((nextDue - now)/1000/60) + ' minutes':
+        Math.ceil((nextDue - now)/1000/60) + ' minutes':
         (nextDue - now) < 1000 * 60 * 60 * 24?
-          Math.floor((nextDue - now)/1000/60/60) + ' hours':
-          Math.floor((nextDue - now)/1000/60/60/24) + ' days';
+          Math.ceil((nextDue - now)/1000/60/60) + ' hours':
+          Math.ceil((nextDue - now)/1000/60/60/24) + ' days';
     res.render('done', {
       dueCount: dueCount,
       timeToNextDue: timeToNextDue
