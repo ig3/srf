@@ -74,8 +74,19 @@ $ npm install
 $ node index.js
 ```
 
-The server listens on port 8000 by default. But the server won't work until
-you have a database.
+The server listens on port 8000 by default.
+
+But the server won't work until you have a database. The server works for
+me, with a database copied from Anki version 2.1.43. If you are using some
+other version of Anki, it probably won't work. Each release of Anki (many
+of them, at least) `upgrades` the database. The Anki Profiles screen has a
+Downgrade & Quit button, but it is not obvious what one is downgrading to
+and when I try it now it simply says that profiles can now be opened with
+an older verson of Anki. Last time I tried, older versions of Anki prompted
+to re-run the new version and downgrade. It might be necessary to step back
+through each release since, to get to an older release - I don't know, I
+haven't done it, but as of 2.1.43, there seems to be no way to downgrade
+anymore.
 
 I started with a copy of my Anki desktop database. I had to remove the
 collation in order to work with it. To do so, you can run the Perl script:
@@ -229,6 +240,13 @@ sounds and images.
 See [Anki 2 annotated schema](https://gist.github.com/sartak/3921255)
 
 See [Database Structure](https://github.com/ankidroid/Anki-Android/wiki/Database-Structure), which is a little more complete/correct.
+
+This code parses some of the blobs in the Anki database. I could not find
+definition of how Anki/serde does this. The code was based on inspection of
+the blobs, trial and error. It may be that different database instances
+will code the data somewhat differently, or the field codes will change
+with each release of Anki. What I have here works for me, with the database
+from Anki 2.1.43.
 
 ### cards
 
