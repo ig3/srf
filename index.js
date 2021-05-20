@@ -45,11 +45,10 @@ let cardStartTime = now;
 let cardsViewed = 0;
 // startOfDay is the epoch time of midnight as the start of the current day.
 const startOfDay = new Date().setHours(0,0,0,0).valueOf();
-console.log('startOfDay ', startOfDay);
+console.log('startOfDay ', new Date(startOfDay).toString());
 // endOfDay is the epoch time of midnight at the end of the current day.
 const endOfDay = startOfDay + msecPerDay;
-const eod = new Date(endOfDay);
-console.log('eod ', eod.toString());
+console.log('endOfDay   ', new Date(endOfDay).toString());
 
 // timeSinceNewCard is ms since a new card was shown.
 // It is used to limit time between new cards, if there are due cards.
@@ -64,6 +63,10 @@ console.log('cardsViewedToday ', cardsViewedToday);
 // studyTimeToday is the total time studying cards since midnight.
 let studyTimeToday = db.prepare('select sum(time) from revlog where id >= ?').get(startOfDay)['sum(time)'] || 0;
 console.log('studyTimeToday ', studyTimeToday);
+// estimatedTotalStudyTime is the sum of actual study time today and
+// average time per card (over the past 10 days) time the number of
+// cards still due today.
+let estimatedTotalStudyTime;
 
 let dueCards = [];
 let newCards = [];
@@ -76,7 +79,6 @@ let note;
 app.get('/', (req, res) => {
   now = Date.now();
   if (!dueCards || !dueCards.length) {
-    console.log('load dueCards');
     dueCards = getDueCards();
   }
   card = getNextCard();
@@ -89,9 +91,7 @@ app.get('/', (req, res) => {
   } else {
     const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
     const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
-    console.log('nextDue ', nextDue);
     const timeToNextDue = tc.milliseconds(nextDue - now);
-    console.log('timeToNextDue ', timeToNextDue.toFullString());
 //    const timeToNextDue = (nextDue - now) < 1000 * 60 ?
 //      Math.ceil((nextDue - now)/1000) + ' seconds' :
 //      (nextDue - now) < 1000 * 60 * 60 ?
@@ -101,7 +101,11 @@ app.get('/', (req, res) => {
 //          Math.ceil((nextDue - now)/1000/60/60/24) + ' days';
     res.render('done', {
       dueCount: dueCount,
-      timeToNextDue: timeToNextDue.toFullString()
+      timeToNextDue: timeToNextDue.toFullString(),
+      cardsViewedToday: cardsViewedToday,
+      studyTimeToday: tc.milliseconds(studyTimeToday).toFullString(),
+      estimatedTotalStudyTime: tc.milliseconds(estimatedTotalStudyTime).toFullString(),
+      averageTimePerCard: Math.floor(averageTimePerCard/1000)
     });
   }
 });
@@ -379,10 +383,14 @@ function formatDue (due) {
 
 function getNextCard () {
   const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
-  console.log('dueCount ', dueCount);
   const dueStudyTime = Math.floor(dueCount * averageTimePerCard);
-  console.log('dueStudyTime ', Math.floor(dueStudyTime/1000/60/60), ' min');
-  if ((studyTimeToday + dueStudyTime) < studyTimeNewCardLimit && (timeSinceNewCard > 600000 || dueCount === 0)) {
+  estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
+  console.log('Estimated total study time: ',
+    tc.milliseconds(estimatedTotalStudyTime).toFullString());
+  if (
+    estimatedTotalStudyTime < studyTimeNewCardLimit &&
+    (timeSinceNewCard > 600000 || dueCount === 0)
+  ) {
     if (!newCards || newCards.length === 0) {
       newCards = getNewCards();
     }
