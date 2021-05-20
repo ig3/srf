@@ -196,6 +196,16 @@ cards if it is less and blocking new cards if it is more. It is always
 possible to review all due cards. There is no limit on cards viewed - only
 on new cards.
 
+Unlike Anki, there are no separate queues and there is no jump to
+scheduling by day. Cards are always due at some specific time and this may
+be any time of day. Don't worry about it. Don't obsess about viewing all
+cards every day. Unless you are studying until midnight every day, there
+will likely be some cards due later in the day. That's OK. As long as you
+view all due cards at least once each day, you will do fine. You will view
+the cards that come due later in the day when you study on the following
+day - it's not a problem. I say this probably because I have obsessed about
+completing all reviews every day in Anki.
+
 ## Templates
 
 My notes/cards are simple: text fields, audio, images and hyperlinks. 
