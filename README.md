@@ -77,8 +77,8 @@ $ node index.js
 The server listens on port 8000 by default. But the server won't work until
 you have a database.
 
-I started with a copy of my Anki database. I had to remove the collation in
-order to work with it. To do so, you can run the Perl script:
+I started with a copy of my Anki desktop database. I had to remove the
+collation in order to work with it. To do so, you can run the Perl script:
 
 ```
 $ perl removeCollation.pl > removeCollation.sql
@@ -107,6 +107,33 @@ start browsing cards, you might to better to reset them all by setting due
 to 0 for all cards in queues other than 0 then setting queue and seen to 0
 for all cards.
 
+If you want preserve the state of cards rather than reset, set due and seen
+based on current queue and due.
+
+For the review and day learn queues: due is days since collection creation.
+Add these and convert to UTC epoch seconds, and save this to due. For
+review queue, set seen to this new due less the interval converted to
+milliseconds (it's days for review queue).
+
+For day (re)learn queue: due is (I think) epoch seconds. Convert to
+milliseconds. Figure out the current interval (I forget the details: it's a
+sequence of intervals in the config and perhaps field left records which is
+the current step) and subtract that interval, converted to milliseconds,
+from due to derive seen.
+
+If you set seen to 0 then your next interval will be 60 seconds. This
+effectively resets the card in terms of learning interval. If you have a
+lot of cards with large intervals, that's quite a setback, though daily
+workload will not be excessive and if you keep finding the cards easy, they
+will progress back to reasonable intervals fairly quickly.
+
+Maybe I will write something to import from an Anki database and code all
+the conversions, but I don't have much need for it myself, so maybe not.
+
+I will probably write something to import a published Anki deck, but that
+would add all the cards as new and the databse format is quite different
+from that of Anki desktop. And I guess the database formats of other
+versions of Anki are different again.
 
 ## Scheduling
 
