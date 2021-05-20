@@ -1,5 +1,7 @@
 'use strict';
 
+const tc = require('timezonecomplete');
+
 const express = require('express');
 // Mustache works for the Anki templates - it allows spaces in the tag keys
 // I had first tried Handlebars but it doesn't allow spaces in the tag keys
@@ -88,16 +90,18 @@ app.get('/', (req, res) => {
     const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
     const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
     console.log('nextDue ', nextDue);
-    const timeToNextDue = (nextDue - now) < 1000 * 60 ?
-      Math.ceil((nextDue - now)/1000) + ' seconds' :
-      (nextDue - now) < 1000 * 60 * 60 ?
-        Math.ceil((nextDue - now)/1000/60) + ' minutes':
-        (nextDue - now) < 1000 * 60 * 60 * 24?
-          Math.ceil((nextDue - now)/1000/60/60) + ' hours':
-          Math.ceil((nextDue - now)/1000/60/60/24) + ' days';
+    const timeToNextDue = tc.milliseconds(nextDue - now);
+    console.log('new timeToNextDue ', timeToNextDue.toFullString());
+//    const timeToNextDue = (nextDue - now) < 1000 * 60 ?
+//      Math.ceil((nextDue - now)/1000) + ' seconds' :
+//      (nextDue - now) < 1000 * 60 * 60 ?
+//        Math.ceil((nextDue - now)/1000/60) + ' minutes':
+//        (nextDue - now) < 1000 * 60 * 60 * 24?
+//          Math.ceil((nextDue - now)/1000/60/60) + ' hours':
+//          Math.ceil((nextDue - now)/1000/60/60/24) + ' days';
     res.render('done', {
       dueCount: dueCount,
-      timeToNextDue: timeToNextDue
+      timeToNextDue: timeToNextDue.toFullString()
     });
   }
 });
