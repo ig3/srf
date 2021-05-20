@@ -1,8 +1,32 @@
 <div class="status">
 All done for now!</br>
 Study time today: {{studyTimeToday}} (hh:mm:ss.ssss)</br>
+Cards viewed today: {{cardsViewedToday}}</br>
 Cards due later today: {{dueCount}}</br>
 Average time per card: {{averageTimePerCard}} (sec)</br>
 Estimated total study time: {{estimatedTotalStudyTime}} (hh:mm:ss.sss)</br>
 Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
 </div>
+<div class="charts">
+<canvas id="chart1" width="400" height="400"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const data = {
+    datasets: [{
+      label: 'My First dataset',
+      backgroundColor: 'rgb(255, 99, 132)',
+      borderColor: 'rgb(255, 99, 132)',
+      data: {{{chart1data}}}
+    }]
+  };
+  const config = {
+    type: 'line',
+    data,
+    options: {}
+  };
+  var myChart = new Chart(
+    document.getElementById('chart1'),
+    config
+  );
+</script>

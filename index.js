@@ -28,98 +28,118 @@ const db = require('better-sqlite3')('srf.db');
 // studyTimeNewCardLimit is the limit on total study time today
 // in milliseconds, after which no more new cards will be shown.
 const studyTimeNewCardLimit = 1000 * 60 * 60;
+
 // msecPerDay is the number of milliseconds in a day
 const msecPerDay = 1000 * 60 * 60 * 24;
+
 // msecPerYear is the number of milliseconds in a year
 const msecPerYear = msecPerDay * 365;
 
+// startTime is the time when this execution of the server started.
+const startTime = Date.now();
+
 
 // now is the current time, updated on receipt of each request
-let now = Date.now();
-// startTime is the time when this execution of the server started.
-const startTime = now;
+let now = startTime;
+
 // cardStartTime is the time when the current card was shown.
 // It is updated each time a card is shown.
 let cardStartTime = now;
-// cardsViewed is the total number of cards viewed in the server run.
-let cardsViewed = 0;
-// startOfDay is the epoch time of midnight as the start of the current day.
-const startOfDay = new Date().setHours(0,0,0,0).valueOf();
-console.log('startOfDay ', new Date(startOfDay).toString());
-// endOfDay is the epoch time of midnight at the end of the current day.
-const endOfDay = startOfDay + msecPerDay;
-console.log('endOfDay   ', new Date(endOfDay).toString());
 
-// timeSinceNewCard is ms since a new card was shown.
-// It is used to limit time between new cards, if there are due cards.
-let timeSinceNewCard = 0;
+// startOfDay is the epoch time of midnight as the start of the current day.
+let startOfDay = new Date().setHours(0,0,0,0).valueOf();
+
+// endOfDay is the epoch time of midnight at the end of the current day.
+let endOfDay = startOfDay + msecPerDay;
+
+// lastNewCardTime is the time the last new card was shown.
+let lastNewCardTime = 0;
+
 // averageTimePerCard is the average time viewing each card in ms.
 // Averaged over all cards viewed in the past 10 days.
-const averageTimePerCard = db.prepare('select avg(time) from revlog where id > ?').get(now - 1000 * 60 * 60 * 24 * 10)['avg(time)'] || 30000;
+// Updated when the day rolls over.
+let averageTimePerCard = db.prepare('select avg(time) from revlog where id > ?').get(now - 1000 * 60 * 60 * 24 * 10)['avg(time)'] || 30000;
 console.log('averageTimePerCard ', averageTimePerCard);
-// cardsViewedToday is the total number of cards viewed since midnight.
-let cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
-console.log('cardsViewedToday ', cardsViewedToday);
+
 // studyTimeToday is the total time studying cards since midnight.
+// Reset when the day rolls over.
 let studyTimeToday = db.prepare('select sum(time) from revlog where id >= ?').get(startOfDay)['sum(time)'] || 0;
 console.log('studyTimeToday ', studyTimeToday);
-// estimatedTotalStudyTime is the sum of actual study time today and
-// average time per card (over the past 10 days) time the number of
-// cards still due today.
-let estimatedTotalStudyTime;
 
+// dueCards and newCards are queues of cards to be viewed.
+// They are updated when they're empty.
 let dueCards = [];
 let newCards = [];
+
 // card is the current card. Updated when a new card is shown.
 let card;
-// note is the note (fields, templates, etc.) of the current card.
-let note;
 
+// Add middleware for common code to every request
+function initRequest (req, res, next) {
+  req.startTime = new Date();
+  now = Date.now();
+  const newStartOfDay = new Date().setHours(0,0,0,0).valueOf();
+  if (newStartOfDay !== startOfDay) {
+    startOfDay = newStartOfDay;
+    endOfDay = startOfDay + msecPerDay;
+    averageTimePerCard = db.prepare('select avg(time) from revlog where id > ?').get(now - 1000 * 60 * 60 * 24 * 10)['avg(time)'] || 30000;
+    studyTimeToday = 0;
+  }
+  next();
+}
+
+app.use(initRequest);
 
 app.get('/', (req, res) => {
-  now = Date.now();
   if (!dueCards || !dueCards.length) {
     dueCards = getDueCards();
   }
   card = getNextCard();
   if (card) {
-    cardsViewed++;
-    cardsViewedToday++;
     cardStartTime = now;
-    note = getNote(card);
-    res.render('home', note);
+    card.note = getNote(card);
+    res.render('home', card.note);
   } else {
+    const startOfDay = new Date(req.startTime).setHours(0,0,0,0).valueOf();
+    const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
     const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
     const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
     const timeToNextDue = tc.milliseconds(nextDue - now);
-//    const timeToNextDue = (nextDue - now) < 1000 * 60 ?
-//      Math.ceil((nextDue - now)/1000) + ' seconds' :
-//      (nextDue - now) < 1000 * 60 * 60 ?
-//        Math.ceil((nextDue - now)/1000/60) + ' minutes':
-//        (nextDue - now) < 1000 * 60 * 60 * 24?
-//          Math.ceil((nextDue - now)/1000/60/60) + ' hours':
-//          Math.ceil((nextDue - now)/1000/60/60/24) + ' days';
+    const dueStudyTime = Math.floor(dueCount * averageTimePerCard);
+    const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
+    const data = {};
+    let first;
+    let last;
+    // The database timestamps are UTC but we want local days so must
+    // add the local offset to determine which day a card was reviewed.
+    const offset = (new Date().getTimezoneOffset()) * 60 * 1000;
+    const viewsPerDay = db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(offset).forEach(el => {
+      if (!first) first = el.day-1;
+      last = el.day-first;
+      data[el.day-first] = el['count()'];
+    });
+    console.log('viewsPerDay', viewsPerDay);
+    console.log('data ', data);
     res.render('done', {
       dueCount: dueCount,
       timeToNextDue: timeToNextDue.toFullString(),
       cardsViewedToday: cardsViewedToday,
       studyTimeToday: tc.milliseconds(studyTimeToday).toFullString(),
       estimatedTotalStudyTime: tc.milliseconds(estimatedTotalStudyTime).toFullString(),
-      averageTimePerCard: Math.floor(averageTimePerCard/1000)
+      averageTimePerCard: Math.floor(averageTimePerCard/1000),
+      chart1data: JSON.stringify(data)
     });
   }
 });
 
 app.get('/back', (req, res) => {
-  now = Date.now();
-  if (!note) {
+  if (!card) {
     return res.redirect('/');
   }
-  res.render('back', note);
+  res.render('back', card.note);
 });
 
 app.get('/again', (req, res) => {
-  now = Date.now();
   if (card) {
     console.log('again');
     const factor = 2000;
@@ -133,7 +153,6 @@ app.get('/again', (req, res) => {
 });
 
 app.get('/hard', (req, res) => {
-  now = Date.now();
   if (card) {
     console.log('hard');
     const factor = Math.max(1200, card.factor - 50);
@@ -148,7 +167,6 @@ app.get('/hard', (req, res) => {
 });
 
 app.get('/good', (req, res) => {
-  now = Date.now();
   if (card) {
     console.log('good');
     const factor = Math.min(10000, card.factor + 50);
@@ -164,7 +182,6 @@ app.get('/good', (req, res) => {
 });
 
 app.get('/easy', (req, res) => {
-  now = Date.now();
   if (card) {
     console.log('easy');
     const factor = Math.min(10000, card.factor + 200);
@@ -325,11 +342,10 @@ function parseNoteTypeConfig (str) {
 function logReview (card, ease, now, newFactor, newDue) {
   let elapsed = Math.min(120000, Math.floor(now - cardStartTime));
   studyTimeToday += elapsed;
-  timeSinceNewCard += elapsed;
+  const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
   console.log(
     now,  // current time (ms)
     Math.floor(studyTimeToday/1000/60), // study time today (min)
-    cardsViewed, // cards viewed this session
     cardsViewedToday, // cards viewed today
     ease, // the ease for this card
     card.due, // when the card was due
@@ -384,18 +400,18 @@ function formatDue (due) {
 function getNextCard () {
   const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
   const dueStudyTime = Math.floor(dueCount * averageTimePerCard);
-  estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
+  const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
   console.log('Estimated total study time: ',
     tc.milliseconds(estimatedTotalStudyTime).toFullString());
   if (
     estimatedTotalStudyTime < studyTimeNewCardLimit &&
-    (timeSinceNewCard > 600000 || dueCount === 0)
+    (lastNewCardTime < now - 60000 || dueCount === 0)
   ) {
     if (!newCards || newCards.length === 0) {
       newCards = getNewCards();
     }
     if (newCards && newCards.length > 0) {
-      timeSinceNewCard = 0;
+      lastNewCardTime = now;
       console.log('new card');
       return(newCards.shift());
     }
