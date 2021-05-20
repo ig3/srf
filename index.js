@@ -42,10 +42,12 @@ let cardStartTime = now;
 // cardsViewed is the total number of cards viewed in the server run.
 let cardsViewed = 0;
 // startOfDay is the epoch time of midnight as the start of the current day.
-const startOfDay = Math.floor(startTime / msecPerDay) * msecPerDay;
+const startOfDay = new Date().setHours(0,0,0,0).valueOf();
 console.log('startOfDay ', startOfDay);
 // endOfDay is the epoch time of midnight at the end of the current day.
 const endOfDay = startOfDay + msecPerDay;
+const eod = new Date(endOfDay);
+console.log('eod ', eod.toString());
 
 // timeSinceNewCard is ms since a new card was shown.
 // It is used to limit time between new cards, if there are due cards.
@@ -87,9 +89,16 @@ app.get('/', (req, res) => {
     const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
     console.log('nextDue ', nextDue);
     const timeToNextDue = (nextDue - now) < 1000 * 60 ?
-      Math.floor((nextDue - now) / 1000) + ' seconds' :
-      Math.floor((nextDue - now) / 1000 / 60) + ' minutes';
-    res.send('All done for now. There are ' + dueCount + ' cards due later today. Next card is due in ' + timeToNextDue);
+      Math.floor((nextDue - now)/1000) + ' seconds' :
+      (nextDue - now) < 1000 * 60 * 60 ?
+        Math.floor((nextDue - now)/1000/60) + ' minutes':
+        (nextDue - now) < 1000 * 60 * 60 * 24?
+          Math.floor((nextDue - now)/1000/60/60) + ' hours':
+          Math.floor((nextDue - now)/1000/60/60/24) + ' days';
+    res.render('done', {
+      dueCount: dueCount,
+      timeToNextDue: timeToNextDue
+    });
   }
 });
 
@@ -368,7 +377,7 @@ function getNextCard () {
   const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(now)['count()'] || 0;
   console.log('dueCount ', dueCount);
   const dueStudyTime = Math.floor(dueCount * averageTimePerCard);
-  console.log('dueStudyTime ', dueStudyTime);
+  console.log('dueStudyTime ', Math.floor(dueStudyTime/1000/60/60), ' min');
   if ((studyTimeToday + dueStudyTime) < studyTimeNewCardLimit && (timeSinceNewCard > 600000 || dueCount === 0)) {
     if (!newCards || newCards.length === 0) {
       newCards = getNewCards();
