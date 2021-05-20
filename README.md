@@ -81,19 +81,68 @@ to 0 for all cards in queues other than 0 then setting queue and seen to 0
 for all cards.
 
 
-## Notes
+## Scheduling
 
-I have also wanted to experiment with the scheduler algorithm but the way
-it is tied into code makes it difficult. There is not a simple API to the
-scheduler.
+Scheduling is very simple. 
+
+Cards with seen = 0 are 'new'. They are only shown if workload permits.
+
+Cards with seen != 0 have been seen before. Seen is the epoch time of when
+they were last seen and due is the time they are due to be seen again.
+
+When a card is seen, it can be updated with one of four buttons:
+
+* Again - factor = 2000, due = now + 60 seconds
+* Hard - factor -= 50, due = now + (now-seen) * 0.9
+* Good - factor += 50, due = now + (now-seen) * factor/1000
+* Easy - factor += 200, due = now + (now-seen) * factor/1000
+
+Minimum time to next due is one minute.
+Maximum time to next due - there isn't one, but probably should be
+Minimum factor is 1200
+Maximum factor is 10000
+
+For Easy, factor is set to a minimum of 4000 and time to next due is a
+minimum of one day.
+
+Unlike Anki, there is no 'interval'. Or, rather, the interval is the time
+from when the card was last seen until now, regardless of whether the card
+has just come due or came due several weeks ago (if you take a break from
+study for whatever reason). If you really want it, you can get the old
+interval: its the difference between when the card was last seen and when
+it was due. But, you view cards when you do, always more or less after they
+are due. The actual interval might not be ideal, in terms of learning
+performance, but whatever it is, that's what it is. Base the time to next
+due based on the actual interval and whether it was easy, good, hard or
+again (ease, in Anki terms) this time.
+
+Workload is managed by controlling the introduction of new (seen = 0)
+cards.
+
+Total time to view all cards due by end of day is estimated. This is based
+on the number of cards due and average time per view for all cards viewed
+the past 10 days. This should probably be increased by some factor, as not
+all cards are easy - you will view some cards more than once in a day. But
+the estimate includes actual time reviewing cards during the day, so the
+estimate becomes more accurate as the day progresses.
+
+If the estimated time to complete reviews exceeds studyTimeNewCardLimit
+(which is set to 1 hour at the moment) then new cards are not shown.
+
+Otherwise, if there are due cards then a new card is shown approximately
+every 10 minutes. If there are no due cards, then new cards are shown
+immediately, until the estimate of total study time exceeds 1 hour.
+
+The objective is to keep study time close to 1 hour per day by adding new
+cards if it is less and blocking new cards if it is more. It is always
+possible to review all due cards. There is no limit on cards viewed - only
+on new cards.
+
+## Notes
 
 The cards I used are simple html/css. Nothing fancy. It should be easy to
 present them in the browser, electron or any other context that supports
 html/css.
-
-So, this is yet another spaced repetition flashcard app (npmjs and GitHub
-are littered with them).
-
 
 ## Anki database
 

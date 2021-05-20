@@ -147,7 +147,7 @@ app.get('/good', (req, res) => {
   now = Date.now();
   if (card) {
     console.log('good');
-    const factor = card.factor + 50;
+    const factor = Math.min(10000, card.factor + 50);
     console.log('factor ', factor);
     const seen = card.seen || now;
     console.log('seen ', card.seen, seen);
@@ -163,7 +163,7 @@ app.get('/easy', (req, res) => {
   now = Date.now();
   if (card) {
     console.log('easy');
-    const factor = Math.min(4000, card.factor + 200);
+    const factor = Math.min(10000, card.factor + 200);
     const now = Date.now();
     const seen = card.seen || now;
     const due = now +
@@ -378,7 +378,7 @@ function formatDue (due) {
 }
 
 function getNextCard () {
-  const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(now)['count()'] || 0;
+  const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
   console.log('dueCount ', dueCount);
   const dueStudyTime = Math.floor(dueCount * averageTimePerCard);
   console.log('dueStudyTime ', Math.floor(dueStudyTime/1000/60/60), ' min');
