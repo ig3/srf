@@ -398,14 +398,20 @@ function formatDue (due) {
 }
 
 function getNextCard () {
-  const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
-  const dueStudyTime = Math.floor(dueCount * averageTimePerCard);
+  console.log('getNextCard');
+  if (!dueCards || dueCards.length === 0) {
+    dueCards = getDueCards();
+  }
+  const dueTodayCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
+  console.log('dueTodayCount ', dueTodayCount);
+  const dueStudyTime = Math.floor(dueTodayCount * averageTimePerCard);
+  console.log('dueStudyTime ', dueStudyTime);
   const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
   console.log('Estimated total study time: ',
     tc.milliseconds(estimatedTotalStudyTime).toFullString());
   if (
     estimatedTotalStudyTime < studyTimeNewCardLimit &&
-    (lastNewCardTime < now - 60000 || dueCount === 0)
+    (lastNewCardTime < now - 60000 || dueCards.length === 0)
   ) {
     if (!newCards || newCards.length === 0) {
       newCards = getNewCards();
@@ -415,9 +421,6 @@ function getNextCard () {
       console.log('new card');
       return(newCards.shift());
     }
-  }
-  if (!dueCards || dueCards.length === 0) {
-    dueCards = getDueCards();
   }
   if (dueCards && dueCards.length > 0) {
     return(dueCards.shift());
