@@ -6,19 +6,46 @@ Spaced Repetition Flashcards.
 Yet another flashcard program, because I am too stupid, lazy and stubborn
 to find and adapt to an existing one (there are many).
 
-I used [Anki](https://apps.ankiweb.net/) desktop for a couple of years. 
-It is quite good, with many decks available and a good feature set. But
-there were a bugs in timezone handling that affected me and I wanted a
-somewhat different scheduler. I created submitted patches and created
-add-ons to fix bugs and add some of the features I wanted, but became
+I used [Anki](https://apps.ankiweb.net/) desktop for a couple of years.  It
+is quite good, with many decks available and a good feature set. But there
+were bugs in timezone handling that affected me and I wanted a somewhat
+different scheduler with automatic adjustment of new cards per day to
+maintain a more constant workload. I submitted patches and created add-ons
+to fix bugs and add some of the features I wanted, but I became
 increasingly frustrated by the complexity of the build environment, the
 frequency of changes to the scheduler api and internals, lack of
-documentation of the internals and add-on apis, the inscrutable rust back
-end and blobs in the database.
+documentation of the internals and add-on APIs, the inscrutable rust back
+end and blobs in the database. Eventually I decided it would be less work
+to write my own (I only need and use a small subset of Anki features) than
+to keep struggling with Anki. I have much respect and appreciation for
+Anki, but I want something a little different in the scheduler and to spend
+more time using the tool and less time developing and maintaining it. 
 
-What I really wanted to do was to write my own scheduler, but with so many
-rapidly changing hooks into it from various parts of the code, doing so was
-impractical.
+I just spent all my free time (and a lot of time that really wasn't free,
+and I should have been doing other things, like sleeping) for a couple of
+weeks to adapt my Anki scheduling add-on to more recent versions of Anki
+and, in particular, to the shift of scheduling function to the back-end and
+elimination of the hooks I had been using. While the outcome was some
+improvement in the approach (necessity is the mother of invention, as they
+say) overall the cost/benefit was not good.
+
+It took me only three days to get this to the point I could get back to
+studying - significantly less time than the last iteration of my Anki
+add-ons, and I still didn't have the scheduling I actually wanted in Anki.
+
+Now, with this, I can do whatever I want with scheduling.
+
+The biggest challenges were reverse engineering the serialization of the
+blobs in the database (because after hours of searching I still couldn't
+find a definition of the rust/serde serialization. It's open source. I'm
+sure the information is there somewhere, but it's not documented, not
+discussed, and there are too many layers of abstraction and build
+automation on top of it - I couldn't find the code. The other issue was the
+collation function in the rust sqlite driver. It is rust specific. I found
+the implementation but didn't want to re-implement it in JavaScript - I
+don't need it. But I couldn't decide this until I found what it was. Once I
+had determined I didn't need or want it, it only took me a little while to
+learn how to remove it from the database.
 
 ## Pros
 
