@@ -38,6 +38,16 @@
         if (el) el.click();
       }
     }
+    // let x = document.getElementById('myaudio');
+    // x.volume = 0.2;
+    // The DOM is stupid: getElementsByTagName doesn't return an array
+    // of elements. Instead, it returns an HTMLCollection, which is an
+    // "array-like object" which is not like an array. So, one has to
+    // do stupid shit like the following to iterate over the elements.
+    let elements = document.getElementsByTagName('audio');
+    for (let element of elements) {
+      element.volume = 0.4;
+    }
   </script>
 </body>
 </html>

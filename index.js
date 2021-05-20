@@ -12,7 +12,7 @@ Mustache.escape = function (text) {
   let x;
   if (x = text.match(/\[sound:(.*)\]/)) {
     return(
-      '<audio autoplay controls src="' + x[1] + '"></audio></br>'
+      '<audio id="myaudio" autoplay controls src="' + x[1] + '"></audio></br>'
     );
   }
   return(text);
