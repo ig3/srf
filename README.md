@@ -135,6 +135,10 @@ would add all the cards as new and the databse format is quite different
 from that of Anki desktop. And I guess the database formats of other
 versions of Anki are different again.
 
+Copy all the Anki media to the media subdirectory. You will probably have
+to create it. I don't think git will create an empty directory and my media
+isn't (at least it shouldn't be) committed.
+
 ## Scheduling
 
 Scheduling is very simple. 
@@ -192,11 +196,23 @@ cards if it is less and blocking new cards if it is more. It is always
 possible to review all due cards. There is no limit on cards viewed - only
 on new cards.
 
-## Notes
+## Templates
 
-The cards I used are simple html/css. Nothing fancy. It should be easy to
-present them in the browser, electron or any other context that supports
-html/css.
+My notes/cards are simple: text fields, audio, images and hyperlinks. 
+
+srf uses two template engines: one for the Anki templates (mustache) and
+the other for pages (handlebars). I used mustache for the Anki templates
+because, unlike handlebars, it handles spaces in the parameter names
+(`{{Some Parameter}}`) which handlebars doesn't. But handlebars seemed a
+little more featureful and I found a tutorial that made it easy to get
+going with some simple pages (express setup and example pages). I probably
+could have used mustache throughout but couldn't have used handlebars
+without changing my templates.
+
+srf works with my Anki templates and content without modifying them at all:
+no changes to the front or back templates or to the CSS. No changes to the
+media either, other than to make a copy of it for srf. My media includes
+sounds and images.
 
 ## Anki database
 
