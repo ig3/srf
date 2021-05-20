@@ -91,7 +91,7 @@ app.get('/', (req, res) => {
     const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
     console.log('nextDue ', nextDue);
     const timeToNextDue = tc.milliseconds(nextDue - now);
-    console.log('new timeToNextDue ', timeToNextDue.toFullString());
+    console.log('timeToNextDue ', timeToNextDue.toFullString());
 //    const timeToNextDue = (nextDue - now) < 1000 * 60 ?
 //      Math.ceil((nextDue - now)/1000) + ' seconds' :
 //      (nextDue - now) < 1000 * 60 * 60 ?
