@@ -195,7 +195,45 @@ will code the data somewhat differently, or the field codes will change
 with each release of Anki. What I have here works for me, with the database
 from Anki 2.1.43.
 
+Related data is stored in notes. For example, a question and answer.
+
+A note has a type, which determines what fields may be populated (e.g.
+question and answer, or English and Chinese and pinyin).
+
+A note type has a set of fields.
+
+A note type has a set of card types/templates. The card types have front
+and back templates.
+
+For each note, one card is produced for each card type associated with the
+note type of the note. The cards are associated with the note types by
+field ord.
+
+The CSS for the cards is stored in notetypes.config. It isn't obvious from
+the card type editor, where it appears that each card type has front and
+back templates and 'styling'. The styling is common to all the card types
+of a given note type.
+
+The database doesn't have a cardtypes table. Rather, the card types are
+manifest in the templates table. Each template is linked to a notetypes by
+templates.ntid. The relationship is many-to-one, with the different
+templates distinguished by ord, which is also in cards. The specific
+template for a card is determined by matching cards.ord to templates.ord.
+
+Each templates record has two templates: front and back, serialized into
+templates.config.
+
+Each note type is associated with a set of fields and a set of templates
+(a.k.a. card types).
+
+Each note is associated with a note type which determines the fields and
+cards associated with the note. The fields are the attributes for which
+values may be saved. The templates determine how these are presented to the
+user. Each template has a front and a back layout (the 'flashcard').
+
+
 ### cards
+
  * id - primary key
  * nid - fk to notes
  * did - fk to decks
@@ -215,6 +253,7 @@ from Anki 2.1.43.
  * flags - ???
  * data - ???
  * seen - srf: milliseconds since epoch when card was last seen
+ * new_order - srf: integer for sorting new cards
 
 type can be 0=new, 1=lrn, 2=rev, 3=relrn. It has something to do with
 filtered decks, at least.

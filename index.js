@@ -171,7 +171,7 @@ app.get('/hard', (req, res) => {
 
 app.get('/good', (req, res) => {
   if (card) {
-    const factor = Math.min(10000, card.factor + 50);
+    const factor = Math.max(1200, Math.min(10000, card.factor + 50));
     const seen = card.seen || now;
     const due = now +
       Math.min(
@@ -220,16 +220,40 @@ function getCreationTime () {
   return (row.crt);
 }
 
+/**
+ * The card is linked to notes by fk nid
+ * The note is linked to notetypes by fk mid
+ * A set of fields are linked to notetype by fk ntid
+ * A set of templates are linked to notetype by fk ntid
+ * The card and template both have ord which determines the template that
+ * matches the card.
+ */
 function getNote (card) {
   const nid = card.nid;
   const note = db.prepare('select * from notes where id = ?').get(nid);
+  if (!note) {
+    console.log('No note for card ', card.id);
+    return;
+  }
   const noteTypeID = note.mid;
   const noteType = db.prepare('select * from notetypes where id = ?').get(noteTypeID);
+  if (!noteType) {
+    console.log('No notetypes for note ', note.id);
+    return;
+  }
   note.noteType = parseNoteTypeConfig(noteType.config.toString('binary'));
   const fields = db.prepare('select * from fields where ntid = ?').all(noteTypeID);
+  if (!fields) {
+    console.log('No fields for note ', note.id);
+  }
   const template = db.prepare('select * from templates where ntid = ? and ord = ?').get(noteTypeID, card.ord);
-  const str = template.config.toString('binary');
-  note.template = parseTemplateConfig(str);
+  if (!template) {
+    console.log('No template for note ', note.id);
+    return;
+  } else {
+    const str = template.config.toString('binary');
+    note.template = parseTemplateConfig(str);
+  }
 
   const tmpFieldValues = note.flds.split(String.fromCharCode(0x1f));
 
@@ -341,6 +365,63 @@ function parseNoteTypeConfig (str) {
   }
 }
 
+/**
+ * Fields:
+ * 08: sticky: int: Remember last input when adding flag
+ * ??: int: Reverse text direction flag
+ * 1a: font_name: string: len text
+ * 20: font_size: int: font size
+ * fa 0f: other:  string: len text - e.g. {"media":[]}
+ *
+ * Anki UI has nothing corresponding to 'other'. From
+ * rslib/src/notetype/schema11.rs, function other_to_bytes, it appers that
+ * the values is JSON text, which is consistent with what I have seen in a
+ * few examples.
+ *
+ * NoteFieldConfig {
+ *  sticky
+ *  rtl
+ *  font_name
+ *  font_size
+ *  other: vec![]
+ * }
+ *
+ * From rslib/backend.proto:
+ *
+ * message NoteFieldConfig {
+ *  bool sticky = 1;
+ *  bool rtl = 2;
+ *  string font_name = 3;
+ *  uint32 font_size = 4;
+ *  bytes other = 255;
+ * }
+ *
+ * I had noticed before that the 'id' byte that starts a field appears to
+ * be the field index << 3. 08 >> 3 = 1; 10 >> 3 = 2, 18 >> 3 = 3, etc.
+ *
+ * fa 0f, interpreted as an integer is 0000 1111 111 1100. Shift this right
+ * by 3 and one gets 1111 1111 = 0xff = 255, which is the value for other
+ * in the message. This is unlikely to be a coincidence.
+ *
+ * So, maybe the field marker, generally, is an integer, which can occupy
+ * more than one byte.
+ *
+ * These config parameters all seem to relate to the Anki UI: The font and
+ * size for displaying the field value, whether the value should be
+ * displayed right to left and whether the editor should clear the field
+ * before next input. The only one that's not certain is 'other', which is
+ * serialized crap nested within serialized crap. 
+ *
+ * The elements of config other than 'other' could/should all be plain
+ * database fields.
+ *
+ * But, it seems there is little or no need for them in srf.
+ *
+ */
+function parseFieldsConfig (str) {
+  throw new Error('not implemented');
+}
+
 function logReview (card, ease, now, newFactor, newDue) {
   let elapsed = Math.min(120000, Math.floor(now - cardStartTime));
   studyTimeToday += elapsed;
@@ -350,6 +431,7 @@ function logReview (card, ease, now, newFactor, newDue) {
     Math.floor(studyTimeToday/1000/60), // study time today (min)
     cardsViewedToday, // cards viewed today
     dueTodayCount, // cards due today
+    tc.milliseconds(getEstimatedTotalStudyTime()).toFullString(),
     formatDue(card.seen), // when card was last seen
     formatDue(card.due),  // when the card was due
     formatDue(newDue), // the new due date
@@ -398,10 +480,8 @@ function formatDue (due) {
 }
 
 function getNextCard () {
-  if (
-    getEstimatedTotalStudyTime() < studyTimeNewCardLimit &&
-    lastNewCardTime < now - 300000
-  ) {
+  const newCardsAllowed = getEstimatedTotalStudyTime() < studyTimeNewCardLimit;
+  if (newCardsAllowed && lastNewCardTime < now - 300000) {
     const card = getNewCard();
     if (card) {
       lastNewCardTime = now;
@@ -412,7 +492,7 @@ function getNextCard () {
     const card = getDueCard();
     if (card) {
       return(card);
-    } else {
+    } else if (newCardsAllowed) {
       const card = getNewCard();
       return(card);
     }
@@ -420,7 +500,7 @@ function getNextCard () {
 }
 
 function getNewCard () {
-  const card = db.prepare('select * from cards where due < ? and seen = 0 order by ord limit 1').get(now);
+  const card = db.prepare('select * from cards where due < ? and seen = 0 order by new_order limit 1').get(now);
   return(card);
 }
 
@@ -433,8 +513,8 @@ function getEstimatedTotalStudyTime () {
   const dueTodayCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
   const dueStudyTime = Math.floor(dueTodayCount * averageTimePerCard);
   const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
-  console.log('Estimated total study time: ',
-    tc.milliseconds(estimatedTotalStudyTime).toFullString());
+  //console.log('Estimated total study time: ',
+  //  tc.milliseconds(estimatedTotalStudyTime).toFullString());
   return(estimatedTotalStudyTime);
 }
 
@@ -444,6 +524,7 @@ function getEstimatedTotalStudyTime () {
  * the same day.
  */
 function buryRelated (card) {
+  console.log('bury ', card.nid);
   db.prepare('update cards set due = ? where seen = 0 and nid = ?')
     .run(now + msecPerDay, card.nid);
 }

@@ -21,7 +21,9 @@ console.log('copied');
 removeCollationUnicase();
 lowercaseTableNames();
 addSeen();
+addNewOrder();
 fixDue();
+setNewOrder();
 
 
 
@@ -90,6 +92,15 @@ function addSeen () {
   db.close();
 }
 
+/**
+ * srf uses a new integer field on the cards table: new_order
+ */
+function addNewOrder () {
+  const db = require('better-sqlite3')(dstFile);
+  db.prepare("alter table cards add column new_order integer not null default 0").run();
+  db.close();
+}
+
 
 /**
  * Anki puts various values into due depending on the queue. But srf sets
@@ -116,9 +127,11 @@ function fixDue () {
       // select id from cards where did = ? and queue = {QUEUE_TYPE_NEW}
       // order by due,ord limit ?
       // Merge due and ord into ord and set due to 0
-      console.log('set ord on ' + card.id);
-      db2.prepare('update cards set ord = ?, due = 0 where id = ?')
-        .run(card.due + card.ord, card.id);
+      //console.log('set ord on ' + card.id);
+      // Doing this one at a time is inefficient.
+      // See setNewOrder()
+      //db2.prepare('update cards set ord = ?, due = 0 where id = ?')
+      //  .run(card.due + card.ord, card.id);
     } else if  (card.queue === 1) { // (re)learn
       // Due is epoch seconds ivl is ???
       // left is used to index into the list of delays
@@ -154,5 +167,32 @@ function fixDue () {
     }
   }
   db2.close();
+  db.close();
+}
+
+
+/**
+ * In Anki, the order of presentation of new cards is primarily determined
+ * by due which, for new cards isn't a due day or time.
+ *
+ * The sort for new cards is: order by due, ord
+ *
+ * In this case, due is a fairly arbitrary integer. Not sure the rules.
+ * The ord coordinates with templates to identify the specific template
+ * to be used to present the note to the user.
+ *
+ * Having new card sort order in due has the disadvantage that after the
+ * card is seen the sort information is overwritten, after which it is not
+ * possible to reset the card and maintain original sort order.
+ *
+ * In srf, the new card sort order is in a new, separate field: new_order.
+ *
+ * For cards in the new queue, we can set new_order. For cards in other
+ * queues, the information has already been overwritten.
+ *
+ */
+function setNewOrder () {
+  const db = require('better-sqlite3')(dstFile);
+  db.prepare('update cards set new_order = due where seen = 0').run();
   db.close();
 }
