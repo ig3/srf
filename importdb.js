@@ -111,11 +111,14 @@ function fixDue () {
   for (const card of cards.iterate()) {
     // console.log('card ', card);
     if (card.queue === 0) { // new
-      // Due is used to order cards but doesn't have much meaning
+      // For new cards, due is an ordinal
       // In Anki the new card queue is filled with
       // select id from cards where did = ? and queue = {QUEUE_TYPE_NEW}
       // order by due,ord limit ?
-      // No need to change due for srf
+      // Merge due and ord into ord and set due to 0
+      console.log('set ord on ' + card.id);
+      db2.prepare('update cards set ord = ?, due = 0 where id = ?')
+        .run(card.due + card.ord, card.id);
     } else if  (card.queue === 1) { // (re)learn
       // Due is epoch seconds ivl is ???
       // left is used to index into the list of delays
@@ -127,7 +130,8 @@ function fixDue () {
       // Make sure due isn't more than a year in the future.
       if (due > dueLimit) due = dueLimit;
       const seen = due - 60000;
-      db2.prepare('update cards set due = ?, seen = ? where id = ?').run(due, seen, card.id);
+      db2.prepare('update cards set due = ?, seen = ? where id = ?')
+        .run(due, seen, card.id);
     } else if (
       card.queue === -3 || // manually buried
       card.queue === -2 || // sibling buried

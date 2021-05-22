@@ -196,6 +196,28 @@ with each release of Anki. What I have here works for me, with the database
 from Anki 2.1.43.
 
 ### cards
+ * id - primary key
+ * nid - fk to notes
+ * did - fk to decks
+ * ord - order among cards linked to same note
+ * mod - card modification time
+ * usn - something to do with syncing in Anki
+ * type - ???
+ * queue - the Anki queue
+ * due - when the card is due seconds since epoch or day number
+ * ivl - the interval between views
+ * factor - the factor for increasing the interval between views
+ * reps - number of times the card has been viewed
+ * lapses - number of times the card was 'repeat'
+ * left - something to do with (re)learn cards progress through steps
+ * odue - original due, for cards temporarily in a different deck
+ * odid - original deck ID, for cards temporarily in a different deck
+ * flags - ???
+ * data - ???
+ * seen - srf: milliseconds since epoch when card was last seen
+
+type can be 0=new, 1=lrn, 2=rev, 3=relrn. It has something to do with
+filtered decks, at least.
 
 ### notes
 
@@ -235,5 +257,23 @@ From templates.rs:
         }
 ```
 
+
+
+## Charts
+
+I have tried [chart.js](https://chartjs.org). It's quite simple for a basic chart. 
+
+Consider also d3.js
+
+[Highcharts](https://www.highcharts.com/docs/chart-concepts/series) is easy
+to use. But it requires a license. CC for non-commercial, but it's not like
+FOSS.
+
+https://alternativeto.net/software/highcharts/?license=free
+
+[plotly](https://plotly.com/javascript/) is open source under MIT license,
+available on GitHub and js available from CDN. It is even easier to use
+than Highcharts (at least, less verbose) and makes good looking charts with
+download, zoom, pan, values on hover and all sorts. Seems quite awesome.
 
 
