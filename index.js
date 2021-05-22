@@ -23,7 +23,13 @@ app.engine('handlebars', expressHandlebars());
 app.set('view engine', 'handlebars');
 app.use(express.static('media'));
 
+process.on('SIGINT', onExit);
 const db = require('better-sqlite3')('srf.db');
+function onExit() {
+  console.log('closing database connection');
+  db.close();
+  process.exit();
+}
 
 // studyTimeNewCardLimit is the limit on total study time today
 // in milliseconds, after which no more new cards will be shown.
@@ -168,12 +174,16 @@ app.get('/hard', (req, res) => {
 
 app.get('/good', (req, res) => {
   if (card) {
-    console.log('good');
     const factor = Math.min(10000, card.factor + 50);
-    console.log('factor ', factor);
     const seen = card.seen || now;
-    console.log('seen ', card.seen, seen);
-    const due = now + Math.max(60000, Math.floor((now - seen) * factor / 1000));
+    const due = now +
+      Math.min(
+        msecPerYear,
+        Math.max(
+          60000,
+          Math.floor((now - seen) * factor / 1000)
+        )
+      );
     db.prepare('update cards set factor = ?, seen = ?, due = ? where id = ?')
     .run(factor, now, due, card.id);
     logReview(card, 3, now, factor, due);
@@ -188,7 +198,13 @@ app.get('/easy', (req, res) => {
     const now = Date.now();
     const seen = card.seen || now;
     const due = now +
-      Math.min(msecPerYear, Math.max(msecPerDay, Math.floor((now - seen) * factor / 1000)));
+      Math.min(
+        msecPerYear,
+        Math.max(
+          msecPerDay,
+          Math.floor((now - seen) * factor / 1000)
+        )
+      );
     db.prepare('update cards set factor = ?, seen = ?, due = ? where id = ?')
     .run(factor, now, due, card.id);
     logReview(card, 4, now, factor, due);
@@ -344,13 +360,9 @@ function logReview (card, ease, now, newFactor, newDue) {
   studyTimeToday += elapsed;
   const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
   console.log(
-    now,  // current time (ms)
     Math.floor(studyTimeToday/1000/60), // study time today (min)
     cardsViewedToday, // cards viewed today
-    ease, // the ease for this card
-    card.due, // when the card was due
     formatDue(card.due),  // when the card was due
-    newDue, // the new due date
     formatDue(newDue), // the new due date
     Math.floor((now - card.due)/1000/60), // how overdue the card is (min)
     newFactor, // updated interval factor
@@ -398,14 +410,12 @@ function formatDue (due) {
 }
 
 function getNextCard () {
-  console.log('getNextCard');
   if (!dueCards || dueCards.length === 0) {
     dueCards = getDueCards();
   }
   const dueTodayCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
   console.log('dueTodayCount ', dueTodayCount);
   const dueStudyTime = Math.floor(dueTodayCount * averageTimePerCard);
-  console.log('dueStudyTime ', dueStudyTime);
   const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
   console.log('Estimated total study time: ',
     tc.milliseconds(estimatedTotalStudyTime).toFullString());

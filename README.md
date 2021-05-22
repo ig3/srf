@@ -76,75 +76,22 @@ $ node index.js
 
 The server listens on port 8000 by default.
 
-But the server won't work until you have a database. The server works for
-me, with a database copied from Anki version 2.1.43. If you are using some
-other version of Anki, it probably won't work. Each release of Anki (many
-of them, at least) `upgrades` the database. The Anki Profiles screen has a
-Downgrade & Quit button, but it is not obvious what one is downgrading to
-and when I try it now it simply says that profiles can now be opened with
-an older verson of Anki. Last time I tried, older versions of Anki prompted
-to re-run the new version and downgrade. It might be necessary to step back
-through each release since, to get to an older release - I don't know, I
-haven't done it, but as of 2.1.43, there seems to be no way to downgrade
-anymore.
+The script `importdb.js` reads an Anki database and makes changes so that
+it will work with srf. There aren't many changes. Read the script for
+details. For my decks, I am then able to study cards without further
+modification, but I use only simple card types. Closures will not work, for
+example. It preserves the due dates of cards. It preserves the due times of
+day learn cards but ignores the intervals - setting interval to 1 minute.
+This is OK for me. A small percentage of my collection are learning and my
+learning intervals are all under 1 hours, so no big loss being set back to
+1 minute interval.
 
-I started with a copy of my Anki desktop database. I had to remove the
-collation in order to work with it. To do so, you can run the Perl script:
+`importdb.js` requires two arguments: the path of the Anki database file,
+which it reads, and the path of the srf database to produce, which it
+writes. You can try this script on your database and maybe it will suffice.
 
-```
-$ perl removeCollation.pl > removeCollation.sql
-```
-
-This will produce SQL code that you can run against your database:
-
-```
-$ sqlite3 srf.db <removeCollation.sql
-$ sqlite3 srf.db reindex
-```
-
-The only change to the database structure thus far is addition of column
-`seen` to table cards.
-
-The following might work but I haven't tested it. I used DB Browser for
-SQLite.
-
-```
-$ sqlite3 srf.db 'alter table cards add column seen integer NOT NULL'
-```
-
-While the table structures are otherwise unaltered from Anki, the use of
-columns in the cards and revlogs tables are different. While you can just
-start browsing cards, you might to better to reset them all by setting due
-to 0 for all cards in queues other than 0 then setting queue and seen to 0
-for all cards.
-
-If you want preserve the state of cards rather than reset, set due and seen
-based on current queue and due.
-
-For the review and day learn queues: due is days since collection creation.
-Add these and convert to UTC epoch seconds, and save this to due. For
-review queue, set seen to this new due less the interval converted to
-milliseconds (it's days for review queue).
-
-For day (re)learn queue: due is (I think) epoch seconds. Convert to
-milliseconds. Figure out the current interval (I forget the details: it's a
-sequence of intervals in the config and perhaps field left records which is
-the current step) and subtract that interval, converted to milliseconds,
-from due to derive seen.
-
-If you set seen to 0 then your next interval will be 60 seconds. This
-effectively resets the card in terms of learning interval. If you have a
-lot of cards with large intervals, that's quite a setback, though daily
-workload will not be excessive and if you keep finding the cards easy, they
-will progress back to reasonable intervals fairly quickly.
-
-Maybe I will write something to import from an Anki database and code all
-the conversions, but I don't have much need for it myself, so maybe not.
-
-I will probably write something to import a published Anki deck, but that
-would add all the cards as new and the databse format is quite different
-from that of Anki desktop. And I guess the database formats of other
-versions of Anki are different again.
+I will probably write something to import a published Anki deck, but not
+yet.
 
 Copy all the Anki media to the media subdirectory. You will probably have
 to create it. I don't think git will create an empty directory and my media

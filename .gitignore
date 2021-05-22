@@ -9,3 +9,5 @@ dump*
 *.db*
 media/
 .npmrc
+*.anki2
+*.srf
