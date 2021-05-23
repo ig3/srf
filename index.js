@@ -59,7 +59,7 @@ let startOfDay = new Date().setHours(0,0,0,0).valueOf();
 let endOfDay = startOfDay + msecPerDay;
 
 // lastNewCardTime is the time the last new card was shown.
-let lastNewCardTime = 0;
+let lastNewCardTime = now;
 
 // averageTimePerCard is the average time viewing each card in ms.
 // Averaged over all cards viewed in the past 10 days.
@@ -95,9 +95,17 @@ app.get('/', (req, res) => {
   const dueNow = db.prepare('select count() from cards where seen != 0 and due < ?').get(now)['count()'] || 0;
   const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
   const timeToNextDue = tc.milliseconds(nextDue - now);
+  const chart1Data = { x: [], y: [], type: 'bar' };
+  const offset = (new Date().getTimezoneOffset()) * 60 * 1000;
+  const duePerHour = db.prepare('select cast((due+?)/(1000*60*60)%24 as integer) as hour, count() from cards where due > ? and due < ? group by hour').all(offset,startOfDay, endOfDay)
+  .forEach(el => {
+    chart1Data.x.push(el.hour);
+    chart1Data.y.push(el['count()']);
+  });
   res.render('home', {
     dueNow: dueNow,
-    timeToNextDue: timeToNextDue.toFullString()
+    timeToNextDue: timeToNextDue.toFullString(),
+    chart1Data: JSON.stringify(chart1Data),
   });
 });
 
@@ -149,7 +157,7 @@ app.get('/front', (req, res) => {
     card.note = getNote(card);
     res.render('front', card.note);
   } else {
-    res.redirect('/home');
+    res.redirect('/');
   }
 });
 
@@ -196,11 +204,12 @@ app.get('/good', (req, res) => {
         msecPerYear,
         Math.max(
           60000,
-          Math.floor((now - seen) * factor / 1000)
+          Math.floor((now - seen) * factor * (5 - Math.random())/ 5 / 1000)
         )
       );
     db.prepare('update cards set factor = ?, seen = ?, due = ? where id = ?')
     .run(factor, now, due, card.id);
+    buryRelated(card);
     logReview(card, 3, now, factor, due);
   }
   res.redirect('/front');
@@ -464,6 +473,11 @@ function logReview (card, ease, now, newFactor, newDue) {
   const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
   const dueTodayCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
   console.log(
+    card.id,
+    card.seen,
+    card.due
+  );
+  console.log(
     Math.floor(studyTimeToday/1000/60), // study time today (min)
     cardsViewedToday, // cards viewed today
     dueTodayCount, // cards due today
@@ -530,6 +544,7 @@ function getNextCard () {
       return(card);
     } else if (newCardsAllowed) {
       const card = getNewCard();
+      console.log('new card');
       return(card);
     }
   }
@@ -556,11 +571,10 @@ function getEstimatedTotalStudyTime () {
 
 /**
  * For each note there may be several cards. This sets due for any of these
- * cards that haven't been seen yet to tomorrow, so it won't be shown on
- * the same day.
+ * cards that are later in order to be at least a day later.
  */
 function buryRelated (card) {
-  console.log('bury ', card.nid);
-  db.prepare('update cards set due = ? where seen = 0 and nid = ?')
-    .run(now + msecPerDay, card.nid);
+  console.log('bury ', card.nid, card.ord);
+  db.prepare('update cards set due = ? where nid = ? and ord > ? and due < ?')
+    .run(now + msecPerDay, card.nid, card.ord, now + msecPerDay);
 }

@@ -5,7 +5,20 @@ Next card due in: {{timeToNextDue}}</br>
 {{#if dueNow}}
 <a href="/front"><button>Study</button></a>
 {{/if}}
+<h3>Cards per hour</h3>
+<div id="chart1" style="width:600px;height:300px;"></div>
 <div class="buttons">
 <a href="/help" target="_blank"><button>Help</button></a>
 </div>
 </div>
+<script src="https://cdn.plot.ly/plotly-latest.min.js" charset="utf-8"></script>
+<script>
+  let chart1 = document.getElementById('chart1');
+  Plotly.newPlot(chart1,
+    [ {{{chart1Data}}} ], {
+      margin: {t: 0},
+      yaxis: { title: 'cards' },
+      xaxis: { title: 'hour' }
+    }
+  );
+</script>
