@@ -1,7 +1,17 @@
-<div class="card">
+<style>
+  th {
+    text-align: left;
+  }
+  td {
+    text-align: right;
+  }
+</style>
 <h1>Spaced Repetition Flashcards</h1>
-Cards due now: {{dueNow}}</br>
-Next card due in: {{timeToNextDue}}</br>
+<table>
+<tr><th>Cards due now:</th><td>{{dueNow}}</td></tr>
+<tr><th>Cards due today:</th><td>{{dueToday}}</td></tr>
+<tr><th>Next card due in:</th><td>{{timeToNextDue}}</td></tr>
+</table>
 {{#if dueNow}}
 <a href="/front"><button>Study</button></a>
 {{/if}}
@@ -9,7 +19,6 @@ Next card due in: {{timeToNextDue}}</br>
 <div id="chart1" style="width:600px;height:300px;"></div>
 <div class="buttons">
 <a href="/help" target="_blank"><button>Help</button></a>
-</div>
 </div>
 <script src="https://cdn.plot.ly/plotly-latest.min.js" charset="utf-8"></script>
 <script>

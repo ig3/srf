@@ -102,8 +102,10 @@ app.get('/', (req, res) => {
     chart1Data.x.push(el.hour);
     chart1Data.y.push(el['count()']);
   });
+  const dueToday = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
   res.render('home', {
     dueNow: dueNow,
+    dueToday: dueToday,
     timeToNextDue: timeToNextDue.toFullString(),
     chart1Data: JSON.stringify(chart1Data),
   });
