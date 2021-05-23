@@ -92,46 +92,64 @@ function initRequest (req, res, next) {
 app.use(initRequest);
 
 app.get('/', (req, res) => {
+  const dueNow = db.prepare('select count() from cards where seen != 0 and due < ?').get(now)['count()'] || 0;
+  const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
+  const timeToNextDue = tc.milliseconds(nextDue - now);
+  res.render('home', {
+    dueNow: dueNow,
+    timeToNextDue: timeToNextDue.toFullString()
+  });
+});
+
+app.get('/help', (req, res) => {
+  res.render('help');
+});
+
+app.get('/stats', (req, res) => {
+  const startOfDay = new Date(req.startTime).setHours(0,0,0,0).valueOf();
+  const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
+  const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
+  const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
+  const timeToNextDue = tc.milliseconds(nextDue - now);
+  const dueStudyTime = Math.floor(dueCount * averageTimePerCard);
+  const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
+  const chart1Data = { x: [], y: [] };
+  let first;
+  let last;
+  // The database timestamps are UTC but we want local days so must
+  // add the local offset to determine which day a card was reviewed.
+  const offset = (new Date().getTimezoneOffset()) * 60 * 1000;
+  const viewsPerDay = db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(offset).forEach(el => {
+    if (!first) first = el.day-1;
+    chart1Data.x.push(el.day-first);
+    chart1Data.y.push(el['count()']);
+  });
+
+  const chart2Data = { x: [], y: [] };
+  db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(offset).forEach(el => {
+    chart2Data.x.push(el.day-first);
+    chart2Data.y.push(el.time/1000/60);
+  });
+  res.render('stats', {
+    dueCount: dueCount,
+    timeToNextDue: timeToNextDue.toFullString(),
+    cardsViewedToday: cardsViewedToday,
+    studyTimeToday: tc.milliseconds(studyTimeToday).toFullString(),
+    estimatedTotalStudyTime: tc.milliseconds(estimatedTotalStudyTime).toFullString(),
+    averageTimePerCard: Math.floor(averageTimePerCard/1000),
+    chart1Data: JSON.stringify(chart1Data),
+    chart2Data: JSON.stringify(chart2Data),
+  });
+});
+
+app.get('/front', (req, res) => {
   card = getNextCard();
   if (card) {
     cardStartTime = now;
     card.note = getNote(card);
-    res.render('home', card.note);
+    res.render('front', card.note);
   } else {
-    const startOfDay = new Date(req.startTime).setHours(0,0,0,0).valueOf();
-    const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
-    const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
-    const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
-    const timeToNextDue = tc.milliseconds(nextDue - now);
-    const dueStudyTime = Math.floor(dueCount * averageTimePerCard);
-    const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
-    const chart1Data = { x: [], y: [] };
-    let first;
-    let last;
-    // The database timestamps are UTC but we want local days so must
-    // add the local offset to determine which day a card was reviewed.
-    const offset = (new Date().getTimezoneOffset()) * 60 * 1000;
-    const viewsPerDay = db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(offset).forEach(el => {
-      if (!first) first = el.day-1;
-      chart1Data.x.push(el.day-first);
-      chart1Data.y.push(el['count()']);
-    });
-
-    const chart2Data = { x: [], y: [] };
-    db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(offset).forEach(el => {
-      chart2Data.x.push(el.day-first);
-      chart2Data.y.push(el.time/1000/60);
-    });
-    res.render('done', {
-      dueCount: dueCount,
-      timeToNextDue: timeToNextDue.toFullString(),
-      cardsViewedToday: cardsViewedToday,
-      studyTimeToday: tc.milliseconds(studyTimeToday).toFullString(),
-      estimatedTotalStudyTime: tc.milliseconds(estimatedTotalStudyTime).toFullString(),
-      averageTimePerCard: Math.floor(averageTimePerCard/1000),
-      chart1Data: JSON.stringify(chart1Data),
-      chart2Data: JSON.stringify(chart2Data),
-    });
+    res.redirect('/home');
   }
 });
 
@@ -152,7 +170,7 @@ app.get('/again', (req, res) => {
     buryRelated(card);
     logReview(card, 1, now, factor, due);
   }
-  res.redirect('/');
+  res.redirect('/front');
 });
 
 app.get('/hard', (req, res) => {
@@ -166,7 +184,7 @@ app.get('/hard', (req, res) => {
     buryRelated(card);
     logReview(card, 2, now, factor, due);
   }
-  res.redirect('/');
+  res.redirect('/front');
 });
 
 app.get('/good', (req, res) => {
@@ -185,7 +203,7 @@ app.get('/good', (req, res) => {
     .run(factor, now, due, card.id);
     logReview(card, 3, now, factor, due);
   }
-  res.redirect('/');
+  res.redirect('/front');
 });
 
 app.get('/easy', (req, res) => {
@@ -205,7 +223,7 @@ app.get('/easy', (req, res) => {
     .run(factor, now, due, card.id);
     logReview(card, 4, now, factor, due);
   }
-  res.redirect('/');
+  res.redirect('/front');
 });
 
 const server = app.listen(8000, () => {
