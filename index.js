@@ -221,7 +221,26 @@ function getCreationTime () {
 }
 
 /**
- * The card is linked to notes by fk nid
+ * The card contains scheduling information for a combination of note, note
+ * type and template. The data to be studied is in the note. The note type
+ * is linked to a set of fields, which determine the data that can be
+ * stored in the note, and a set of templates, which define how the note
+ * should be presented to the user. For each template, one card is created
+ * and independently scheduled.
+ *
+ * The card is linked to notes by cards.nid.
+ *
+ * The note is linked to notetypes by notes.mid. 
+ *
+ * The fields are linked to notetypes by fields.ntid.
+ *
+ * The templates are linked to notetypes by templates.ntid.
+ *
+ * The primary key of templates is the tuple (ntid, ord). A card is linked
+ * to a specific template only indirectly. The card has cards.ord,
+ * corresponding to templates.ord, but the note type ID is only available
+ * through lookup of the note: notes.mid. 
+ *
  * The note is linked to notetypes by fk mid
  * A set of fields are linked to notetype by fk ntid
  * A set of templates are linked to notetype by fk ntid
@@ -246,13 +265,12 @@ function getNote (card) {
   if (!fields) {
     console.log('No fields for note ', note.id);
   }
-  const template = db.prepare('select * from templates where ntid = ? and ord = ?').get(noteTypeID, card.ord);
-  if (!template) {
+
+  // Primary key of templates is (ntid, ord)
+  note.template = db.prepare('select name, front, back, css from templates where ntid = ? and ord = ?').get(noteTypeID, card.ord);
+  if (!note.template) {
     console.log('No template for note ', note.id);
     return;
-  } else {
-    const str = template.config.toString('binary');
-    note.template = parseTemplateConfig(str);
   }
 
   const tmpFieldValues = note.flds.split(String.fromCharCode(0x1f));

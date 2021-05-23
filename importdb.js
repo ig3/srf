@@ -20,10 +20,10 @@ console.log('copied');
 
 removeCollationUnicase();
 lowercaseTableNames();
-addSeen();
-addNewOrder();
+addFields();
 fixDue();
 setNewOrder();
+reviseTemplates();
 
 
 
@@ -84,20 +84,18 @@ function lowercaseTableNames () {
 
 
 /**
- * srf uses a new integer field on the cards table: seen
+ * add fields adds new fields to existing tables.
+ *
+ * cards.seen - time when card was last seen
+ * cards.new_order - sorting field for new cards
  */
-function addSeen () {
+function addFields () {
   const db = require('better-sqlite3')(dstFile);
   db.prepare("alter table cards add column seen integer not null default 0").run();
-  db.close();
-}
-
-/**
- * srf uses a new integer field on the cards table: new_order
- */
-function addNewOrder () {
-  const db = require('better-sqlite3')(dstFile);
   db.prepare("alter table cards add column new_order integer not null default 0").run();
+  db.prepare("alter table templates add column front text not null default ''").run();
+  db.prepare("alter table templates add column back text not null default ''").run();
+  db.prepare("alter table templates add column css text not null default ''").run();
   db.close();
 }
 
@@ -196,3 +194,269 @@ function setNewOrder () {
   db.prepare('update cards set new_order = due where seen = 0').run();
   db.close();
 }
+
+/**
+ * In Anki, the HTML for front and back are serialized into a blob
+ *
+ * In srf the front and back templates and CSS are put into separate
+ * fields.
+ */
+function reviseTemplates () {
+  const db = require('better-sqlite3')(dstFile);
+  const templates = db.prepare('select * from templates');
+
+  for (const template of templates.iterate()) {
+    const configString = template.config.toString('binary');
+    const config = parseTemplateConfig(template.config);
+    const noteType = getNoteType(template.ntid);
+    const db = require('better-sqlite3')(dstFile);
+    db.prepare("update templates set front = ?, back = ?, css = ? where ntid = ? and ord = ?")
+      .run(
+        config.front,
+        config.back,
+        noteType.config.css,
+        template.ntid,
+        template.ord
+      );
+    db.close();
+  }
+  db.close();
+}
+
+/**
+ * parseTemplateConfig takes the buffer returned by SQLite for the config
+ * field and parses it into a JavaScript object, which is returned.
+ *
+ * From rslib/backend.proto:
+ *
+ * message CardTemplateConfig {
+ *  string q_format = 1;
+ *  string a_format = 2;
+ *  string q_format_browser = 3;
+ *  string a_format_browser = 4;
+ *  int64 target_deck_id = 5;
+ *  string browser_font_name = 6;
+ *  uint32 browser_font_size = 7;
+ *  bytes other = 255;
+ * }
+ *
+ * The other field will be a JSON string.
+ *
+ * There are, potentially, 8 fields, but I have only seen 2: q_format
+ * (0x08) and a_format (0x12).
+ *
+ * I expect the bottom three bits of the field code incode type field type,
+ * with 0 for integer and 2 for string. There are likely different codes
+ * for int74 and uint32 and bytes and maybe other field types.
+ */
+function parseTemplateConfig (buffer) {
+  const value = {};
+  const buf = {
+    pos: 0,
+    str: buffer.toString('binary')
+  };
+  while (buf.pos < buf.str.length) {
+    const fieldCode = serdeGetInt(buf);
+    if (fieldCode === 0x0a) {
+      const len = serdeGetInt(buf);
+      value.front = buf.str.substr(buf.pos, len);
+      buf.pos += len;
+    } else if (fieldCode === 0x12) {
+      const len = serdeGetInt(buf);
+      value.back = buf.str.substr(buf.pos, len);
+      buf.pos += len;
+    } else {
+      throw new Error('Unsupported field code ' + fieldCode + ' in template config ' + JSON.stringify(buf));
+    }
+  }
+  return(value);
+}
+
+
+/**
+ * serdeGetInt parses an integer value from in.str starting at in.pos.
+ * The string is rust serde serialization as per Anki use of serde.
+ *
+ * The integer is stored little-endian, seven bits per byte. If the high
+ * order bit is set then the next byte is part of the integer. Otherwise,
+ * the current byte is the last byte of the integer.
+ */
+function serdeGetInt (buf) {
+  let value = 0;
+  let n = 0;
+  do {
+    value = value | ((buf.str.charCodeAt(buf.pos) & 0x7f) << (n++ * 7));
+  } while(buf.str.charCodeAt(buf.pos++) > 0x7f);
+  return(value);
+}
+
+
+function getNoteType (ntid) {
+  const db = require('better-sqlite3')(dstFile);
+  const noteType = db.prepare('select * from notetypes where id = ?').get(ntid);
+  const config = parseNoteTypeConfig(noteType.config);
+  noteType.config = config;
+  return(noteType);
+}
+
+
+/**
+ * parseNoteTypeConfig takes the buffer returned by SQLite for the config
+ * field and parses it into a JavaScript object, which is returned.
+ *
+ * From rslib/backend.proto
+ *
+ * message NoteTypeConfig {
+ *  enum Kind {
+ *    KIND_NORMAL = 0;
+ *    KIND_CLOZE = 1;
+ *  }
+ *  Kind kind = 1;
+ *  uint32 sort_field_idx = 2;
+ *  string css = 3;
+ *  int64 target_deck_id = 4;
+ *  string latext_pre = 5;
+ *  string latex_post = 6;
+ *  bool latex_svg = 7;
+ *  repeated CardRequirement reqs = 8;
+ *  bytes other = 255;
+ * }
+ *
+ * More of this 'other' nonsense. It's already a serialized object, why
+ * have one inside another?
+ *
+ * message CardRequirement {
+ *  enum Kind {
+ *    KIND_NONE = 0;
+ *    KIND_ANY = 1;
+ *    KIND_ALL = 2;
+ *  }
+ *  uint32 card_ord = 1;
+ *  Kind kind = 2;
+ *  repeated uint32 field_ords = 3;
+ * }
+ *
+ * I don't know how that repeated CardRequirement would manifest.
+ */
+function parseNoteTypeConfig (buffer) {
+  const value = {};
+  const buf = {
+    pos: 0,
+    str: buffer.toString('binary')
+  };
+  while (buf.pos < buf.str.length) {
+    const fieldCode = serdeGetInt(buf);
+    if (fieldCode === 0x08) {
+      // kind is 0 for Standard or 1 for Cloze
+      value.kind = serdeGetInt(buf);
+    } else if (fieldCode === 0x10) {
+      value.sortFieldIndex = serdeGetInt(buf);
+    } else if (fieldCode === 0x1a) {
+      const len = serdeGetInt(buf);
+      value.css = buf.str.substr(buf.pos, len);
+      buf.pos += len;
+    } else if (fieldCode === 0x20) {
+      value.targetDeckID = serdeGetInt(buf);
+    } else if (fieldCode === 0x2a) {
+      const len = serdeGetInt(buf);
+      value.latexPre = buf.str.substr(buf.pos, len);
+      buf.pos += len;
+    } else if (fieldCode === 0x32) {
+      const len = serdeGetInt(buf);
+      value.latexPost = buf.str.substr(buf.pos, len);
+      buf.pos += len;
+    } else if (fieldCode === 0x38) {
+      value.LatexSvg = serdeGetIng(buf);
+    } else if (fieldCode === 0x42) {
+      const len = serdeGetInt(buf);
+      const cardReqStr = buf.str.substr(buf.pos, len);
+      if (!value.cardRequirements) value.cardRequirements = [];
+      value.cardRequirements.push(parseCardRequirement(cardReqStr));
+      buf.pos += len;
+    } else if (fieldCode === 0x7fa) {
+      const len = serdeGetInt(buf);
+      value.other = JSON.parse(buf.str.substr(buf.pos, len));
+      buf.pos += len;
+    } else {
+      throw new Error('Unsupported field code ' + fieldCode + ' in notetype config ' + JSON.stringify(buf));
+    }
+  }
+  return(value);
+}
+
+
+
+
+/**
+ * parseCardRequirement takes a string containing the content of one
+ * cardRequirement item, parses it into an object and returns the object.
+ *
+ * From rslib/backend.proto
+ *
+ * message NoteTypeConfig {
+ *  enum Kind {
+ *    KIND_NORMAL = 0;
+ *    KIND_CLOZE = 1;
+ *  }
+ *  Kind kind = 1;
+ *  uint32 sort_field_idx = 2;
+ *  string css = 3;
+ *  int64 target_deck_id = 4;
+ *  string latext_pre = 5;
+ *  string latex_post = 6;
+ *  bool latex_svg = 7;
+ *  repeated CardRequirement reqs = 8;
+ *  bytes other = 255;
+ * }
+ *
+ * More of this 'other' nonsense. It's already a serialized object, why
+ * have one inside another?
+ *
+ * message CardRequirement {
+ *  enum Kind {
+ *    KIND_NONE = 0;
+ *    KIND_ANY = 1;
+ *    KIND_ALL = 2;
+ *  }
+ *  uint32 card_ord = 1;
+ *  Kind kind = 2;
+ *  repeated uint32 field_ords = 3;
+ * }
+ *
+ * I don't know how that repeated CardRequirement would manifest.
+ * It looks like a count followed by that many integers in a row
+ * with no further field/type codes. But this is inconsistent with
+ * the repeated above, where each repeat has a leading code and length,
+ * but maybe it depends on the type??? Who knows, because I can't find
+ * the rust/serde code.
+ *
+ * The result doesn't look too grosly unreasonable, but there is a good 
+ * chance this parsing is wrong.
+ */
+function parseCardRequirement (str) {
+  const value = {};
+  const buf = {
+    pos: 0,
+    str: str
+  };
+  while (buf.pos < buf.str.length) {
+    const fieldCode = serdeGetInt(buf);
+    if (fieldCode === 0x08) {
+      value.cardOrd = serdeGetInt(buf);
+    } else if (fieldCode === 0x10) {
+      value.kind = serdeGetInt(buf);
+    } else if (fieldCode === 0x1a) {
+      const count = serdeGetInt(buf);
+      if (!value.fieldOrds) value.fieldOrds = [];
+      for (var i = 0; i < count; i++) {
+        value.fieldOrds.push(serdeGetInt(buf));
+      }
+    } else {
+      throw new Error('Unsupported field code ' + fieldCode + ' in CardRequirement' + JSON.stringify(buf));
+    }
+  }
+  return(value);
+}
+
+
+
