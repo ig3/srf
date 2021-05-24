@@ -258,6 +258,51 @@ user. Each template has a front and a back layout (the 'flashcard').
 type can be 0=new, 1=lrn, 2=rev, 3=relrn. It has something to do with
 filtered decks, at least.
 
+srf only sets epoch milliseconds for timestamps, in due and seen. New cards
+have seen = 0. When the card is seen, seen is set to the current time, and
+it is updated with each viewing. Interval (ivl) isn't used. The interval is
+always from the last time the card was seen until current time. The cards
+won't be shown before they are due but they might not be viewed until some
+time after they are due - maybe hours or days after. That's OK. The actual
+interval is more relevant than any intended, theoretically ideal interval.
+
+cards.new_order is for ordering the presentation of new cards. On import,
+it is set to whatever due was equal to. The separate field gives the
+advantage that the new card order isn't overwritten when the card is
+viewed. The deck can be reset, including the order of new cards. But, any
+cards viewed before import cannot be restored to their original new card
+order - the information is gone.
+
+In Anki, review and 'day' learning cards have due set to a day number, with
+day 0 being the collection creation day, which is stored in the col table.
+In srf, day numbers aren't used. Due is always milliseconds since the
+epoch.
+
+### fields
+
+CREATE TABLE "fields" (
+	"ntid"	integer NOT NULL,
+	"ord"	integer NOT NULL,
+	"name"	text NOT NULL,
+	"config"	blob NOT NULL,
+	PRIMARY KEY("ntid","ord")
+) WITHOUT ROWID;
+
+ntid: fk to notetypes
+ord: ordinal for sorting fields
+name: the field name
+config: not used in srf. 
+
+The config field holds a serialized data structure (rust/serde) that appear
+to relate to the Anki field content editor: sticky, rtl (right-to-left),
+font_name, font_size and 'other' for a JSON string, I think.
+
+srf uses ntid, ord and name, at least until I add a card/note editor.
+
+Note that this table only holds field names and sort order. The values
+are in the notes table: notes.flds, with all field values serialized into
+the single field.
+
 ### notes
 
  * id - primary key
@@ -275,6 +320,26 @@ filtered decks, at least.
 
 
 ### templates
+
+CREATE TABLE "templates" (
+	"ntid"	integer NOT NULL,
+	"ord"	integer NOT NULL,
+	"name"	text NOT NULL,
+	"mtime_secs"	integer NOT NULL,
+	"usn"	integer NOT NULL,
+	"config"	blob NOT NULL,
+	"front"	text NOT NULL DEFAULT '',
+	"back"	text NOT NULL DEFAULT '',
+	"css"	text NOT NULL DEFAULT '',
+	PRIMARY KEY("ntid","ord")
+) WITHOUT ROWID;
+
+I added front, back and css. In Anki the HTML for front and back are
+serialized into templates.config and the css is serialized into
+notetype.config. The downside of this being that the CSS is common to all
+card types associated with a given note type. Not a big issue, but with the
+CSS moved to the templates table, each template can have its own CSS.
+
 From templates.rs:
 
 ```

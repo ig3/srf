@@ -159,6 +159,7 @@ app.get('/front', (req, res) => {
   if (card) {
     cardStartTime = now;
     card.note = getNote(card);
+    logCard(card);
     res.render('front', card.note);
   } else {
     res.redirect('/');
@@ -175,8 +176,7 @@ app.get('/back', (req, res) => {
 app.get('/again', (req, res) => {
   if (card) {
     const factor = 2000;
-    const now = Date.now();
-    const due = now + 60000;
+    const due = dueAgain(card);
     db.prepare('update cards set factor = ?, seen = ?, due = ? where id = ?')
     .run(factor, now, due, card.id);
     buryRelated(card);
@@ -188,9 +188,7 @@ app.get('/again', (req, res) => {
 app.get('/hard', (req, res) => {
   if (card) {
     const factor = Math.max(1200, card.factor - 50);
-    const now = Date.now();
-    const seen = card.seen || now;
-    const due = now + Math.max(60000, Math.floor((now - seen) * 0.9));
+    const due = dueHard(card);
     db.prepare('update cards set factor = ?, seen = ?, due = ? where id = ?')
     .run(factor, now, due, card.id);
     buryRelated(card);
@@ -202,15 +200,7 @@ app.get('/hard', (req, res) => {
 app.get('/good', (req, res) => {
   if (card) {
     const factor = Math.max(1200, Math.min(10000, card.factor + 50));
-    const seen = card.seen || now;
-    const due = now +
-      Math.min(
-        msecPerYear,
-        Math.max(
-          60000,
-          Math.floor((now - seen) * factor * (5 - Math.random())/ 5 / 1000)
-        )
-      );
+    const due = dueGood(card);
     db.prepare('update cards set factor = ?, seen = ?, due = ? where id = ?')
     .run(factor, now, due, card.id);
     buryRelated(card);
@@ -222,16 +212,7 @@ app.get('/good', (req, res) => {
 app.get('/easy', (req, res) => {
   if (card) {
     const factor = Math.min(10000, card.factor + 200);
-    const now = Date.now();
-    const seen = card.seen || now;
-    const due = now +
-      Math.min(
-        msecPerYear,
-        Math.max(
-          msecPerDay,
-          Math.floor((now - seen) * factor / 1000)
-        )
-      );
+    const due = dueEasy(card);
     db.prepare('update cards set factor = ?, seen = ?, due = ? where id = ?')
     .run(factor, now, due, card.id);
     logReview(card, 4, now, factor, due);
@@ -477,11 +458,6 @@ function logReview (card, ease, now, newFactor, newDue) {
   const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
   const dueTodayCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
   console.log(
-    card.id,
-    card.seen,
-    card.due
-  );
-  console.log(
     Math.floor(studyTimeToday/1000/60), // study time today (min)
     cardsViewedToday, // cards viewed today
     dueTodayCount, // cards due today
@@ -526,10 +502,15 @@ function formatDue (due) {
     let month = '' + (d.getMonth() + 1);
     let day = '' + d.getDate();
     let year = d.getFullYear();
+    //let hour = d.getHour();
+    //let minute = d.getMinute();
 
     if (month.length < 2) month = '0' + month;
     if (day.length < 2) day = '0' + day;
+    //if (hour.lengh < 2) hour = '0' + hour;
+    //if (minute.length < 2) minute = '0' + minute;
     return([year, month, day].join('-'));
+    //return([year, month, day].join('-') + ' ' + [hour, minute].join(':'));
   }
 }
 
@@ -578,7 +559,56 @@ function getEstimatedTotalStudyTime () {
  * cards that are later in order to be at least a day later.
  */
 function buryRelated (card) {
-  console.log('bury ', card.nid, card.ord);
   db.prepare('update cards set due = ? where nid = ? and ord > ? and due < ?')
     .run(now + msecPerDay, card.nid, card.ord, now + msecPerDay);
+}
+
+function dueAgain (card) {
+  return(now + 30000);
+}
+
+function dueHard (card) {
+  if (!card.seen || card.seen === 0) return(30000);
+  return(now + Math.max(30000, Math.floor((now - card.seen) * 0.9)));
+}
+
+function dueGood (card) {
+  if (!card.seen || card.seen === 0) return(600000);
+  return(
+    now +
+    Math.min(
+      msecPerYear,
+      Math.max(
+        60000,
+        Math.floor(
+          (now - card.seen) * card.factor * (5 - Math.random())/ 5 / 1000
+        )
+      )
+    )
+  );
+}
+
+function dueEasy (card) {
+  if (!card.seen || card.seen === 0) return(msecPerDay);
+  return(
+    now +
+    Math.min(
+      msecPerYear,
+      Math.max(
+        msecPerDay,
+        Math.floor((now - card.seen) * card.factor / 1000)
+      )
+    )
+  );
+}
+
+function logCard (card) {
+  console.log(
+    formatDue(card.seen),
+    formatDue(card.due),
+    formatDue(dueAgain(card)),
+    formatDue(dueHard(card)),
+    formatDue(dueGood(card)),
+    formatDue(dueEasy(card))
+  );
 }
