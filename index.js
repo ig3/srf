@@ -32,17 +32,17 @@ function onExit() {
 }
 
 // studyTimeNewCardLimit is the limit on total study time today
-// in milliseconds, after which no more new cards will be shown.
-const studyTimeNewCardLimit = 1000 * 60 * 60;
+// in seconds, after which no more new cards will be shown.
+const studyTimeNewCardLimit = 60 * 60;
 
-// msecPerDay is the number of milliseconds in a day
-const msecPerDay = 1000 * 60 * 60 * 24;
+// secPerDay is the number of seconds in a day
+const secPerDay = 60 * 60 * 24;
 
-// msecPerYear is the number of milliseconds in a year
-const msecPerYear = msecPerDay * 365;
+// secPerYear is the number of seconds in a year
+const secPerYear = secPerDay * 365;
 
 // startTime is the time when this execution of the server started.
-const startTime = Date.now();
+const startTime = Math.floor(Date.now() / 1000);
 
 
 // now is the current time, updated on receipt of each request
@@ -53,10 +53,10 @@ let now = startTime;
 let cardStartTime = now;
 
 // startOfDay is the epoch time of midnight as the start of the current day.
-let startOfDay = new Date().setHours(0,0,0,0).valueOf();
+let startOfDay = Math.floor(new Date().setHours(0,0,0,0).valueOf() / 1000);
 
 // endOfDay is the epoch time of midnight at the end of the current day.
-let endOfDay = startOfDay + msecPerDay;
+let endOfDay = startOfDay + secPerDay;
 
 // lastNewCardTime is the time the last new card was shown.
 let lastNewCardTime = now;
@@ -64,12 +64,12 @@ let lastNewCardTime = now;
 // averageTimePerCard is the average time viewing each card in ms.
 // Averaged over all cards viewed in the past 10 days.
 // Updated when the day rolls over.
-let averageTimePerCard = db.prepare('select avg(time) from revlog where id > ?').get(now - 1000 * 60 * 60 * 24 * 10)['avg(time)'] || 30000;
+let averageTimePerCard = Math.floor(db.prepare('select avg(time) from revlog where id > ?').get((now - 60 * 60 * 24 * 10)*1000)['avg(time)']) || 30;
 console.log('averageTimePerCard ', averageTimePerCard);
 
 // studyTimeToday is the total time studying cards since midnight.
 // Reset when the day rolls over.
-let studyTimeToday = db.prepare('select sum(time) from revlog where id >= ?').get(startOfDay)['sum(time)'] || 0;
+let studyTimeToday = db.prepare('select sum(time) from revlog where id >= ?').get(startOfDay*1000)['sum(time)'] || 0;
 console.log('studyTimeToday ', studyTimeToday);
 
 // card is the current card. Updated when a new card is shown.
@@ -77,13 +77,14 @@ let card;
 
 // Add middleware for common code to every request
 function initRequest (req, res, next) {
-  req.startTime = new Date();
-  now = Date.now();
-  const newStartOfDay = new Date().setHours(0,0,0,0).valueOf();
+  now = Math.floor(Date.now() / 1000);
+  req.startTime = now;
+  const newStartOfDay =
+    Math.floor(new Date().setHours(0,0,0,0).valueOf() / 1000);
   if (newStartOfDay !== startOfDay) {
     startOfDay = newStartOfDay;
-    endOfDay = startOfDay + msecPerDay;
-    averageTimePerCard = db.prepare('select avg(time) from revlog where id > ?').get(now - 1000 * 60 * 60 * 24 * 10)['avg(time)'] || 30000;
+    endOfDay = startOfDay + secPerDay;
+    averageTimePerCard = Math.floor(db.prepare('select avg(time) from revlog where id > ?').get((now - 60 * 60 * 24 * 10)*1000)['avg(time)']) || 30;
     studyTimeToday = 0;
   }
   next();
@@ -92,23 +93,29 @@ function initRequest (req, res, next) {
 app.use(initRequest);
 
 app.get('/', (req, res) => {
-  const dueNow = db.prepare('select count() from cards where seen != 0 and due < ?').get(now)['count()'] || 0;
-  const dueToday = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
-  const viewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
-  const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
-  const timeToNextDue = tc.milliseconds(nextDue - now);
+  const dueNow = db.prepare('select count() from cards where interval != 0 and due < ?').get(now)['count()'] || 0;
+  console.log('dueNow ', dueNow);
+  console.log('endOfDay ', endOfDay);
+  const dueToday = db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0;
+  console.log('dueToday ', dueToday);
+  const viewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay*1000)['count()'];
+  const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get()['due'];
+  const timeToNextDue = tc.seconds(nextDue - now);
   const chart1Data = { x: [], y: [], type: 'bar' };
-  const offset = (new Date().getTimezoneOffset()) * 60 * 1000;
-  const duePerHour = db.prepare('select cast((due+?)/(1000*60*60)%24 as integer) as hour, count() from cards where seen != 0 and due > ? and due < ? group by hour').all(offset,startOfDay, endOfDay)
+  const offset = (new Date().getTimezoneOffset()) * 60;
+  const duePerHour = db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from cards where interval != 0 and due > ? and due < ? group by hour').all(offset,startOfDay, endOfDay)
   .forEach(el => {
+    console.log('el ', el);
     chart1Data.x.push(el.hour);
     chart1Data.y.push(el['count()']);
   });
+  console.log('duePerHour ', duePerHour);
+  console.log('chart1Data ', chart1Data);
   res.render('home', {
     dueNow: dueNow,
     dueToday: dueToday,
     viewedToday: viewedToday,
-    timeToNextDue: timeToNextDue.toFullString().substr(0,8),
+    timeToNextDue: timeToNextDue.toFullString().substr(0,9),
     chart1Data: JSON.stringify(chart1Data),
   });
 });
@@ -118,11 +125,12 @@ app.get('/help', (req, res) => {
 });
 
 app.get('/stats', (req, res) => {
-  const startOfDay = new Date(req.startTime).setHours(0,0,0,0).valueOf();
-  const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
-  const dueCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
-  const nextDue = db.prepare('select due from cards where seen != 0 order by due limit 1').get()['due'];
-  const timeToNextDue = tc.milliseconds(nextDue - now);
+  const startOfDay =
+    Math.floor(new Date(req.startTime).setHours(0,0,0,0).valueOf() / 1000);
+  const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay*1000)['count()'];
+  const dueCount = db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0;
+  const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get()['due'];
+  const timeToNextDue = tc.seconds(nextDue - now);
   const dueStudyTime = Math.floor(dueCount * averageTimePerCard);
   const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
   const chart1Data = { x: [], y: [] };
@@ -131,24 +139,24 @@ app.get('/stats', (req, res) => {
   // The database timestamps are UTC but we want local days so must
   // add the local offset to determine which day a card was reviewed.
   const offset = (new Date().getTimezoneOffset()) * 60 * 1000;
-  const viewsPerDay = db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(offset).forEach(el => {
+  const viewsPerDay = db.prepare('select cast((id + ?)/(60*60*24) as integer) as day, count() from revlog group by day').all(offset).forEach(el => {
     if (!first) first = el.day-1;
     chart1Data.x.push(el.day-first);
     chart1Data.y.push(el['count()']);
   });
 
   const chart2Data = { x: [], y: [] };
-  db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(offset).forEach(el => {
+  db.prepare('select cast((id + ?)/(60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(offset).forEach(el => {
     chart2Data.x.push(el.day-first);
-    chart2Data.y.push(el.time/1000/60);
+    chart2Data.y.push(el.time/60);
   });
   res.render('stats', {
     dueCount: dueCount,
     timeToNextDue: timeToNextDue.toFullString(),
     cardsViewedToday: cardsViewedToday,
-    studyTimeToday: tc.milliseconds(studyTimeToday).toFullString(),
-    estimatedTotalStudyTime: tc.milliseconds(estimatedTotalStudyTime).toFullString(),
-    averageTimePerCard: Math.floor(averageTimePerCard/1000),
+    studyTimeToday: tc.seconds(studyTimeToday).toFullString(),
+    estimatedTotalStudyTime: tc.seconds(estimatedTotalStudyTime).toFullString(),
+    averageTimePerCard: Math.floor(averageTimePerCard),
     chart1Data: JSON.stringify(chart1Data),
     chart2Data: JSON.stringify(chart2Data),
   });
@@ -159,7 +167,7 @@ app.get('/front', (req, res) => {
   if (card) {
     cardStartTime = now;
     card.note = getNote(card);
-    logCard(card);
+    // logCard(card);
     res.render('front', card.note);
   } else {
     res.redirect('/');
@@ -177,10 +185,7 @@ app.get('/again', (req, res) => {
   if (card) {
     const factor = 2000;
     const due = dueAgain(card);
-    db.prepare('update cards set factor = ?, seen = ?, due = ? where id = ?')
-    .run(factor, now, due, card.id);
-    buryRelated(card);
-    logReview(card, 1, now, factor, due);
+    updateSeenCard(card, 1, factor, due);
   }
   res.redirect('/front');
 });
@@ -189,10 +194,7 @@ app.get('/hard', (req, res) => {
   if (card) {
     const factor = Math.max(1200, card.factor - 50);
     const due = dueHard(card);
-    db.prepare('update cards set factor = ?, seen = ?, due = ? where id = ?')
-    .run(factor, now, due, card.id);
-    buryRelated(card);
-    logReview(card, 2, now, factor, due);
+    updateSeenCard(card, 2, factor, due);
   }
   res.redirect('/front');
 });
@@ -201,10 +203,7 @@ app.get('/good', (req, res) => {
   if (card) {
     const factor = Math.max(1200, Math.min(10000, card.factor + 50));
     const due = dueGood(card);
-    db.prepare('update cards set factor = ?, seen = ?, due = ? where id = ?')
-    .run(factor, now, due, card.id);
-    buryRelated(card);
-    logReview(card, 3, now, factor, due);
+    updateSeenCard(card, 3, factor, due);
   }
   res.redirect('/front');
 });
@@ -213,9 +212,7 @@ app.get('/easy', (req, res) => {
   if (card) {
     const factor = Math.min(10000, card.factor + 200);
     const due = dueEasy(card);
-    db.prepare('update cards set factor = ?, seen = ?, due = ? where id = ?')
-    .run(factor, now, due, card.id);
-    logReview(card, 4, now, factor, due);
+    updateSeenCard(card, 4, factor, due);
   }
   res.redirect('/front');
 });
@@ -452,32 +449,38 @@ function parseFieldsConfig (str) {
   throw new Error('not implemented');
 }
 
-function logReview (card, ease, now, newFactor, newDue) {
-  let elapsed = Math.min(120000, Math.floor(now - cardStartTime));
+function updateSeenCard (card, ease, factor, due) {
+    db.prepare('update cards set factor = ?, interval = ?, due = ? where id = ?')
+    .run(factor, (due - now), due, card.id);
+    buryRelated(card);
+    logReview(card, ease, factor, due);
+}
+
+function logReview (card, ease, newFactor, newDue) {
+  let elapsed = Math.min(120, Math.floor(now - cardStartTime));
   studyTimeToday += elapsed;
-  const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay)['count()'];
-  const dueTodayCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
+  const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay*1000)['count()'];
+  const dueTodayCount = db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0;
   console.log(
-    Math.floor(studyTimeToday/1000/60), // study time today (min)
+    Math.floor(studyTimeToday/60), // study time today (min)
     cardsViewedToday, // cards viewed today
     dueTodayCount, // cards due today
-    tc.milliseconds(getEstimatedTotalStudyTime()).toFullString(),
-    formatDue(card.seen), // when card was last seen
+    tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
+    formatDue(card.due - card.interval), // when card was last seen
     formatDue(card.due),  // when the card was due
     formatDue(newDue), // the new due date
     newFactor, // updated interval factor
     elapsed // elapsed time studying this card
   );
   db.prepare('insert into revlog (id, cid, usn, ease, ivl, lastivl, factor, time, type) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-  .run(now, card.id, -1, ease, newDue - now, now - card.due,
+  .run(Date.now(), card.id, -1, ease, newDue - now, now - card.due,
     newFactor, elapsed, 2);
 }
 
 function formatDue (due) {
-  const now = Date.now();
-  const interval = due - now + 10;
-  if (interval < -3600000 * 24) {
-    const d = new Date(due);
+  const interval = due - now;
+  if (interval < -3600 * 24) {
+    const d = new Date(due * 1000);
     let month = '' + (d.getMonth() + 1);
     let day = '' + d.getDate();
     let year = d.getFullYear();
@@ -485,38 +488,38 @@ function formatDue (due) {
     if (month.length < 2) month = '0' + month;
     if (day.length < 2) day = '0' + day;
     return([year, month, day].join('-'));
-  } else if (interval < -3600000) {
-    return('-' + Math.floor(-interval/3600000) + ':' + Math.floor((-interval % 3600000) / 60000));
-  } else if (interval < -60000) {
-    return('-' + Math.floor(-interval/60000) + ' min');
+  } else if (interval < -3600) {
+    return('-' + Math.floor(-interval/3600) + ':' + Math.floor((-interval % 3600) / 60));
+  } else if (interval < -60) {
+    return('-' + Math.floor(-interval/60) + ' min');
   } else if (interval < 0) {
-    return('-' + Math.floor(-interval/1000) + ' sec');
-  } else if (interval < 60000) {
-    return(Math.floor(interval/1000) + ' sec');
-  } else if (interval < 3600000) {
-    return(Math.floor(interval/60000) + ' min');
-  } else if (interval < 3600000 * 24) {
-    return(Math.floor(interval/3600000) + ':' + Math.floor((interval % 3600000) / 60000));
+    return('-' + Math.floor(-interval) + ' sec');
+  } else if (interval < 60) {
+    return(Math.floor(interval) + ' sec');
+  } else if (interval < 3600) {
+    return(Math.floor(interval/60) + ' min');
+  } else if (interval < 3600 * 24) {
+    return(Math.floor(interval/3600) + ':' + Math.floor((interval % 3600) / 60));
   } else {
-    const d = new Date(due);
+    const d = new Date(due * 1000);
     let month = '' + (d.getMonth() + 1);
     let day = '' + d.getDate();
     let year = d.getFullYear();
-    //let hour = d.getHour();
-    //let minute = d.getMinute();
+    let hours = d.getHours();
+    let minutes = d.getMinutes();
 
     if (month.length < 2) month = '0' + month;
     if (day.length < 2) day = '0' + day;
-    //if (hour.lengh < 2) hour = '0' + hour;
-    //if (minute.length < 2) minute = '0' + minute;
-    return([year, month, day].join('-'));
-    //return([year, month, day].join('-') + ' ' + [hour, minute].join(':'));
+    if (hours.lengh < 2) hour = '0' + hours;
+    if (minutes.length < 2) minute = '0' + minutes;
+    //return([year, month, day].join('-'));
+    return([year, month, day].join('-') + 'T' + [hours, minutes].join(':'));
   }
 }
 
 function getNextCard () {
   const newCardsAllowed = getEstimatedTotalStudyTime() < studyTimeNewCardLimit;
-  if (newCardsAllowed && lastNewCardTime < now - 300000) {
+  if (newCardsAllowed && lastNewCardTime < now - 300) {
     const card = getNewCard();
     if (card) {
       lastNewCardTime = now;
@@ -536,21 +539,21 @@ function getNextCard () {
 }
 
 function getNewCard () {
-  const card = db.prepare('select * from cards where due < ? and seen = 0 order by new_order limit 1').get(now);
+  const card = db.prepare('select * from cards where due < ? and interval = 0 order by new_order limit 1').get(now);
   return(card);
 }
 
 function getDueCard () {
-  const card = db.prepare('select * from cards where seen != 0 and due < ? order by due limit 1').get(now);
+  const card = db.prepare('select * from cards where interval != 0 and due < ? order by interval, due limit 1').get(now);
   return(card);
 }
 
 function getEstimatedTotalStudyTime () {
-  const dueTodayCount = db.prepare('select count() from cards where seen != 0 and due < ?').get(endOfDay)['count()'] || 0;
+  const dueTodayCount = db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0;
   const dueStudyTime = Math.floor(dueTodayCount * averageTimePerCard);
   const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
   //console.log('Estimated total study time: ',
-  //  tc.milliseconds(estimatedTotalStudyTime).toFullString());
+  //  tc.seconds(estimatedTotalStudyTime).toFullString());
   return(estimatedTotalStudyTime);
 }
 
@@ -560,28 +563,29 @@ function getEstimatedTotalStudyTime () {
  */
 function buryRelated (card) {
   db.prepare('update cards set due = ? where nid = ? and ord > ? and due < ?')
-    .run(now + msecPerDay, card.nid, card.ord, now + msecPerDay);
+    .run(now + secPerDay, card.nid, card.ord, now + secPerDay);
 }
 
 function dueAgain (card) {
-  return(now + 30000);
+  return(now + 10);
 }
 
 function dueHard (card) {
-  if (!card.seen || card.seen === 0) return(30000);
-  return(now + Math.max(30000, Math.floor((now - card.seen) * 0.9)));
+  if (!card.interval || card.interval === 0) return(30);
+  return(now + Math.max(30, Math.floor((now - card.due + card.interval) * 0.9)));
 }
 
 function dueGood (card) {
-  if (!card.seen || card.seen === 0) return(600000);
+  if (!card.interval || card.interval === 0) return(600);
   return(
     now +
     Math.min(
-      msecPerYear,
+      secPerYear,
       Math.max(
-        60000,
+        60,
         Math.floor(
-          (now - card.seen) * card.factor * (5 - Math.random())/ 5 / 1000
+          (now - card.due + card.interval) * card.factor / 1000
+            * (5 - Math.random())/ 5
         )
       )
     )
@@ -589,14 +593,14 @@ function dueGood (card) {
 }
 
 function dueEasy (card) {
-  if (!card.seen || card.seen === 0) return(msecPerDay);
+  if (!card.interval || card.interval === 0) return(secPerDay);
   return(
     now +
     Math.min(
-      msecPerYear,
+      secPerYear,
       Math.max(
-        msecPerDay,
-        Math.floor((now - card.seen) * card.factor / 1000)
+        secPerDay,
+        Math.floor((now - card.due + card.interval) * card.factor / 1000)
       )
     )
   );
@@ -604,11 +608,11 @@ function dueEasy (card) {
 
 function logCard (card) {
   console.log(
-    formatDue(card.seen),
-    formatDue(card.due),
-    formatDue(dueAgain(card)),
-    formatDue(dueHard(card)),
-    formatDue(dueGood(card)),
-    formatDue(dueEasy(card))
+    'interval: ', formatDue(now + card.interval),
+    'due: ', formatDue(card.due),
+    'again: ', formatDue(dueAgain(card)),
+    'hard: ', formatDue(dueHard(card)),
+    'good: ', formatDue(dueGood(card)),
+    'easy: ', formatDue(dueEasy(card))
   );
 }

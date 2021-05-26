@@ -14,12 +14,13 @@
 <tr><th>Next card due in:</th><td>{{timeToNextDue}}</td></tr>
 </table>
 {{#if dueNow}}
-<a href="/front"><button>Study</button></a>
+<a href="/front" class="shortcut_s"><button>Study</button></a>
 {{/if}}
 <h3>Cards due per hour</h3>
 <div id="chart1" style="width:600px;height:300px;"></div>
 <div class="buttons">
 <a href="/help" target="_blank"><button>Help</button></a>
+<a href="/" class="default_action"><button>reload</button></a>
 </div>
 <script src="https://cdn.plot.ly/plotly-latest.min.js" charset="utf-8"></script>
 <script>

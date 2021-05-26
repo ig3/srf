@@ -101,9 +101,9 @@ isn't (at least it shouldn't be) committed.
 
 Scheduling is very simple. 
 
-Cards with seen = 0 are 'new'. They are only shown if workload permits.
+Cards with interval = 0 are 'new'. They are only shown if workload permits.
 
-Cards with seen != 0 have been seen before. Seen is the epoch time of when
+Cards with interval != 0 have been seen before. Seen is the epoch time of when
 they were last seen and due is the time they are due to be seen again.
 
 When a card is seen, it can be updated with one of four buttons:
@@ -243,7 +243,7 @@ user. Each template has a front and a back layout (the 'flashcard').
  * type - ???
  * queue - the Anki queue
  * due - when the card is due seconds since epoch or day number
- * ivl - the interval between views
+ * ivl - (renamed to interval) the interval between views
  * factor - the factor for increasing the interval between views
  * reps - number of times the card has been viewed
  * lapses - number of times the card was 'repeat'
@@ -258,13 +258,17 @@ user. Each template has a front and a back layout (the 'flashcard').
 type can be 0=new, 1=lrn, 2=rev, 3=relrn. It has something to do with
 filtered decks, at least.
 
-srf only sets epoch milliseconds for timestamps, in due and seen. New cards
-have seen = 0. When the card is seen, seen is set to the current time, and
-it is updated with each viewing. Interval (ivl) isn't used. The interval is
-always from the last time the card was seen until current time. The cards
-won't be shown before they are due but they might not be viewed until some
-time after they are due - maybe hours or days after. That's OK. The actual
-interval is more relevant than any intended, theoretically ideal interval.
+srf records all times with units of milliseconds. This includes due and
+interval. New cards have interval = 0. When the card is seen, interval is
+set to the interval from the current time to when the card will next be
+due.
+
+The relevant interval, when a card is seen, is the interval from when it
+was last seen to the time it was next seen. The card was last seen at
+cards.interval milliseconds before cards.due. The cards won't be shown
+before they are due but they might not be seen until some time after they
+are due - maybe hours or days after.  That's OK. The actual interval is
+more relevant than any intended, theoretically ideal interval.
 
 cards.new_order is for ordering the presentation of new cards. On import,
 it is set to whatever due was equal to. The separate field gives the

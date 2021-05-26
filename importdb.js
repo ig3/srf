@@ -6,12 +6,14 @@ const fs = require('fs');
 const srcFile = process.argv[2];
 const dstFile = process.argv[3];
 
-if (!srcFile || !dstFile) {
+if (!srcFile || srcFile === '' || !dstFile || dstFile === '') {
   console.log('Usage: importdb.js <source> <destination>');
+  process.exit(1);
 }
 
 if (srcFile === dstFile) {
   console.log('source and destination must be different');
+  process.exit(1);
 }
 
 fs.copyFileSync(srcFile, dstFile);
@@ -20,9 +22,11 @@ console.log('copied');
 
 removeCollationUnicase();
 lowercaseTableNames();
-addFields();
+addColumns();
+renameColumns();
 fixDue();
 setNewOrder();
+reviseRevlog();
 reviseTemplates();
 
 
@@ -84,14 +88,12 @@ function lowercaseTableNames () {
 
 
 /**
- * add fields adds new fields to existing tables.
+ * addColumns adds new columns to existing tables.
  *
- * cards.seen - time when card was last seen
  * cards.new_order - sorting field for new cards
  */
-function addFields () {
+function addColumns () {
   const db = require('better-sqlite3')(dstFile);
-  db.prepare("alter table cards add column seen integer not null default 0").run();
   db.prepare("alter table cards add column new_order integer not null default 0").run();
   db.prepare("alter table templates add column front text not null default ''").run();
   db.prepare("alter table templates add column back text not null default ''").run();
@@ -101,21 +103,34 @@ function addFields () {
 
 
 /**
+ * renameColumns renames existing columns
+ *
+ * ivl -> interval
+ */
+function renameColumns () {
+  const db = require('better-sqlite3')(dstFile);
+  db.prepare("alter table cards rename column ivl to interval").run();
+  db.close();
+}
+
+
+/**
  * Anki puts various values into due depending on the queue. But srf sets
- * due to milliseconds since the epoch always. So, for each card, set due
+ * due to seconds since the epoch always. So, for each card, set due
  * to the appropriate value for srf.
  */
 function fixDue () {
   const db = require('better-sqlite3')(dstFile);
   const db2 = require('better-sqlite3')(dstFile);
-  // crt is the collection creation times
+  // crt is the collection creation time in seconds since epoch
   // many due values are relative to this
-  const crt = db.prepare('select crt from col').get()['crt'] * 1000;
+  const crt = db.prepare('select crt from col').get()['crt'];
   console.log('crt ', crt);
 
-  const cards = db.prepare('select * from cards order by due');
+  const cards = db.prepare('select * from cards');
 
-  const dueLimit = Date.now() + 1000 * 60 * 60 * 24 * 365;
+  // Limit due to 1 year from now
+  const dueLimit = Date.now()/1000 + 60 * 60 * 24 * 365;
 
   for (const card of cards.iterate()) {
     // console.log('card ', card);
@@ -131,18 +146,18 @@ function fixDue () {
       //db2.prepare('update cards set ord = ?, due = 0 where id = ?')
       //  .run(card.due + card.ord, card.id);
     } else if  (card.queue === 1) { // (re)learn
-      // Due is epoch seconds ivl is ???
+      // Due is epoch seconds interval is ???
       // left is used to index into the list of delays
       // Some people have very long steps in learning
       // but mine are no more than an hour
-      let due = card.due * 1000;
+      let due = card.due;
       // I have seen a few strange due values
       // Probably because I don't understand the database conents
       // Make sure due isn't more than a year in the future.
       if (due > dueLimit) due = dueLimit;
-      const seen = due - 60000;
-      db2.prepare('update cards set due = ?, seen = ? where id = ?')
-        .run(due, seen, card.id);
+      const interval = 60;
+      db2.prepare('update cards set interval = ?, due = ? where id = ?')
+        .run(interval, due, card.id);
     } else if (
       card.queue === -3 || // manually buried
       card.queue === -2 || // sibling buried
@@ -151,20 +166,33 @@ function fixDue () {
       card.queue === 3 // day (re)learn
     ) {
       // due is a day with crt being day 0
-      let due = crt + card.due * 1000 * 60 * 60 * 24;
-      console.log('due  ', due, new Date(due).toString());
+      let due = crt + card.due * 60 * 60 * 24;
+      console.log('due  ', due, new Date(due*1000).toString());
       if (due > dueLimit) due = dueLimit;
-      // ivl is a number of days. Set seen based on due and ivl
-      const seen = due - card.ivl * 1000 * 60 * 60 * 24;
-      console.log('seen ', seen, new Date(seen).toString());
-      db2.prepare('update cards set due = ?, seen = ? where id = ?').run(due, seen, card.id);
-    } else if (card.queue === 4) { // preview
-      console.log('queue 4 ', card);
+      // interval is a number of days.
+      const interval = card.interval * 60 * 60 * 24;
+      db2.prepare('update cards set interval = ?, due = ? where id = ?')
+        .run(interval, due, card.id);
     } else {
       console.log('Unsupported queue ', card.queue);
     }
   }
   db2.close();
+  db.close();
+}
+
+/**
+ * ivl is negative for seconds or positive for days. Convert all to
+ * seconds. Same for lastivl. Time is milliseconds. Convert to seconds.
+ */
+function reviseRevlog () {
+  const db = require('better-sqlite3')(dstFile);
+  db.prepare(`
+update revlog set
+  ivl = case when ivl < 0 then -ivl else ivl*60*60*24 end,
+  lastivl = case when lastivl < 0 then -lastivl else lastivl*60*60*24 end,
+  time = round(time/1000,0)
+  `).run();
   db.close();
 }
 
@@ -191,7 +219,7 @@ function fixDue () {
  */
 function setNewOrder () {
   const db = require('better-sqlite3')(dstFile);
-  db.prepare('update cards set new_order = due where seen = 0').run();
+  db.prepare('update cards set new_order = due where queue = 0').run();
   db.close();
 }
 
