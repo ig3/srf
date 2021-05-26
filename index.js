@@ -444,8 +444,9 @@ function parseFieldsConfig (str) {
 }
 
 function updateSeenCard (card, ease, factor, due) {
-    db.prepare('update cards set factor = ?, interval = ?, due = ? where id = ?')
-    .run(factor, (due - now), due, card.id);
+  const lapses = ease === 1 ? card.lapses + 1: card.lapses;
+    db.prepare('update cards set factor = ?, interval = ?, due = ?, reps = ?, lapses = ? where id = ?')
+    .run(factor, (due - now), due, card.reps + 1, lapses, card.id);
     buryRelated(card);
     logReview(card, ease, factor, due);
 }
