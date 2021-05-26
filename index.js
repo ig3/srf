@@ -94,10 +94,7 @@ app.use(initRequest);
 
 app.get('/', (req, res) => {
   const dueNow = db.prepare('select count() from cards where interval != 0 and due < ?').get(now)['count()'] || 0;
-  console.log('dueNow ', dueNow);
-  console.log('endOfDay ', endOfDay);
   const dueToday = db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0;
-  console.log('dueToday ', dueToday);
   const viewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay*1000)['count()'];
   const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get()['due'];
   const timeToNextDue = tc.seconds(nextDue - now);
@@ -105,12 +102,9 @@ app.get('/', (req, res) => {
   const offset = (new Date().getTimezoneOffset()) * 60;
   const duePerHour = db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from cards where interval != 0 and due > ? and due < ? group by hour').all(offset,startOfDay, endOfDay)
   .forEach(el => {
-    console.log('el ', el);
     chart1Data.x.push(el.hour);
     chart1Data.y.push(el['count()']);
   });
-  console.log('duePerHour ', duePerHour);
-  console.log('chart1Data ', chart1Data);
   res.render('home', {
     dueNow: dueNow,
     dueToday: dueToday,
