@@ -445,8 +445,8 @@ function parseFieldsConfig (str) {
 
 function updateSeenCard (card, ease, factor, due) {
   const lapses = ease === 1 ? card.lapses + 1: card.lapses;
-    db.prepare('update cards set factor = ?, interval = ?, due = ?, reps = ?, lapses = ? where id = ?')
-    .run(factor, (due - now), due, card.reps + 1, lapses, card.id);
+    db.prepare('update cards set mod = ?, factor = ?, interval = ?, due = ?, reps = ?, lapses = ? where id = ?')
+    .run(now, factor, (due - now), due, card.reps + 1, lapses, card.id);
     buryRelated(card);
     logReview(card, ease, factor, due);
 }
@@ -465,7 +465,8 @@ function logReview (card, ease, newFactor, newDue) {
     formatDue(card.due),  // when the card was due
     formatDue(newDue), // the new due date
     newFactor, // updated interval factor
-    elapsed // elapsed time studying this card
+    elapsed, // elapsed time studying this card
+    card.ord
   );
   db.prepare('insert into revlog (id, cid, usn, ease, ivl, lastivl, factor, time, type) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
   .run(Date.now(), card.id, -1, ease, newDue - now, now - card.due,
