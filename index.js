@@ -457,6 +457,7 @@ function logReview (card, ease, newFactor, newDue) {
   const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay*1000)['count()'];
   const dueTodayCount = db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0;
   console.log(
+    card.id,
     Math.floor(studyTimeToday/60), // study time today (min)
     cardsViewedToday, // cards viewed today
     dueTodayCount, // cards due today
@@ -555,11 +556,15 @@ function getEstimatedTotalStudyTime () {
 
 /**
  * For each note there may be several cards. This sets due for any of these
- * cards that are later in order to be at least a day later.
+ * cards that are later in order to be at least a day later. Due is set on
+ * unseen cards to ensure they are not selected as a new card too soon
+ * after seeing a related card.
  */
 function buryRelated (card) {
-  db.prepare('update cards set due = ? where nid = ? and ord > ? and due < ?')
-    .run(now + secPerDay, card.nid, card.ord, now + secPerDay);
+  // const related = db.prepare('select * from cards where nid = ? and ord > ? and due < ?').all(card.nid, card.ord, now + secPerDay);
+  // console.log('related ', related);
+  db.prepare('update cards set mod = ?, due = ? where nid = ? and ord > ? and due < ?')
+    .run(now, now + secPerDay, card.nid, card.ord, now + secPerDay);
 }
 
 function dueAgain (card) {
@@ -567,12 +572,12 @@ function dueAgain (card) {
 }
 
 function dueHard (card) {
-  if (!card.interval || card.interval === 0) return(30);
+  if (!card.interval || card.interval === 0) return(now + 30);
   return(now + Math.max(30, Math.floor((now - card.due + card.interval) * 0.9)));
 }
 
 function dueGood (card) {
-  if (!card.interval || card.interval === 0) return(600);
+  if (!card.interval || card.interval === 0) return(now + 300);
   return(
     now +
     Math.min(
@@ -589,7 +594,7 @@ function dueGood (card) {
 }
 
 function dueEasy (card) {
-  if (!card.interval || card.interval === 0) return(secPerDay);
+  if (!card.interval || card.interval === 0) return(now + secPerDay);
   return(
     now +
     Math.min(
