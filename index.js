@@ -64,7 +64,7 @@ let lastNewCardTime = now;
 // averageTimePerCard is the average time viewing each card in ms.
 // Averaged over all cards viewed in the past 10 days.
 // Updated when the day rolls over.
-let averageTimePerCard = Math.floor(db.prepare('select avg(time) from revlog where id > ?').get((now - 60 * 60 * 24 * 10)*1000)['avg(time)']) || 30;
+let averageTimePerCard = getAverageTimePerCard();
 console.log('averageTimePerCard ', averageTimePerCard);
 
 // studyTimeToday is the total time studying cards since midnight.
@@ -84,7 +84,7 @@ function initRequest (req, res, next) {
   if (newStartOfDay !== startOfDay) {
     startOfDay = newStartOfDay;
     endOfDay = startOfDay + secPerDay;
-    averageTimePerCard = Math.floor(db.prepare('select avg(time) from revlog where id > ?').get((now - 60 * 60 * 24 * 10)*1000)['avg(time)']) || 30;
+    averageTimePerCard = getAverageTimePerCard();
     studyTimeToday = 0;
   }
   next();
@@ -110,6 +110,7 @@ app.get('/', (req, res) => {
     dueToday: dueToday,
     viewedToday: viewedToday,
     timeToNextDue: timeToNextDue.toFullString().substr(0,9),
+    estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
     chart1Data: JSON.stringify(chart1Data),
   });
 });
@@ -125,8 +126,6 @@ app.get('/stats', (req, res) => {
   const dueCount = db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0;
   const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get()['due'];
   const timeToNextDue = tc.seconds(nextDue - now);
-  const dueStudyTime = Math.floor(dueCount * averageTimePerCard);
-  const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
   const chart1Data = { x: [], y: [] };
   let first;
   let last;
@@ -149,8 +148,8 @@ app.get('/stats', (req, res) => {
     timeToNextDue: timeToNextDue.toFullString(),
     cardsViewedToday: cardsViewedToday,
     studyTimeToday: tc.seconds(studyTimeToday).toFullString(),
-    estimatedTotalStudyTime: tc.seconds(estimatedTotalStudyTime).toFullString(),
-    averageTimePerCard: Math.floor(averageTimePerCard),
+    estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
+    averageTimePerCard: averageTimePerCard,
     chart1Data: JSON.stringify(chart1Data),
     chart2Data: JSON.stringify(chart2Data),
   });
@@ -616,4 +615,16 @@ function logCard (card) {
     'good: ', formatDue(dueGood(card)),
     'easy: ', formatDue(dueEasy(card))
   );
+}
+
+/**
+ * getAverageTimePerCard returns the average time spent per card over the
+ * past 10 days. Note that this is not the average time per view, as some
+ * cards are viewed more than once.
+ */
+function getAverageTimePerCard () {
+  const result = db.prepare('select avg(t) from (select sum(time) as t, cast(id/1000/60/60/24 as integer) as d, cid from revlog where id > ? group by d, cid)')
+    .get((now - 60 * 60 * 24 * 10)*1000)['avg(t)'] || 30;
+  console.log('result ', result);
+  return(Math.round(result,0));
 }
