@@ -572,7 +572,7 @@ function dueAgain (card) {
 
 function dueHard (card) {
   if (!card.interval || card.interval === 0) return(now + 30);
-  return(now + Math.max(30, Math.floor((now - card.due + card.interval) * 0.9)));
+  return(now + Math.max(30, Math.floor((now - card.due + card.interval) * 0.5)));
 }
 
 function dueGood (card) {
