@@ -27,3 +27,10 @@
 </tbody>
 </table>
 <script src="js/sorttable.js"></script>
+<script>
+  document.querySelectorAll('table tr')
+  .forEach(e => e.addEventListener('click', (event) => {
+    const cells = event.currentTarget.getElementsByTagName('td');
+    window.location = "/note/" + cells[0].innerText;
+  }));
+</script>

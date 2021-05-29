@@ -160,9 +160,15 @@ app.get('/front', (req, res) => {
   card = getNextCard();
   if (card) {
     cardStartTime = now;
-    card.note = getNote(card);
+    const note = getNote(card.nid);
+    note.template = getTemplate(note.mid, card.ord);
+    note.front = Mustache.render(note.template.front, note.fieldData);
+    note.fieldData.FrontSide = note.front;
+    note.back = Mustache.render(note.template.back, note.fieldData);
+    card.note = note;
+
     // logCard(card);
-    res.render('front', card.note);
+    res.render('front', note);
   } else {
     res.redirect('/');
   }
@@ -218,6 +224,16 @@ app.get('/notes', (req, res) => {
   });
 });
 
+app.get('/note/:id', (req, res) => {
+  console.log('get note ID ' + req.params.id);
+  const note = getNote(req.params.id);
+  console.log('note ', note);
+  const tmpFieldValues = note.flds.split(String.fromCharCode(0x1f));
+  res.render('note', {
+    note: note
+  });
+});
+
 const server = app.listen(8000, () => {
   let host = server.address().address;
   let port = server.address().port;
@@ -257,11 +273,10 @@ function getCreationTime () {
  * The card and template both have ord which determines the template that
  * matches the card.
  */
-function getNote (card) {
-  const nid = card.nid;
+function getNote (nid) {
   const note = db.prepare('select * from notes where id = ?').get(nid);
   if (!note) {
-    console.log('No note for card ', card.id);
+    console.log('No note ID ', nid);
     return;
   }
   const noteTypeID = note.mid;
@@ -274,13 +289,6 @@ function getNote (card) {
   const fields = db.prepare('select * from fields where ntid = ?').all(noteTypeID);
   if (!fields) {
     console.log('No fields for note ', note.id);
-  }
-
-  // Primary key of templates is (ntid, ord)
-  note.template = db.prepare('select name, front, back, css from templates where ntid = ? and ord = ?').get(noteTypeID, card.ord);
-  if (!note.template) {
-    console.log('No template for note ', note.id);
-    return;
   }
 
   const tmpFieldValues = note.flds.split(String.fromCharCode(0x1f));
@@ -296,16 +304,17 @@ function getNote (card) {
 
   note.fieldData = fieldData;
 
-  const front = Mustache.render(note.template.front, fieldData);
-  fieldData.FrontSide = front;
-  const back = Mustache.render(note.template.back, fieldData);
-  
-  note.front = front;
-  note.back = back;
-
-  // res.send(template({who: 'World'}));
-
   return(note);
+}
+
+function getTemplate (ntid, ord) {
+  // Primary key of templates is (ntid, ord)
+  const template = db.prepare('select name, front, back, css from templates where ntid = ? and ord = ?').get(ntid, ord);
+  if (!template) {
+    console.log('No template for ntid ', ntid, ' ord ', ord);
+    return;
+  }
+  return(template);
 }
 
 function parseTemplateConfig (str) {

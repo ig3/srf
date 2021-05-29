@@ -1,0 +1,22 @@
+<style>
+  th {
+    text-align: left;
+  }
+  td {
+    text-align: right;
+  }
+</style>
+<h1>Spaced Repetition Flashcards</h1>
+<h2>Note</h2>
+<table>
+<tr><th>ID</th><td>{{note.id}}</td></tr>
+<tr><th>GUID</th><td>{{note.guid}}</td></tr>
+<tr><th>ntid</th><td>{{note.mid}}</td></tr>
+</table>
+
+<h2>Fields</h2>
+<table>
+{{#each note.fieldData}}
+<tr><th>{{@key}}</th><td>{{this}}</td></tr>
+{{/each}}
+</table>
