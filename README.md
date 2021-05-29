@@ -385,3 +385,62 @@ than Highcharts (at least, less verbose) and makes good looking charts with
 download, zoom, pan, values on hover and all sorts. Seems quite awesome.
 
 
+## Dependencies
+
+### NodeJS
+The server runs on NodeJS
+
+### better-sqlite3
+Interface to the SQLite database
+
+### body-parser
+Because some template for using Express said to use this.
+
+### cookie-parser
+Because some template for using Express said to use this.
+
+### express
+The is the web server framework. It handles parsing and routing of requests
+and production of responses.
+
+### express-handlebars
+This is template middleware for express. The website pages are generated
+from handlebars templates.
+
+### handlebars
+This is the handlebars template engine. It is an extension of, or at least
+largely compatible with the Mustache template engine.
+
+### multer
+Because some template for using Express said to use this.
+
+### mustache
+Another template engine. This one is, by default, a bit more compatible
+with the Anki templates. So, the Anki templates are processed by Mustache
+and the web pages are then produced from Handlebars templates. Handlebars
+documentation says that it is compatible with Mustache, so perhaps there is
+a way to consolidate on just Handlebars, in which case Mustache can be
+dropped.
+
+### timezonecomplete
+For some timezone and time data processing.
+
+### tzdata
+Timezone data from timezonecomplete.
+
+## Potential Dependencies
+
+### [sorttable](https://kryogenix.org/code/browser/sorttable/)
+
+Some script for making tables sortable. A copy of the script is in the root
+directory of the project, for the moment, but not used.
+
+### [tabulator](http://www.tabulator.info/)
+
+This is another script for generating sortable tables. This takes quite a
+different approach to sorttable. It seems well documented, but I haven't
+tried it yet.
+
+### [sort a table](https://htmldom.dev/sort-a-table-by-clicking-its-headers/)
+
+This is some guidance and examples of sorting a table.

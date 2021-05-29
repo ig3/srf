@@ -1,0 +1,29 @@
+<style>
+  th {
+    text-align: left;
+  }
+  td {
+    text-align: right;
+  }
+</style>
+<h1>Spaced Repetition Flashcards</h1>
+<h2>Notes</h2>
+<table border="1" class="sortable">
+<thead>
+  <tr>
+    {{#each notes.[0]}}
+      <th>{{@key}}</th>
+    {{/each}}
+  </tr>
+</thead>
+<tbody>
+  {{#each notes}}
+    <tr>
+      {{#each this}}
+        <td>{{this}}</td>
+      {{/each}}
+    </tr>
+  {{/each}}
+</tbody>
+</table>
+<script src="js/sorttable.js"></script>

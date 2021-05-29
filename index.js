@@ -21,6 +21,7 @@ const app = express();
 const expressHandlebars = require('express-handlebars');
 app.engine('handlebars', expressHandlebars());
 app.set('view engine', 'handlebars');
+app.use(express.static('public'));
 app.use(express.static('media'));
 
 process.on('SIGINT', onExit);
@@ -208,6 +209,13 @@ app.get('/easy', (req, res) => {
     updateSeenCard(card, 4, factor, due);
   }
   res.redirect('/front');
+});
+
+app.get('/notes', (req, res) => {
+  const notes = db.prepare('select * from notes').all();
+  res.render('notes', {
+    notes: notes
+  });
 });
 
 const server = app.listen(8000, () => {
