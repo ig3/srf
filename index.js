@@ -23,6 +23,7 @@ app.engine('handlebars', expressHandlebars());
 app.set('view engine', 'handlebars');
 app.use(express.static('public'));
 app.use(express.static('media'));
+app.use(express.json());
 
 process.on('SIGINT', onExit);
 const db = require('better-sqlite3')('srf.db');
@@ -45,6 +46,9 @@ const secPerYear = secPerDay * 365;
 // startTime is the time when this execution of the server started.
 const startTime = Math.floor(Date.now() / 1000);
 
+// matureThreshold is the interval beyond which a card is considered mature
+// Cards with interval less than this are being learned
+const matureThreshold = 60 * 60 * 24 * 21;
 
 // now is the current time, updated on receipt of each request
 let now = startTime;
@@ -52,6 +56,8 @@ let now = startTime;
 // cardStartTime is the time when the current card was shown.
 // It is updated each time a card is shown.
 let cardStartTime = now;
+
+console.log(new Date().toString());
 
 // startOfDay is the epoch time of midnight as the start of the current day.
 let startOfDay = Math.floor(new Date().setHours(0,0,0,0).valueOf() / 1000);
@@ -83,6 +89,7 @@ function initRequest (req, res, next) {
   const newStartOfDay =
     Math.floor(new Date().setHours(0,0,0,0).valueOf() / 1000);
   if (newStartOfDay !== startOfDay) {
+    console.log(new Date().toString());
     startOfDay = newStartOfDay;
     endOfDay = startOfDay + secPerDay;
     averageTimePerCard = getAverageTimePerCard();
@@ -225,13 +232,24 @@ app.get('/notes', (req, res) => {
 });
 
 app.get('/note/:id', (req, res) => {
-  console.log('get note ID ' + req.params.id);
   const note = getNote(req.params.id);
-  console.log('note ', note);
   const tmpFieldValues = note.flds.split(String.fromCharCode(0x1f));
   res.render('note', {
     note: note
   });
+});
+
+app.post('/note/:id', (req, res) => {
+  console.log('save note ' + req.params.id);
+  const note = getNote(req.params.id);
+  console.log('note ', note);
+  console.log('body ', req.body);
+  const flds = note.fields.map(field => req.body[field])
+    .join(String.fromCharCode(0x1f));
+  console.log('flds ', flds);
+  db.prepare('update notes set flds = ? where id = ?')
+    .run(flds, req.params.id);
+  res.send('ok');
 });
 
 const server = app.listen(8000, () => {
@@ -286,6 +304,8 @@ function getNote (nid) {
     return;
   }
   note.noteType = parseNoteTypeConfig(noteType.config.toString('binary'));
+  note.noteType.id = noteType.id;
+  note.noteType.name = noteType.name;
   const fields = db.prepare('select * from fields where ntid = ?').all(noteTypeID);
   if (!fields) {
     console.log('No fields for note ', note.id);
@@ -293,16 +313,16 @@ function getNote (nid) {
 
   const tmpFieldValues = note.flds.split(String.fromCharCode(0x1f));
 
-  const fieldData = {};
+  note.fieldData = {};
+  note.fields = [];
   fields
   .sort((a, b) => {
-    return b.ord - a.ord;
+    return a.ord - b.ord;
   })
   .forEach(field => {
-    fieldData[field.name] = tmpFieldValues[field.ord];
+    note.fieldData[field.name] = tmpFieldValues[field.ord];
+    note.fields.push(field.name);
   });
-
-  note.fieldData = fieldData;
 
   return(note);
 }
@@ -460,14 +480,16 @@ function parseFieldsConfig (str) {
 }
 
 function updateSeenCard (card, ease, factor, due) {
-  const lapses = ease === 1 ? card.lapses + 1: card.lapses;
-    db.prepare('update cards set mod = ?, factor = ?, interval = ?, due = ?, reps = ?, lapses = ? where id = ?')
-    .run(now, factor, (due - now), due, card.reps + 1, lapses, card.id);
+  const interval = due - now;
+  const lapsed = interval < matureThreshold && card.interval > matureThreshold;
+  const lapses = lapsed ? card.lapses + 1 : card.lapses;
+  db.prepare('update cards set mod = ?, factor = ?, interval = ?, due = ?, reps = ?, lapses = ? where id = ?')
+    .run(now, factor, interval, due, card.reps + 1, lapses, card.id);
     buryRelated(card);
-    logReview(card, ease, factor, due);
+    logReview(card, ease, factor, due, lapsed, lapses);
 }
 
-function logReview (card, ease, newFactor, newDue) {
+function logReview (card, ease, factor, due, lapsed, lapses) {
   let elapsed = Math.min(120, Math.floor(now - cardStartTime));
   studyTimeToday += elapsed;
   const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay*1000)['count()'];
@@ -480,14 +502,44 @@ function logReview (card, ease, newFactor, newDue) {
     tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
     formatDue(card.due - card.interval), // when card was last seen
     formatDue(card.due),  // when the card was due
-    formatDue(newDue), // the new due date
-    newFactor, // updated interval factor
+    formatDue(due), // the new due date
+    factor, // updated interval factor
     elapsed, // elapsed time studying this card
     card.ord
   );
-  db.prepare('insert into revlog (id, cid, usn, ease, ivl, lastivl, factor, time, type) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-  .run(Date.now(), card.id, -1, ease, newDue - now, now - card.due,
-    newFactor, elapsed, 2);
+  const interval = due - now;
+  const lastInterval = card.interval === 0 ? 0 : now - card.due + card.interval;
+  // Distinguishing cases
+  //  New new card: revlog.lastivl === 0
+  //  New / Learning card: lapses === 0
+  //  Newly lapsed card: revlog.lastivl > matureThreshold &&
+  //    revlog.ivl < matureThreshold
+  //  Lapsed / Relearning card: lapses > 0
+  //  Mature card: revlog.ivl > matureThreshold
+  //
+  //  Type:
+  //    0 - New / Learning card
+  //    1 - Lapsed / Relearing card
+  //    2 - Mature card
+  //
+  //  Note that the type can be derived from base data (ivl, lastivl and
+  //  lapses), so it is redundant and perhaps should be eliminated.
+  //
+  const type = interval > 60*60*24*21 ? 2 : lapses === 0 ? 0 : 1;
+  const info = db.prepare('insert into revlog (id, cid, usn, ease, ivl, lastivl, factor, time, type, lapses) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+  .run(
+    now * 1000, // Time the card was seen
+    card.id,  
+    -1,
+    ease,
+    interval, // Time until the card is due to be seen again
+    lastInterval, // Time since card was last seen
+    factor,  // Factor for adjusting interval
+    elapsed,  // Time spent viewing card
+    type,  // 0 - New; 1 - Lapsed; 2 - Review
+    lapses
+  );
+  console.log('info ', info);
 }
 
 function formatDue (due) {
@@ -642,6 +694,5 @@ function logCard (card) {
 function getAverageTimePerCard () {
   const result = db.prepare('select avg(t) from (select sum(time) as t, cast(id/1000/60/60/24 as integer) as d, cid from revlog where id > ? group by d, cid)')
     .get((now - 60 * 60 * 24 * 10)*1000)['avg(t)'] || 30;
-  console.log('result ', result);
   return(Math.round(result,0));
 }

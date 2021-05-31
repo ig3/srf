@@ -394,7 +394,7 @@ The server runs on NodeJS
 Interface to the SQLite database
 
 ### body-parser
-Because some template for using Express said to use this.
+For parsing JSON in POST bodies.
 
 ### cookie-parser
 Because some template for using Express said to use this.

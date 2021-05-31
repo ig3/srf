@@ -98,6 +98,7 @@ function addColumns () {
   db.prepare("alter table templates add column front text not null default ''").run();
   db.prepare("alter table templates add column back text not null default ''").run();
   db.prepare("alter table templates add column css text not null default ''").run();
+  db.prepare("alter table revlog add column lapses integer not null default 0").run();
   db.close();
 }
 
@@ -193,6 +194,10 @@ update revlog set
   lastivl = case when lastivl < 0 then -lastivl else lastivl*60*60*24 end,
   time = round(time/1000,0)
   `).run();
+  db.prepare('update revlog set lapses = (select count() from revlog as b where b.cid = revlog.cid and b.ivl < 60*60*24*21 and b.lastivl > 60*60*24*21 and b.id <= revlog.id)').run();
+  db.prepare('update revlog set type = 2 where ivl > 60*60*24*21').run();
+  db.prepare('update revlog set type = 0 where ivl < 60*60*24*21 and lapses = 0').run();
+  db.prepare('update revlog set type = 1 where ivl < 60*60*24*21 and lapses > 0').run();
   db.close();
 }
 

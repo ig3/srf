@@ -6,7 +6,7 @@
     text-align: right;
   }
 </style>
-<h1>Spaced Repetition Flashcards</h1>
+<h1><a href="/">Spaced Repetition Flashcards</a></h1>
 <h2>Notes</h2>
 <table border="1" class="sortable">
 <thead>
@@ -31,6 +31,7 @@
   document.querySelectorAll('table tr')
   .forEach(e => e.addEventListener('click', (event) => {
     const cells = event.currentTarget.getElementsByTagName('td');
-    window.location = "/note/" + cells[0].innerText;
+    window.open('/note/' + cells[0].innerText, 'Edit Note',
+      'height=800,width=600');
   }));
 </script>

@@ -11,12 +11,45 @@
 <table>
 <tr><th>ID</th><td>{{note.id}}</td></tr>
 <tr><th>GUID</th><td>{{note.guid}}</td></tr>
-<tr><th>ntid</th><td>{{note.mid}}</td></tr>
+<tr><th>ntid/name</th><td>{{note.mid}}/{{note.noteType.name}}</td></tr>
 </table>
 
 <h2>Fields</h2>
 <table>
 {{#each note.fieldData}}
-<tr><th>{{@key}}</th><td>{{this}}</td></tr>
+<tr><th>{{@key}}</th><td><input type="text" id="{{@key}}" value="{{this}}"/></td></tr>
 {{/each}}
 </table>
+<button onclick="save()">Save</button>
+<button onclick="cancel()">Cancel</button>
+<script>
+  function save() {
+    const data = {};
+    document.querySelectorAll('input')
+    .forEach((input) => {
+      data[input.id] = input.value;
+    });
+    console.log('data ', data);
+    fetch('/note/{{note.id}}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    .then( response => {
+      if (!response.ok) {
+        throw new Error(response.url + ': ' + response.status + ': ' +
+          response.statusText);
+      }
+      console.log('response ', response);
+      window.close();
+    })
+    .catch( err => {
+      alert('failed');
+      console.log('err ', err);
+    });
+  }
+
+  function cancel() {
+    window.close();
+  }
+</script>
