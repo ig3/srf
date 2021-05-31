@@ -9,10 +9,12 @@ Estimated total study time: {{estimatedTotalStudyTime}} (hh:mm:ss.sss)</br>
 Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
 </div>
 <div class="charts">
-<h3>Cards per day</h3>
+<h3>Cards Studied per day</h3>
 <div id="chart1" style="width:600px;height:300px;"></div>
-<h3>Minutes per day</h3>
+<h3>Minutes Studied per day</h3>
 <div id="chart2" style="width:600px;height:300px;"></div>
+<h3>Cards Due per day</h3>
+<div id="chart3" style="width:600px;height:300px;"></div>
 </div>
 <script src="https://cdn.plot.ly/plotly-latest.min.js" charset="utf-8"></script>
 <script>
@@ -29,6 +31,15 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
     [ {{{chart2Data}}} ], {
       margin: {t: 0},
       yaxis: { title: 'min' },
+      xaxis: { title: 'day#' }
+    }
+  );
+
+  let chart3 = document.getElementById('chart3');
+  Plotly.newPlot(chart3,
+    [ {{{chart3Data}}} ], {
+      margin: {t: 0},
+      yaxis: { title: 'cards' },
       xaxis: { title: 'day#' }
     }
   );

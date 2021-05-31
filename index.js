@@ -135,23 +135,37 @@ app.get('/stats', (req, res) => {
   const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get()['due'];
 
   const timeToNextDue = tc.seconds(nextDue - now);
+
+  // Cards studied per day
   const chart1Data = { x: [], y: [] };
   let first;
   let last;
   // The database timestamps are UTC but we want local days so must
   // add the local offset to determine which day a card was reviewed.
   const offset = (new Date().getTimezoneOffset()) * 60 * 1000;
-  const viewsPerDay = db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(offset).forEach(el => {
+  db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(offset).forEach(el => {
     if (!first) first = el.day-1;
     chart1Data.x.push(el.day-first);
     chart1Data.y.push(el['count()']);
   });
 
+  // Minutes studied per day
   const chart2Data = { x: [], y: [] };
   db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(offset).forEach(el => {
     chart2Data.x.push(el.day-first);
     chart2Data.y.push(el.time/60);
   });
+
+  // Cards due per day
+  const chart3Data = { x: [], y: [] };
+  first = null;
+  db.prepare('select cast((due + ?)/(60*60*24) as integer) as day, count() from cards where interval != 0 group by day').all(offset/1000).forEach(el => {
+    if (!first) first = el.day-1;
+    chart3Data.x.push(el.day-first);
+    chart3Data.y.push(el['count()']);
+  });
+  console.log('chart3Data ', chart3Data);
+
   res.render('stats', {
     dueCount: dueCount,
     timeToNextDue: timeToNextDue.toFullString(),
@@ -161,6 +175,7 @@ app.get('/stats', (req, res) => {
     averageTimePerCard: averageTimePerCard,
     chart1Data: JSON.stringify(chart1Data),
     chart2Data: JSON.stringify(chart2Data),
+    chart3Data: JSON.stringify(chart3Data)
   });
 });
 
