@@ -539,7 +539,10 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
     type,  // 0 - New; 1 - Lapsed; 2 - Review
     lapses
   );
-  console.log('info ', info);
+  if (info.changes !== 1) {
+    console.log('revlog update failed ', info);
+    process.exit(1);
+  }
 }
 
 function formatDue (due) {
