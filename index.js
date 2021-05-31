@@ -485,8 +485,8 @@ function updateSeenCard (card, ease, factor, due) {
   const lapses = lapsed ? card.lapses + 1 : card.lapses;
   db.prepare('update cards set mod = ?, factor = ?, interval = ?, due = ?, reps = ?, lapses = ? where id = ?')
     .run(now, factor, interval, due, card.reps + 1, lapses, card.id);
-    buryRelated(card);
-    logReview(card, ease, factor, due, lapsed, lapses);
+  buryRelated(card);
+  logReview(card, ease, factor, due, lapsed, lapses);
 }
 
 function logReview (card, ease, factor, due, lapsed, lapses) {
