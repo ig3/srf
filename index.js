@@ -101,9 +101,9 @@ function initRequest (req, res, next) {
 app.use(initRequest);
 
 app.get('/', (req, res) => {
-  const dueNow = db.prepare('select count() from cards where interval != 0 and due < ?').get(now)['count()'] || 0;
-  const dueToday = db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0;
-  const viewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay*1000)['count()'];
+  const dueNow = getCountCardsDueNow();
+  const dueToday = getCountCardsDueToday();
+  const viewedToday = getCountCardsViewedToday();
   const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get()['due'];
   const timeToNextDue = tc.seconds(nextDue - now);
   const chart1Data = { x: [], y: [], type: 'bar' };
@@ -128,11 +128,12 @@ app.get('/help', (req, res) => {
 });
 
 app.get('/stats', (req, res) => {
-  const startOfDay =
-    Math.floor(new Date(req.startTime).setHours(0,0,0,0).valueOf() / 1000);
-  const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay*1000)['count()'];
-  const dueCount = db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0;
+  // revlog.id is ms timestamp
+  const cardsViewedToday = getCountCardsViewedToday();
+  const dueCount = getCountCardsDueToday();
+
   const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get()['due'];
+
   const timeToNextDue = tc.seconds(nextDue - now);
   const chart1Data = { x: [], y: [] };
   let first;
@@ -140,14 +141,14 @@ app.get('/stats', (req, res) => {
   // The database timestamps are UTC but we want local days so must
   // add the local offset to determine which day a card was reviewed.
   const offset = (new Date().getTimezoneOffset()) * 60 * 1000;
-  const viewsPerDay = db.prepare('select cast((id + ?)/(60*60*24) as integer) as day, count() from revlog group by day').all(offset).forEach(el => {
+  const viewsPerDay = db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(offset).forEach(el => {
     if (!first) first = el.day-1;
     chart1Data.x.push(el.day-first);
     chart1Data.y.push(el['count()']);
   });
 
   const chart2Data = { x: [], y: [] };
-  db.prepare('select cast((id + ?)/(60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(offset).forEach(el => {
+  db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(offset).forEach(el => {
     chart2Data.x.push(el.day-first);
     chart2Data.y.push(el.time/60);
   });
@@ -492,8 +493,8 @@ function updateSeenCard (card, ease, factor, due) {
 function logReview (card, ease, factor, due, lapsed, lapses) {
   let elapsed = Math.min(120, Math.floor(now - cardStartTime));
   studyTimeToday += elapsed;
-  const cardsViewedToday = db.prepare('select count() from revlog where id >= ?').get(startOfDay*1000)['count()'];
-  const dueTodayCount = db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0;
+  const cardsViewedToday = getCountCardsViewedToday();
+  const dueTodayCount = getCountCardsDueToday();
   console.log(
     card.id,
     Math.floor(studyTimeToday/60), // study time today (min)
@@ -617,7 +618,7 @@ function getDueCard () {
 }
 
 function getEstimatedTotalStudyTime () {
-  const dueTodayCount = db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0;
+  const dueTodayCount = getCountCardsDueToday();
   const dueStudyTime = Math.floor(dueTodayCount * averageTimePerCard);
   const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
   //console.log('Estimated total study time: ',
@@ -698,4 +699,16 @@ function getAverageTimePerCard () {
   const result = db.prepare('select avg(t) from (select sum(time) as t, cast(id/1000/60/60/24 as integer) as d, cid from revlog where id > ? group by d, cid)')
     .get((now - 60 * 60 * 24 * 10)*1000)['avg(t)'] || 30;
   return(Math.round(result,0));
+}
+
+function getCountCardsDueToday () {
+  return(db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0);
+}
+
+function getCountCardsDueNow () {
+  return(db.prepare('select count() from cards where interval != 0 and due < ?').get(now)['count()'] || 0);
+}
+
+function getCountCardsViewedToday () {
+  return(db.prepare('select count() from revlog where id >= ?').get(startOfDay*1000)['count()']);
 }
