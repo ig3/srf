@@ -148,7 +148,7 @@ For cards that you remember very well, that you are viewing too frequently.
 Factor is increased by 200, to a maximum of 10000.
 
 Next due is time since last seen multipied by factor/1000, with a minimum
-of 60 seconds and a maximum of one year.
+of one day and a maximum of one year.
 
 ## New Cards
 
