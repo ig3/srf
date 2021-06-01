@@ -164,7 +164,6 @@ app.get('/stats', (req, res) => {
     chart3Data.x.push(el.day-first);
     chart3Data.y.push(el['count()']);
   });
-  console.log('chart3Data ', chart3Data);
 
   res.render('stats', {
     dueCount: dueCount,

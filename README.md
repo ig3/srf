@@ -105,7 +105,13 @@ The cards to be studied are the cards with a due time before the current
 time. Cards with later due times are to be studied later / in the future.
 
 Of the cards to be studied, then next card to be studied is the card with
-the earliest due time.
+shortest interval and earliest due time. Consider if you haven't studied
+since the day (or week) before. There will be many cards due with various
+intervals. The due cards are all those that have come due since you last
+studied, which may be many. To avoid this backlog of cards blocking review
+of the cards which you are just learning (with short intervals), priority
+is given to the cards with shorter intervals. In practice, this works
+better than simply ordering by due time.
 
 When a card is seen, it can be updated with one of four buttons:
 
