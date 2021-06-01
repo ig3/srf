@@ -99,70 +99,81 @@ isn't (at least it shouldn't be) committed.
 
 ## Scheduling
 
-Scheduling is very simple. 
+Cards have a due time (seconds since the epoch).
 
-Cards with interval = 0 are 'new'. They are only shown if workload permits.
+The cards to be studied are the cards with a due time before the current
+time. Cards with later due times are to be studied later / in the future.
 
-Cards with interval != 0 have been seen before. Seen is the epoch time of when
-they were last seen and due is the time they are due to be seen again.
+Of the cards to be studied, then next card to be studied is the card with
+the earliest due time.
 
 When a card is seen, it can be updated with one of four buttons:
 
-* Again - factor = 2000, due = now + 60 seconds
-* Hard - factor -= 50, due = now + (now-seen) * 0.9
-* Good - factor += 50, due = now + (now-seen) * factor/1000
-* Easy - factor += 200, due = now + (now-seen) * factor/1000
+### Again
+For cards you don't remember.
 
-Minimum time to next due is one minute.
-Maximum time to next due - there isn't one, but probably should be
-Minimum factor is 1200
-Maximum factor is 10000
+Factor is set to 2000. This factor determines how quickly the interval
+increases for Good and Easy cards (see below).
 
-For Easy, factor is set to a minimum of 4000 and time to next due is a
-minimum of one day.
+Next due is in 10 seconds.
 
-Unlike Anki, there is no 'interval'. Or, rather, the interval is the time
-from when the card was last seen until now, regardless of whether the card
-has just come due or came due several weeks ago (if you take a break from
-study for whatever reason). If you really want it, you can get the old
-interval: its the difference between when the card was last seen and when
-it was due. But, you view cards when you do, always more or less after they
-are due. The actual interval might not be ideal, in terms of learning
-performance, but whatever it is, that's what it is. Base the time to next
-due based on the actual interval and whether it was easy, good, hard or
-again (ease, in Anki terms) this time.
+### Hard
+For cards you remember with difficulty.
 
-Workload is managed by controlling the introduction of new (seen = 0)
-cards.
+Factor is decreased by 50, to a minimum of 1200.
+
+Next due is 50% of the interval from when the card was last seen. For
+example, if the card was last seen 4 days ago, it will be due in 2 days, if
+the card was last seen 2 hours ago, it will be due in 1 hour, etc. The
+minimum interval is 30 seconds.
+
+### Good
+For cards that you remember well.
+
+Factor is increased by 50, to a maximum of 10000 and a minimum of 1200.
+
+Next due is time since last seen multipied by factor/1000, with a minimum
+of 60 seconds and a maximum of one year.
+
+### Easy
+For cards that you remember very well, that you are viewing too frequently.
+
+Factor is increased by 200, to a maximum of 10000.
+
+Next due is time since last seen multipied by factor/1000, with a minimum
+of 60 seconds and a maximum of one year.
+
+## New Cards
+
+Workload is managed by controlling the introduction of new cards.
+
+All cards are initially considered to be 'new'. Technically, this is
+determined by cards.interval being 0. After a card has been seen,
+cards.interval is set to some non-zero value: the time, in seconds, until
+the card is due to be seen again.
+
+New cards are allowed when the estimate of total time to complete all due
+reviews is less than the value of studyTimeNewCardLimit (currently
+hard-coded in server.js as one hour (60\*60)).
+
+While new cards are allowed, a new card will be presented if it is more
+than 5 minutes since the last new card was presented or there are no cards
+due for review (i.e. their due time is before current time - there may well
+be more cards due later in the day).
 
 Total time to view all cards due by end of day is estimated. This is based
-on the number of cards due and average time per view for all cards viewed
-the past 10 days. This should probably be increased by some factor, as not
-all cards are easy - you will view some cards more than once in a day. But
-the estimate includes actual time reviewing cards during the day, so the
-estimate becomes more accurate as the day progresses.
-
-If the estimated time to complete reviews exceeds studyTimeNewCardLimit
-(which is set to 1 hour at the moment) then new cards are not shown.
-
-Otherwise, if there are due cards then a new card is shown approximately
-every 10 minutes. If there are no due cards, then new cards are shown
-immediately, until the estimate of total study time exceeds 1 hour.
+on actual study time, the number of cards due and historic time per card
+per day, averaged over the past 10 days. The product of cards due and
+average time per card is added to the actual time already spent to estimate
+the time it would take to complete study of all due cards. This takes into
+account that some cards are viewed more than once in a day.  It's only an
+estimate: not terribly accurate. But it is only a basis for limiting new
+cards, to avoid overload. It doesn't have to be very accurate.
 
 The objective is to keep study time close to 1 hour per day by adding new
-cards if it is less and blocking new cards if it is more. It is always
-possible to review all due cards. There is no limit on cards viewed - only
-on new cards.
-
-Unlike Anki, there are no separate queues and there is no jump to
-scheduling by day. Cards are always due at some specific time and this may
-be any time of day. Don't worry about it. Don't obsess about viewing all
-cards every day. Unless you are studying until midnight every day, there
-will likely be some cards due later in the day. That's OK. As long as you
-view all due cards at least once each day, you will do fine. You will view
-the cards that come due later in the day when you study on the following
-day - it's not a problem. I say this probably because I have obsessed about
-completing all reviews every day in Anki.
+cards if it would be less and blocking new cards if it would be more. It is
+always possible to review all due cards. There is no limit on cards viewed
+- only on new cards.
 
 ## Templates
 
