@@ -15,6 +15,8 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
 <div id="chart2" style="width:600px;height:300px;"></div>
 <h3>Cards Due per day</h3>
 <div id="chart3" style="width:600px;height:300px;"></div>
+<h3>New Cards per day</h3>
+<div id="chart4" style="width:600px;height:300px;"></div>
 </div>
 <script src="https://cdn.plot.ly/plotly-latest.min.js" charset="utf-8"></script>
 <script>
@@ -38,6 +40,15 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
   let chart3 = document.getElementById('chart3');
   Plotly.newPlot(chart3,
     [ {{{chart3Data}}} ], {
+      margin: {t: 0},
+      yaxis: { title: 'cards' },
+      xaxis: { title: 'day#' }
+    }
+  );
+
+  let chart4 = document.getElementById('chart4');
+  Plotly.newPlot(chart4,
+    [ {{{chart4Data}}} ], {
       margin: {t: 0},
       yaxis: { title: 'cards' },
       xaxis: { title: 'day#' }

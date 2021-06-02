@@ -198,6 +198,7 @@ update revlog set
   db.prepare('update revlog set type = 2 where ivl > 60*60*24*21').run();
   db.prepare('update revlog set type = 0 where ivl < 60*60*24*21 and lapses = 0').run();
   db.prepare('update revlog set type = 1 where ivl < 60*60*24*21 and lapses > 0').run();
+  db.prepare('update revlog set lastivl = 0 where id in (select id from revlog group by cid order by cid, id)').run();
   db.close();
 }
 
