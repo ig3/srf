@@ -190,10 +190,13 @@ app.get('/stats', (req, res) => {
     points[el.day-first] = el['count()'];
   });
   const chart4Data = { x: [], y: [] };
+  let totalNew = 0;
   for (let i = 0; i < last-first; i++) {
     chart4Data.x.push(i);
     chart4Data.y.push(points[i] || 0);
+    totalNew += points[i] || 0;
   }
+  let newCardsPerDay = (last - first) > 0 ? totalNew / (last - first) : 0;
 
   res.render('stats', {
     dueCount: dueCount,
@@ -202,6 +205,7 @@ app.get('/stats', (req, res) => {
     studyTimeToday: tc.seconds(studyTimeToday).toFullString(),
     estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
     averageTimePerCard: averageTimePerCard,
+    newCardsPerDay: newCardsPerDay.toFixed(2),
     chart1Data: JSON.stringify(chart1Data),
     chart2Data: JSON.stringify(chart2Data),
     chart3Data: JSON.stringify(chart3Data),
