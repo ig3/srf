@@ -136,20 +136,20 @@ app.get('/stats', (req, res) => {
 
   const timeToNextDue = tc.seconds(nextDue - now);
 
-  // Cards studied per day
-  let first;
-  let last;
-  let points = [];
   // The database timestamps are UTC but we want local days so must
   // add the local offset to determine which day a card was reviewed.
   const offset = (new Date().getTimezoneOffset()) * 60 * 1000;
+  const last = Math.floor((Date.now() + offset)/1000/60/60/24);
+
+  // Cards studied per day
+  let first;
+  let points = [];
   db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(offset).forEach(el => {
     if (!first) first = el.day-1;
     points[el.day-first] = el['count()'];
   });
   const chart1Data = { x: [], y: [] };
-  last = Math.floor(Date.now()/1000/60/60/24) - first;
-  for (let i = 0; i <= last; i++) {
+  for (let i = 0; i <= last-first; i++) {
     chart1Data.x.push(i);
     chart1Data.y.push(points[i] || 0);
   }
@@ -162,8 +162,7 @@ app.get('/stats', (req, res) => {
     points[el.day-first] = el.time/60;
   });
   const chart2Data = { x: [], y: [] };
-  last = Math.floor(Date.now()/1000/60/60/24) - first;
-  for (let i = 0; i <= last; i++) {
+  for (let i = 0; i < last-first; i++) {
     chart2Data.x.push(i);
     chart2Data.y.push(points[i] || 0);
   }
@@ -171,14 +170,14 @@ app.get('/stats', (req, res) => {
   // Cards due per day
   points = [];
   first = null;
-  last = null;
+  let lastDay = null;
   db.prepare('select cast((due + ?)/(60*60*24) as integer) as day, count() from cards where interval != 0 group by day').all(offset/1000).forEach(el => {
     if (!first) first = el.day-1;
-    last = el.day-1 - first;
+    lastDay = el.day-1 - first;
     points[el.day-first] = el['count()'];
   });
   const chart3Data = { x: [], y: [] };
-  for (let i = 0; i <= last; i++) {
+  for (let i = 0; i < lastDay; i++) {
     chart3Data.x.push(i);
     chart3Data.y.push(points[i] || 0);
   }
@@ -190,9 +189,8 @@ app.get('/stats', (req, res) => {
     if (!first) first = el.day-1;
     points[el.day-first] = el['count()'];
   });
-  last = Math.floor(Date.now()/1000/60/60/24) - first;
   const chart4Data = { x: [], y: [] };
-  for (let i = 0; i <= last; i++) {
+  for (let i = 0; i < last-first; i++) {
     chart4Data.x.push(i);
     chart4Data.y.push(points[i] || 0);
   }
