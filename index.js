@@ -50,6 +50,8 @@ const startTime = Math.floor(Date.now() / 1000);
 // Cards with interval less than this are being learned
 const matureThreshold = 60 * 60 * 24 * 21;
 
+let timezoneOffset = (new Date().getTimezoneOffset()) * 60;
+
 // now is the current time, updated on receipt of each request
 let now = startTime;
 
@@ -94,6 +96,7 @@ function initRequest (req, res, next) {
     endOfDay = startOfDay + secPerDay;
     averageTimePerCard = getAverageTimePerCard();
     studyTimeToday = 0;
+    timezoneOffset = (new Date().getTimezoneOffset()) * 60;
   }
   next();
 }
@@ -107,8 +110,7 @@ app.get('/', (req, res) => {
   const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get()['due'];
   const timeToNextDue = tc.seconds(nextDue - now);
   const chart1Data = { x: [], y: [], type: 'bar' };
-  const offset = (new Date().getTimezoneOffset()) * 60;
-  const duePerHour = db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from cards where interval != 0 and due > ? and due < ? group by hour').all(offset,startOfDay, endOfDay)
+  const duePerHour = db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from cards where interval != 0 and due > ? and due < ? group by hour').all(timezoneOffset, startOfDay, endOfDay)
   .forEach(el => {
     chart1Data.x.push(el.hour);
     chart1Data.y.push(el['count()']);
@@ -138,13 +140,12 @@ app.get('/stats', (req, res) => {
 
   // The database timestamps are UTC but we want local days so must
   // add the local offset to determine which day a card was reviewed.
-  const offset = (new Date().getTimezoneOffset()) * 60 * 1000;
-  const last = Math.floor((Date.now() + offset)/1000/60/60/24);
+  const last = Math.floor((Date.now() + timezoneOffset*1000)/1000/60/60/24);
 
   // Cards studied per day
   let first;
   let points = [];
-  db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(offset).forEach(el => {
+  db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(timezoneOffset*1000).forEach(el => {
     if (!first) first = el.day-1;
     points[el.day-first] = el['count()'];
   });
@@ -157,7 +158,7 @@ app.get('/stats', (req, res) => {
   // Minutes studied per day
   points = [];
   first = null;
-  db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(offset).forEach(el => {
+  db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(timezoneOffset*1000).forEach(el => {
     if (!first) first = el.day-1;
     points[el.day-first] = el.time/60;
   });
@@ -171,7 +172,7 @@ app.get('/stats', (req, res) => {
   points = [];
   first = null;
   let lastDay = null;
-  db.prepare('select cast((due + ?)/(60*60*24) as integer) as day, count() from cards where interval != 0 group by day').all(offset/1000).forEach(el => {
+  db.prepare('select cast((due + ?)/(60*60*24) as integer) as day, count() from cards where interval != 0 group by day').all(timezoneOffset).forEach(el => {
     if (!first) first = el.day-1;
     lastDay = el.day-1 - first;
     points[el.day-first] = el['count()'];
@@ -185,7 +186,7 @@ app.get('/stats', (req, res) => {
   // New cards per day
   points = [];
   first = null;
-  db.prepare('select cast(((id + ?)/1000/60/60/24) as int) as day, count() from (select * from revlog group by cid) group by day').all(offset).forEach(el => {
+  db.prepare('select cast(((id + ?)/1000/60/60/24) as int) as day, count() from (select * from revlog group by cid) group by day').all(timezoneOffset*1000).forEach(el => {
     if (!first) first = el.day-1;
     points[el.day-first] = el['count()'];
   });
@@ -694,38 +695,49 @@ function dueAgain (card) {
 
 function dueHard (card) {
   if (!card.interval || card.interval === 0) return(now + 30);
-  return(now + Math.max(30, Math.floor((now - card.due + card.interval) * 0.5)));
+  const timeSinceLastSeen = now - card.due + card.interval;
+  let due = now + Math.max(30, Math.floor(timeSinceLastSeen * 0.5));
+  if ((due - now) > 60 * 60 * 24 * 5) {
+    due = new Date(due*1000).setHours(0,0,0,0).valueOf() / 1000;
+  }
+  return (due);
 }
 
 function dueGood (card) {
   if (!card.interval || card.interval === 0) return(now + 300);
-  return(
-    now +
+  const timeSinceLastSeen = now - card.due + card.interval;
+  let due = now +
     Math.min(
       secPerYear,
       Math.max(
         60,
         Math.floor(
-          (now - card.due + card.interval) * card.factor / 1000
+          timeSinceLastSeen * card.factor / 1000
             * (5 - Math.random())/ 5
         )
       )
-    )
-  );
+    );
+  if ((due - now) > 60 * 60 * 24 * 5) {
+    due = new Date(due*1000).setHours(0,0,0,0).valueOf() / 1000;
+  }
+  return (due);
 }
 
 function dueEasy (card) {
   if (!card.interval || card.interval === 0) return(now + secPerDay);
-  return(
-    now +
+  const timeSinceLastSeen = now - card.due + card.interval;
+  let due = now +
     Math.min(
       secPerYear,
       Math.max(
         secPerDay,
-        Math.floor((now - card.due + card.interval) * card.factor / 1000)
+        Math.floor(timeSinceLastSeen * card.factor / 1000)
       )
-    )
-  );
+    );
+  if ((due - now) > 60 * 60 * 24 * 5) {
+    due = new Date(due*1000).setHours(0,0,0,0).valueOf() / 1000;
+  }
+  return (due);
 }
 
 function logCard (card) {
