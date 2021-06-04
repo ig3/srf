@@ -185,13 +185,13 @@ app.get('/stats', (req, res) => {
   // New cards per day
   points = [];
   first = null;
-  db.prepare('select id/1000/60/60/24 as day, count() from (select * from revlog group by cid) group by day').all().forEach(el => {
+  db.prepare('select cast(((id + ?)/1000/60/60/24) as int) as day, count() from (select * from revlog group by cid) group by day').all(offset).forEach(el => {
     if (!first) first = el.day-1;
     points[el.day-first] = el['count()'];
   });
   const chart4Data = { x: [], y: [] };
   let totalNew = 0;
-  for (let i = 0; i < last-first; i++) {
+  for (let i = 0; i <= last-first; i++) {
     chart4Data.x.push(i);
     chart4Data.y.push(points[i] || 0);
     totalNew += points[i] || 0;
