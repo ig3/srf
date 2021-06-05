@@ -81,6 +81,9 @@ console.log('averageTimePerCard ', averageTimePerCard);
 let studyTimeToday = db.prepare('select sum(time) from revlog where id >= ?').get(startOfDay*1000)['sum(time)'] || 0;
 console.log('studyTimeToday ', studyTimeToday);
 
+// The number of cards buried
+let buried = '';
+
 // card is the current card. Updated when a new card is shown.
 let card;
 
@@ -569,7 +572,8 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
     formatDue(card.due - card.interval), // when card was last seen
     formatDue(card.due),  // when the card was due
     formatDue(due), // the new due date
-    factor // updated interval factor
+    factor, // updated interval factor
+    buried
   );
   const interval = due - now;
   const lastInterval = card.interval === 0 ? 0 : now - card.due + card.interval;
@@ -698,8 +702,9 @@ function getEstimatedTotalStudyTime () {
 function buryRelated (card) {
   // const related = db.prepare('select * from cards where nid = ? and ord > ? and due < ?').all(card.nid, card.ord, now + secPerDay);
   // console.log('related ', related);
-  db.prepare('update cards set mod = ?, due = ? where nid = ? and ord > ? and due < ?')
+  const info = db.prepare('update cards set mod = ?, due = ? where nid = ? and ord > ? and due < ?')
     .run(now, now + secPerDay, card.nid, card.ord, now + secPerDay);
+  buried = info.changes > 0 ? '(' + info.changes + ')' : '';
 }
 
 function dueAgain (card) {
