@@ -138,17 +138,17 @@ app.get('/stats', (req, res) => {
 
   const timeToNextDue = tc.seconds(nextDue - now);
 
+  const dayNumber = Math.floor((Date.now()+timezoneOffset*1000)/1000/60/60/24);
+
   // Cards studied per day
   let first;
-  let last;
   let points = [];
   db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(timezoneOffset*1000).forEach(el => {
     if (!first) first = el.day-1;
-    last = el.day - first;
-    points[last] = el['count()'];
+    points[el.day - first] = el['count()'];
   });
   const chart1Data = { x: [], y: [] };
-  for (let i = 0; i <= last; i++) {
+  for (let i = 0; i <= dayNumber - first; i++) {
     chart1Data.x.push(i);
     chart1Data.y.push(points[i] || 0);
   }
@@ -158,17 +158,17 @@ app.get('/stats', (req, res) => {
   first = null;
   db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(timezoneOffset*1000).forEach(el => {
     if (!first) first = el.day-1;
-    last = el.day - first;
-    points[last] = el.time/60;
+    points[el.day - first] = el.time/60;
   });
   const chart2Data = { x: [], y: [] };
-  for (let i = 0; i <=last; i++) {
+  for (let i = 0; i <= dayNumber - first; i++) {
     chart2Data.x.push(i);
     chart2Data.y.push(points[i] || 0);
   }
 
   // Cards due per day
   points = [];
+  let last;
   first = null;
   db.prepare('select cast((due + ?)/(60*60*24) as integer) as day, count() from cards where interval != 0 group by day').all(timezoneOffset).forEach(el => {
     if (!first) first = el.day-1;
@@ -187,7 +187,6 @@ app.get('/stats', (req, res) => {
     last = el.days;
     points[el.days] = el['count()'];
   });
-  console.log('last ', last);
   const chart4Data = { x: [], y: [] };
   for (let i = 0; i < last; i++) {
     chart4Data.x.push(i);
@@ -201,17 +200,16 @@ app.get('/stats', (req, res) => {
   first = null;
   db.prepare('select cast(((id + ?)/1000/60/60/24) as int) as day, count() from (select * from revlog group by cid) group by day').all(timezoneOffset*1000).forEach(el => {
     if (!first) first = el.day-1;
-    last = el.day - first;
-    points[last] = el['count()'];
+    points[el.day - first] = el['count()'];
   });
   const chart5Data = { x: [], y: [] };
   let totalNew = 0;
-  for (let i = 0; i <= last-first; i++) {
+  for (let i = 0; i <= dayNumber - first; i++) {
     chart5Data.x.push(i);
     chart5Data.y.push(points[i] || 0);
     totalNew += points[i] || 0;
   }
-  let newCardsPerDay = (last - first) > 0 ? totalNew / (last - first) : 0;
+  let newCardsPerDay = (dayNumber - first) > 0 ? totalNew / (dayNumber - first) : 0;
 
   res.render('stats', {
     dueCount: dueCount,
