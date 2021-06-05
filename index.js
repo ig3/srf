@@ -138,19 +138,17 @@ app.get('/stats', (req, res) => {
 
   const timeToNextDue = tc.seconds(nextDue - now);
 
-  // The database timestamps are UTC but we want local days so must
-  // add the local offset to determine which day a card was reviewed.
-  const last = Math.floor((Date.now() + timezoneOffset*1000)/1000/60/60/24);
-
   // Cards studied per day
   let first;
+  let last;
   let points = [];
   db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(timezoneOffset*1000).forEach(el => {
     if (!first) first = el.day-1;
-    points[el.day-first] = el['count()'];
+    last = el.day - first;
+    points[last] = el['count()'];
   });
   const chart1Data = { x: [], y: [] };
-  for (let i = 0; i <= last-first; i++) {
+  for (let i = 0; i <= last; i++) {
     chart1Data.x.push(i);
     chart1Data.y.push(points[i] || 0);
   }
@@ -160,10 +158,11 @@ app.get('/stats', (req, res) => {
   first = null;
   db.prepare('select cast((id + ?)/(1000*60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(timezoneOffset*1000).forEach(el => {
     if (!first) first = el.day-1;
-    points[el.day-first] = el.time/60;
+    last = el.day - first;
+    points[last] = el.time/60;
   });
   const chart2Data = { x: [], y: [] };
-  for (let i = 0; i < last-first; i++) {
+  for (let i = 0; i <=last; i++) {
     chart2Data.x.push(i);
     chart2Data.y.push(points[i] || 0);
   }
@@ -171,30 +170,45 @@ app.get('/stats', (req, res) => {
   // Cards due per day
   points = [];
   first = null;
-  let lastDay = null;
   db.prepare('select cast((due + ?)/(60*60*24) as integer) as day, count() from cards where interval != 0 group by day').all(timezoneOffset).forEach(el => {
     if (!first) first = el.day-1;
-    lastDay = el.day-1 - first;
-    points[el.day-first] = el['count()'];
+    last = el.day - first;
+    points[last] = el['count()'];
   });
   const chart3Data = { x: [], y: [] };
-  for (let i = 0; i < lastDay; i++) {
+  for (let i = 0; i <= last; i++) {
     chart3Data.x.push(i);
     chart3Data.y.push(points[i] || 0);
   }
+
+  // Cards per interval
+  points = [];
+  db.prepare('select interval/60/60/24 as days, count() from cards where interval != 0 group by days').all().forEach(el => {
+    last = el.days;
+    points[el.days] = el['count()'];
+  });
+  console.log('last ', last);
+  const chart4Data = { x: [], y: [] };
+  for (let i = 0; i < last; i++) {
+    chart4Data.x.push(i);
+    chart4Data.y.push(points[i] || 0);
+  }
+  const cardsSeen = db.prepare('select count() from cards where interval != 0').get()['count()'] || 0;
+  const matureCards = db.prepare('select count() from cards where interval > 364*24*60*60').get()['count()'] || 0;
 
   // New cards per day
   points = [];
   first = null;
   db.prepare('select cast(((id + ?)/1000/60/60/24) as int) as day, count() from (select * from revlog group by cid) group by day').all(timezoneOffset*1000).forEach(el => {
     if (!first) first = el.day-1;
-    points[el.day-first] = el['count()'];
+    last = el.day - first;
+    points[last] = el['count()'];
   });
-  const chart4Data = { x: [], y: [] };
+  const chart5Data = { x: [], y: [] };
   let totalNew = 0;
   for (let i = 0; i <= last-first; i++) {
-    chart4Data.x.push(i);
-    chart4Data.y.push(points[i] || 0);
+    chart5Data.x.push(i);
+    chart5Data.y.push(points[i] || 0);
     totalNew += points[i] || 0;
   }
   let newCardsPerDay = (last - first) > 0 ? totalNew / (last - first) : 0;
@@ -207,10 +221,13 @@ app.get('/stats', (req, res) => {
     estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
     averageTimePerCard: averageTimePerCard,
     newCardsPerDay: newCardsPerDay.toFixed(2),
+    cardsSeen: cardsSeen,
+    matureCards: matureCards,
     chart1Data: JSON.stringify(chart1Data),
     chart2Data: JSON.stringify(chart2Data),
     chart3Data: JSON.stringify(chart3Data),
-    chart4Data: JSON.stringify(chart4Data)
+    chart4Data: JSON.stringify(chart4Data),
+    chart5Data: JSON.stringify(chart5Data)
   });
 });
 
@@ -547,10 +564,10 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
   const dueTodayCount = getCountCardsDueToday();
   console.log(
     card.id,
-    Math.floor(studyTimeToday/60), // study time today (min)
     cardsViewedToday, // cards viewed today
+    Math.floor(studyTimeToday/60) + ' min', // study time today (min)
     dueTodayCount, // cards due today
-    tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
+    Math.floor(getEstimatedTotalStudyTime()/60) + ' min',
     formatDue(card.due - card.interval), // when card was last seen
     formatDue(card.due),  // when the card was due
     formatDue(due), // the new due date

@@ -1,6 +1,7 @@
 <h1><a href="/">Spaced Repetition Flashcards</a></h1>
 <div class="status">
-All done for now!</br>
+Cards seen: {{cardsSeen}}</br>
+Mature cards: {{matureCards}}</br>
 Study time today: {{studyTimeToday}} (hh:mm:ss.ssss)</br>
 Cards viewed today: {{cardsViewedToday}}</br>
 Cards due later today: {{dueCount}}</br>
@@ -16,8 +17,10 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
 <div id="chart2" style="width:600px;height:300px;"></div>
 <h3>Cards Due per day</h3>
 <div id="chart3" style="width:600px;height:300px;"></div>
-<h3>New Cards per day</h3>
+<h3>Cards per interval</h3>
 <div id="chart4" style="width:600px;height:300px;"></div>
+<h3>New Cards per day</h3>
+<div id="chart5" style="width:600px;height:300px;"></div>
 </div>
 <script src="https://cdn.plot.ly/plotly-latest.min.js" charset="utf-8"></script>
 <script>
@@ -50,6 +53,15 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
   let chart4 = document.getElementById('chart4');
   Plotly.newPlot(chart4,
     [ {{{chart4Data}}} ], {
+      margin: {t: 0},
+      yaxis: { title: 'cards' },
+      xaxis: { title: 'days' }
+    }
+  );
+
+  let chart5 = document.getElementById('chart5');
+  Plotly.newPlot(chart5,
+    [ {{{chart5Data}}} ], {
       margin: {t: 0},
       yaxis: { title: 'cards' },
       xaxis: { title: 'day#' }
