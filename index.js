@@ -554,9 +554,7 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
     formatDue(card.due - card.interval), // when card was last seen
     formatDue(card.due),  // when the card was due
     formatDue(due), // the new due date
-    factor, // updated interval factor
-    elapsed, // elapsed time studying this card
-    card.ord
+    factor // updated interval factor
   );
   const interval = due - now;
   const lastInterval = card.interval === 0 ? 0 : now - card.due + card.interval;
@@ -608,7 +606,7 @@ function formatDue (due) {
     if (day.length < 2) day = '0' + day;
     return([year, month, day].join('-'));
   } else if (interval < -3600) {
-    return('-' + Math.floor(-interval/3600) + ':' + Math.floor((-interval % 3600) / 60));
+    return('-' + (-interval/3600).toFixed(2) + ' hr');
   } else if (interval < -60) {
     return('-' + Math.floor(-interval/60) + ' min');
   } else if (interval < 0) {
@@ -618,7 +616,7 @@ function formatDue (due) {
   } else if (interval < 3600) {
     return(Math.floor(interval/60) + ' min');
   } else if (interval < 3600 * 24) {
-    return(Math.floor(interval/3600) + ':' + Math.floor((interval % 3600) / 60));
+    return((interval/3600).toFixed(2) + ' hr');
   } else {
     const d = new Date(due * 1000);
     let month = '' + (d.getMonth() + 1);
