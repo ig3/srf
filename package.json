@@ -22,6 +22,7 @@
     "handlebars": "^4.7.7",
     "multer": "^1.4.2",
     "mustache": "^4.2.0",
+    "serve-favicon": "^2.5.0",
     "timezonecomplete": "^5.12.4",
     "tzdata": "^1.0.25"
   },

@@ -3,21 +3,32 @@
 const tc = require('timezonecomplete');
 
 const express = require('express');
+const favicon = require('serve-favicon');
+const path = require('path');
 // Mustache works for the Anki templates - it allows spaces in the tag keys
 // I had first tried Handlebars but it doesn't allow spaces in the tag keys
 // Links to sound and images don't work - Anki uses a 'special' syntax
 // But, maybe I can write a 'helper'
 const Mustache = require('mustache');
 Mustache.escape = function (text) {
-  let x;
-  if (x = text.match(/\[sound:(.*)\]/)) {
-    return(
-      '<audio id="myaudio" autoplay controls src="' + x[1] + '"></audio></br>'
-    );
+//  console.log('text: ', text);
+  if (/\[sound:.*\]/.test(text)) {
+    const src = [];
+    for (const m of text.matchAll(/\[sound:(.*?)\]/g)) {
+      src.push(m[1]);
+    }
+    let result = '<audio id="myaudio" autoplay controls></audio></br>';
+    result += '<script>';
+    result += 'var audioFiles = ["' + src.join('","') + '"];';
+    result += '</script>';
+//    console.log('result: ', result);
+    return result;
+  } else {
+    return text;
   }
-  return(text);
 };
 const app = express();
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 const expressHandlebars = require('express-handlebars');
 app.engine('handlebars', expressHandlebars());
 app.set('view engine', 'handlebars');
@@ -241,7 +252,6 @@ app.get('/front', (req, res) => {
     note.fieldData.FrontSide = note.front;
     note.back = Mustache.render(note.template.back, note.fieldData);
     card.note = note;
-
     // logCard(card);
     res.render('front', note);
   } else {
@@ -318,6 +328,11 @@ app.post('/note/:id', (req, res) => {
   db.prepare('update notes set flds = ? where id = ?')
     .run(flds, req.params.id);
   res.send('ok');
+});
+
+app.use((req, res, next) => {
+  console.log('404 ', req.path);
+  res.status(404).send('Not found');
 });
 
 const server = app.listen(8000, () => {
