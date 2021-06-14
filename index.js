@@ -708,16 +708,20 @@ function getEstimatedTotalStudyTime () {
 }
 
 /**
- * For each note there may be several cards. This sets due for any of these
- * cards that are later in order to be at least a day later. Due is set on
- * unseen cards to ensure they are not selected as a new card too soon
- * after seeing a related card.
+ * For each note there may be several cards. To avoid seeing these related
+ * cards too close to each other, if a card later in the order than the
+ * current card is due in the next 5 days, push its due date out to 5 days
+ * from now.
  */
 function buryRelated (card) {
-  // const related = db.prepare('select * from cards where nid = ? and ord > ? and due < ?').all(card.nid, card.ord, now + secPerDay);
-  // console.log('related ', related);
   const info = db.prepare('update cards set mod = ?, due = ? where nid = ? and ord > ? and due < ?')
-    .run(now, now + secPerDay, card.nid, card.ord, now + secPerDay);
+    .run(
+      now, // modification time
+      now + secPerDay * 5, // new due
+      card.nid, // note ID
+      card.ord, // ord or current card
+      now + secPerDay * 5 // old due
+    );
   buried = info.changes > 0 ? '(' + info.changes + ')' : '';
 }
 
