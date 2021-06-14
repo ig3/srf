@@ -25,8 +25,5 @@
     "serve-favicon": "^2.5.0",
     "timezonecomplete": "^5.12.4",
     "tzdata": "^1.0.25"
-  },
-  "devDependencies": {
-    "eslint-entrain": "^1.0.4"
   }
 }

@@ -492,5 +492,59 @@ function parseCardRequirement (str) {
   return(value);
 }
 
-
-
+/**
+ * Fields:
+ * 08: sticky: int: Remember last input when adding flag
+ * ??: int: Reverse text direction flag
+ * 1a: font_name: string: len text
+ * 20: font_size: int: font size
+ * fa 0f: other:  string: len text - e.g. {"media":[]}
+ *
+ * Anki UI has nothing corresponding to 'other'. From
+ * rslib/src/notetype/schema11.rs, function other_to_bytes, it appers that
+ * the values is JSON text, which is consistent with what I have seen in a
+ * few examples.
+ *
+ * NoteFieldConfig {
+ *  sticky
+ *  rtl
+ *  font_name
+ *  font_size
+ *  other: vec![]
+ * }
+ *
+ * From rslib/backend.proto:
+ *
+ * message NoteFieldConfig {
+ *  bool sticky = 1;
+ *  bool rtl = 2;
+ *  string font_name = 3;
+ *  uint32 font_size = 4;
+ *  bytes other = 255;
+ * }
+ *
+ * I had noticed before that the 'id' byte that starts a field appears to
+ * be the field index << 3. 08 >> 3 = 1; 10 >> 3 = 2, 18 >> 3 = 3, etc.
+ *
+ * fa 0f, interpreted as an integer is 0000 1111 111 1100. Shift this right
+ * by 3 and one gets 1111 1111 = 0xff = 255, which is the value for other
+ * in the message. This is unlikely to be a coincidence.
+ *
+ * So, maybe the field marker, generally, is an integer, which can occupy
+ * more than one byte.
+ *
+ * These config parameters all seem to relate to the Anki UI: The font and
+ * size for displaying the field value, whether the value should be
+ * displayed right to left and whether the editor should clear the field
+ * before next input. The only one that's not certain is 'other', which is
+ * serialized crap nested within serialized crap.
+ *
+ * The elements of config other than 'other' could/should all be plain
+ * database fields.
+ *
+ * But, it seems there is little or no need for them in srf.
+ *
+ */
+function parseFieldsConfig (str) {
+  throw new Error('not implemented');
+}
