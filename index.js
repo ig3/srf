@@ -1,10 +1,18 @@
+#!/usr/local/bin/node
 'use strict';
 
 const tc = require('timezonecomplete');
 
 const express = require('express');
 const favicon = require('serve-favicon');
+const fs = require('fs');
 const path = require('path');
+
+const userDataDir = path.join(process.env.HOME, '.local', 'share');
+const databasePath = path.join(userDataDir, 'srf', 'srf.db');
+const mediaDir = path.join(userDataDir, 'srf', 'media');
+const publicDir = path.join(__dirname, 'public');
+
 // Mustache works for the Anki templates - it allows spaces in the tag keys
 // I had first tried Handlebars but it doesn't allow spaces in the tag keys
 // Links to sound and images don't work - Anki uses a 'special' syntax
@@ -31,13 +39,14 @@ const app = express();
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 const expressHandlebars = require('express-handlebars');
 app.engine('handlebars', expressHandlebars());
+app.set('views', __dirname + '/views');
 app.set('view engine', 'handlebars');
-app.use(express.static('public'));
-app.use(express.static('media'));
+app.use(express.static(publicDir));
+app.use(express.static(mediaDir));
 app.use(express.json());
 
 process.on('SIGINT', onExit);
-const db = require('better-sqlite3')('srf.db');
+const db = require('better-sqlite3')(databasePath);
 function onExit () {
   console.log('closing database connection');
   db.close();

@@ -76,6 +76,10 @@ $ node index.js
 
 The server listens on port 8000 by default.
 
+The database must be in ~/.local/share/srf/srf.db.
+
+Media files must bein in ~/.local/share/srf/media.
+
 The script `importdb.js` reads an Anki database and makes changes so that
 it will work with srf. There aren't many changes. Read the script for
 details. For my decks, I am then able to study cards without further
@@ -90,12 +94,12 @@ learning intervals are all under 1 hours, so no big loss being set back to
 which it reads, and the path of the srf database to produce, which it
 writes. You can try this script on your database and maybe it will suffice.
 
+Copy the imported database to: `~/.local/share/srf/srf.db`.
+
 I will probably write something to import a published Anki deck, but not
 yet.
 
-Copy all the Anki media to the media subdirectory. You will probably have
-to create it. I don't think git will create an empty directory and my media
-isn't (at least it shouldn't be) committed.
+Copy all the Anki media to the media subdirectory: `~/.local/share/srf/media`.
 
 ## Scheduling
 
