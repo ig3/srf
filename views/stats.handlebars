@@ -21,6 +21,8 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
 <div id="chart4" style="width:600px;height:300px;"></div>
 <h3>New Cards per day</h3>
 <div id="chart5" style="width:600px;height:300px;"></div>
+<h3>Matured &amp; Lapsed</h3>
+<div id="chart6" style="width:600px;height:300px;"></div>
 </div>
 <script src="https://cdn.plot.ly/plotly-latest.min.js" charset="utf-8"></script>
 <script>
@@ -65,6 +67,26 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
       margin: {t: 0},
       yaxis: { title: 'cards' },
       xaxis: { title: 'day#' }
+    }
+  );
+
+  let chart6 = document.getElementById('chart6');
+  Plotly.newPlot(chart6,
+    {{{chart6Data}}}, {
+      margin: {t: 0},
+      xaxis: { title: 'day#' },
+      yaxis: { title: 'cards' },
+      yaxis2: {
+        title: 'cumulative cards',
+        overlaying: 'y',
+        side: 'right',
+        anchor: 'free',
+        position: 1.0
+      },
+      legend: {
+        x: 0.1,
+        y: 1.0
+      }
     }
   );
 

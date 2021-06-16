@@ -319,9 +319,10 @@ ord: ordinal for sorting fields
 name: the field name
 config: not used in srf. 
 
-The config field holds a serialized data structure (rust/serde) that appear
-to relate to the Anki field content editor: sticky, rtl (right-to-left),
-font_name, font_size and 'other' for a JSON string, I think.
+The config field holds a serialized data structure (rust/serde) that
+appears to relate to the Anki field content editor: sticky, rtl
+(right-to-left), font_name, font_size and 'other' for a JSON string, I
+think.
 
 srf uses ntid, ord and name, at least until I add a card/note editor.
 
@@ -344,6 +345,41 @@ the single field.
  * flags - I guess notes can have flags too - probably legacy
  * data - always empty - probably legacy
 
+
+### notetypes
+
+ * id - primary key
+ * name - text name of notetype
+ * mtime_secs - modification time
+ * usn - ???
+ * config - serialized data structure
+
+Note types are identified by ID. Fields and notes are linked to this ID.
+
+mtime_secs is used in Anki sync, to find note types modified since last
+sync, presumably. I haven't looked into sync.
+
+usn is used in Anki sync.
+
+config - this is a rust/serde serialized data structure. See importdb.js
+
+config:
+ * kind: 0 - Normal, 1 - Cloze
+ * sort_field_idx: 
+ * css: the css for the notes
+ * target_deck_id: ???
+ * latex_pre
+ * latex_post
+ * latex_svg
+ * reqs: an array ???
+ * other: arbitrary JSON serialized data
+
+The css for the cards is here. This makes it common to all the templates
+related to the note type. In srf, the css is extracted and added to the
+templates table. In srf, each template has its own CSS.
+
+Anki has support for using LaTeX to format cards. The latex_\* fields relate
+to this.
 
 ### templates
 

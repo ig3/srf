@@ -232,8 +232,13 @@ function setNewOrder () {
 /**
  * In Anki, the HTML for front and back are serialized into a blob
  *
+ * In Anki, the CSS for the templates is in table notetypes. It is common
+ * to all the templates associated with a given note type. Here it is
+ * replicated to each template so that in srf each template has its own,
+ * independent CSS.
+ *
  * In srf the front and back templates and CSS are put into separate
- * fields.
+ * fields, rather than serialized into the config field.
  */
 function reviseTemplates () {
   const db = require('better-sqlite3')(dstFile);
@@ -325,6 +330,9 @@ function serdeGetInt (buf) {
 }
 
 
+/**
+ * getNoteType retuns details of the note type with the given ID.
+ */
 function getNoteType (ntid) {
   const db = require('better-sqlite3')(dstFile);
   const noteType = db.prepare('select * from notetypes where id = ?').get(ntid);
@@ -371,6 +379,23 @@ function getNoteType (ntid) {
  * }
  *
  * I don't know how that repeated CardRequirement would manifest.
+ *
+ * sort_field_idx is the index of the field by which cards are sorted in
+ * the Anki card browser.
+ *
+ * target_deck_id appears to be a default deck into which cards are added.
+ * I don't see a way to set this in the Anki UI. When adding a card, one
+ * selects the deck in the UI. Maybe this target_deck_id determines the
+ * default deck in the selector (I haven't traced the code that far) but
+ * either it is never set or doesn't have this effect: the default deck is
+ * the same no matter which card type I select. If it is 0, then no deck is
+ * selected. In at least one place, if this is 0 then the target deck is
+ * deck ID 1.
+ *
+ * CardRequirement appears to relate to fields. See
+ * rslib/src/notetype/mod.rs. It is set on all note types, but it isn't
+ * clear from a quick review of the code if or how or when it is used.
+ *
  */
 function parseNoteTypeConfig (buffer) {
   const value = {};
@@ -415,6 +440,7 @@ function parseNoteTypeConfig (buffer) {
       throw new Error('Unsupported field code ' + fieldCode + ' in notetype config ' + JSON.stringify(buf));
     }
   }
+  console.log('Note type config: ', value);
   return(value);
 }
 

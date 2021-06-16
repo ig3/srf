@@ -233,6 +233,55 @@ app.get('/stats', (req, res) => {
   }
   const newCardsPerDay = dayNumber >= first ? cardsSeen / (dayNumber - first + 1) : 0;
 
+  // Matured & Lapsed per day
+  points = [];
+  first = null;
+  db.prepare('select cast((id - ?)/(24*60*60*1000) as int) as day, count(case when ivl >= 60*60*24*364 and lastivl < 60*60*24*364 then 1 else null end) as matured, count(case when ivl < 60*60*24*364 and lastivl > 60*60*24*364 then 1 else null end) as lapsed from revlog group by day').all(timezoneOffset * 1000).forEach(el => {
+    if (!first) first = el.day;
+    points[el.day - first] = {
+      matured: el.matured,
+      lapsed: el.lapsed
+    };
+  });
+  const chart6Trace1 = {
+    x: [],
+    y: [],
+    mode: 'lines',
+    name: 'Matured'
+  };
+  const chart6Trace2 = {
+    x: [],
+    y: [],
+    mode: 'lines',
+    name: 'Lapsed'
+  };
+  const chart6Trace3 = {
+    x: [],
+    y: [],
+    mode: 'lines',
+    name: 'Net'
+  };
+  const chart6Trace4 = {
+    x: [],
+    y: [],
+    mode: 'lines',
+    name: 'Cumulative',
+    yaxis: 'y2'
+  };
+  let total = 0;
+  for (let i = 0; i <= dayNumber - first; i++) {
+    chart6Trace1.x.push(i);
+    chart6Trace1.y.push(points[i] ? points[i].matured : 0);
+    chart6Trace2.x.push(i);
+    chart6Trace2.y.push(points[i] ? points[i].lapsed : 0);
+    chart6Trace3.x.push(i);
+    chart6Trace3.y.push(points[i] ? points[i].matured - points[i].lapsed : 0);
+    total += points[i] ? points[i].matured - points[i].lapsed : 0;
+    chart6Trace4.x.push(i);
+    chart6Trace4.y.push(total);
+  }
+  const chart6Data = [ chart6Trace1, chart6Trace2, chart6Trace3, chart6Trace4 ];
+
   res.render('stats', {
     dueCount: dueCount,
     timeToNextDue: timeToNextDue.toFullString(),
@@ -247,7 +296,8 @@ app.get('/stats', (req, res) => {
     chart2Data: JSON.stringify(chart2Data),
     chart3Data: JSON.stringify(chart3Data),
     chart4Data: JSON.stringify(chart4Data),
-    chart5Data: JSON.stringify(chart5Data)
+    chart5Data: JSON.stringify(chart5Data),
+    chart6Data: JSON.stringify(chart6Data)
   });
 });
 
@@ -321,6 +371,12 @@ app.get('/note/:id', (req, res) => {
   const note = getNote(req.params.id);
   res.render('note', {
     note: note
+  });
+});
+
+app.get('/note', (req, res) => {
+  res.render('note', {
+    note: {}
   });
 });
 
@@ -421,6 +477,15 @@ function getTemplate (ntid, ord) {
   return (template);
 }
 
+/**
+ * parseNoteTypeConfig parses the config field on a notetypes record.
+ *
+ * In Anki, the config field is rust/serde serialized object.
+ *
+ * See importdb.js for more details and to maintain consistency of parsing.
+ *
+ *
+ */
 function parseNoteTypeConfig (str) {
   const config = {
     kind: 'Standard',
