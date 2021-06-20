@@ -142,8 +142,9 @@ app.get('/', (req, res) => {
     dueNow: dueNow,
     dueToday: dueToday,
     viewedToday: viewedToday,
+    totalToday: viewedToday + dueToday,
     timeToNextDue: timeToNextDue.toFullString().substr(0, 9),
-    estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
+    estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString().substring(0,5),
     chart1Data: JSON.stringify(chart1Data)
   });
 });

@@ -8,11 +8,12 @@
 </style>
 <h1>Spaced Repetition Flashcards</h1>
 <table>
-<tr><th>Cards due now:</th><td>{{dueNow}}</td></tr>
+<tr><th>Cards viewed today:</th><td>{{viewedToday}}</td></tr>
 <tr><th>Cards due today:</th><td>{{dueToday}}</td></tr>
-<tr><th>Cards viewed today::</th><td>{{viewedToday}}</td></tr>
-<tr><th>Next card due in:</th><td>{{timeToNextDue}}</td></tr>
+<tr><th>Total today:</th><td>{{totalToday}}</td></tr>
 <tr><th>Estimated Total Study Time:</th><td>{{estimatedTotalStudyTime}}</td></tr>
+<tr><th>Cards due now:</th><td>{{dueNow}}</td></tr>
+<tr><th>Next card due in:</th><td>{{timeToNextDue}}</td></tr>
 </table>
 {{#if dueNow}}
 <a href="/front" class="shortcut_s"><button>Study</button></a>
