@@ -74,17 +74,18 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
   Plotly.newPlot(chart6,
     {{{chart6Data}}}, {
       margin: {t: 0},
+      width: 700,
       xaxis: { title: 'day#' },
       yaxis: { title: 'cards' },
       yaxis2: {
-        title: 'cumulative cards',
+        title: 'cumulative',
         overlaying: 'y',
         side: 'right',
         anchor: 'free',
         position: 1.0
       },
       legend: {
-        x: 0.1,
+        x: 1.13,
         y: 1.0
       }
     }

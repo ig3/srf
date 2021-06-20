@@ -545,8 +545,9 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
   studyTimeToday += elapsed;
   const cardsViewedToday = getCountCardsViewedToday();
   const dueTodayCount = getCountCardsDueToday();
+  const time = new Date().toTimeString().substring(0,5);
   console.log(
-    card.id,
+    time,
     cardsViewedToday, // cards viewed today
     Math.floor(studyTimeToday / 60) + ' min', // study time today (min)
     dueTodayCount, // cards due today
