@@ -1,19 +1,30 @@
 <style>
-  th {
+  table {
+    border-spacing: 20px 0;
+  }
+  thead th {
+    text-align: right;
+  }
+  tbody th {
     text-align: left;
   }
-  td {
+  tbody td {
     text-align: right;
   }
 </style>
 <h1>Spaced Repetition Flashcards</h1>
 <table>
-<tr><th>Cards viewed today:</th><td>{{viewedToday}}</td></tr>
-<tr><th>Cards due today:</th><td>{{dueToday}}</td></tr>
-<tr><th>Total today:</th><td>{{totalToday}}</td></tr>
-<tr><th>Estimated Total Study Time:</th><td>{{estimatedTotalStudyTime}}</td></tr>
+<thead>
+<tr><th></th><th>Cards</th><th>Minutes</th></tr>
+</thead>
+<tbody>
+<tr><th>Viewed:</th><td>{{viewedToday}}</td><td>{{studyTimeToday}}</tr>
+<tr><th>Due:</th><td>{{dueToday}}</td><td>{{dueStudyTime}}</tr>
+<tr><th>Total:</th><td>{{totalToday}}</td><td>{{totalStudyTime}}</tr>
+<tr><td>&nbsp;</td></tr>
 <tr><th>Cards due now:</th><td>{{dueNow}}</td></tr>
 <tr><th>Next card due in:</th><td>{{timeToNextDue}}</td></tr>
+</tbody>
 </table>
 {{#if dueNow}}
 <a href="/front" class="shortcut_s"><button>Study</button></a>

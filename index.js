@@ -127,10 +127,11 @@ function initRequest (req, res, next) {
 app.use(initRequest);
 
 app.get('/', (req, res) => {
-  const dueNow = getCountCardsDueNow();
-  const dueToday = getCountCardsDueToday();
   const viewedToday = getCountCardsViewedToday();
+  const dueToday = getCountCardsDueToday();
+  const dueStudyTime = getEstimatedStudyTime(dueToday);
   const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get().due;
+  const dueNow = getCountCardsDueNow();
   const timeToNextDue = tc.seconds(nextDue - now);
   const chart1Data = { x: [], y: [], type: 'bar' };
   db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from cards where interval != 0 and due > ? and due < ? group by hour').all(timezoneOffset, startOfDay, endOfDay)
@@ -139,12 +140,14 @@ app.get('/', (req, res) => {
     chart1Data.y.push(el['count()']);
   });
   res.render('home', {
-    dueNow: dueNow,
-    dueToday: dueToday,
     viewedToday: viewedToday,
+    studyTimeToday: Math.floor(studyTimeToday/60),
+    dueToday: dueToday,
+    dueStudyTime: Math.floor(dueStudyTime/60),
     totalToday: viewedToday + dueToday,
+    totalStudyTime: Math.floor((studyTimeToday + dueStudyTime)/60),
+    dueNow: dueNow,
     timeToNextDue: timeToNextDue.toFullString().substr(0, 9),
-    estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString().substring(0,5),
     chart1Data: JSON.stringify(chart1Data)
   });
 });
@@ -670,7 +673,7 @@ function getDueCard () {
 
 function getEstimatedTotalStudyTime () {
   const dueTodayCount = getCountCardsDueToday();
-  const dueStudyTime = Math.floor(dueTodayCount * averageTimePerCard);
+  const dueStudyTime = getEstimatedStudyTime(dueTodayCount);
   const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
   // console.log('Estimated total study time: ',
   //  tc.seconds(estimatedTotalStudyTime).toFullString());
@@ -767,4 +770,8 @@ function getCountCardsDueNow () {
 
 function getCountCardsViewedToday () {
   return (db.prepare('select count() from revlog where id >= ?').get(startOfDay * 1000)['count()']);
+}
+
+function getEstimatedStudyTime (count) {
+  return Math.floor(count * averageTimePerCard);
 }
