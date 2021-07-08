@@ -339,7 +339,7 @@ app.get('/again', (req, res) => {
 
 app.get('/hard', (req, res) => {
   if (card) {
-    const factor = Math.max(1200, card.factor - 50);
+    const factor = Math.floor(Math.max(1200, card.factor - 50));
     const due = dueHard(card);
     updateSeenCard(card, 2, factor, due);
   }
@@ -348,7 +348,7 @@ app.get('/hard', (req, res) => {
 
 app.get('/good', (req, res) => {
   if (card) {
-    const factor = Math.max(1200, Math.min(10000, card.factor + 50));
+    const factor = Math.floor(Math.max(1200, Math.min(10000, card.factor + 50)));
     const due = dueGood(card);
     updateSeenCard(card, 3, factor, due);
   }
@@ -357,7 +357,7 @@ app.get('/good', (req, res) => {
 
 app.get('/easy', (req, res) => {
   if (card) {
-    const factor = Math.min(10000, card.factor + 200);
+    const factor = Math.floor(Math.min(10000, card.factor + 200));
     const due = dueEasy(card);
     updateSeenCard(card, 4, factor, due);
   }
