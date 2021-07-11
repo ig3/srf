@@ -739,8 +739,11 @@ function dueEasy (card) {
     Math.min(
       secPerYear,
       Math.max(
-        secPerDay,
-        Math.floor(timeSinceLastSeen * card.factor / 1000)
+        secPerDay * 7,
+        Math.floor(
+          timeSinceLastSeen * card.factor / 1000 *
+            (5 - Math.random()) / 5
+        )
       )
     );
   if ((due - now) > 60 * 60 * 24 * 5) {
