@@ -330,7 +330,7 @@ app.get('/back', (req, res) => {
 
 app.get('/again', (req, res) => {
   if (card) {
-    const factor = Math.floor(2000 * (1 + 2 * card.interval / secPerYear));
+    const factor = Math.floor(1000 * (1 + 9 * card.interval / secPerYear));
     const due = dueAgain(card);
     updateSeenCard(card, 1, factor, due);
   }
