@@ -1,17 +1,22 @@
 #!/usr/local/bin/node
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+const userDataDir = path.join(process.env.HOME, '.local', 'share');
+console.log('userDataDir: ', userDataDir);
+
+const config = getConfig();
+
+const databasePath = path.join(userDataDir, 'srf', 'srf.db');
+const mediaDir = path.join(userDataDir, 'srf', 'media');
+const publicDir = path.join(__dirname, 'public');
+
 const tc = require('timezonecomplete');
 
 const express = require('express');
 const favicon = require('serve-favicon');
-const fs = require('fs');
-const path = require('path');
 
-const userDataDir = path.join(process.env.HOME, '.local', 'share');
-const databasePath = path.join(userDataDir, 'srf', 'srf.db');
-const mediaDir = path.join(userDataDir, 'srf', 'media');
-const publicDir = path.join(__dirname, 'public');
 
 // Mustache works for the Anki templates - it allows spaces in the tag keys
 // I had first tried Handlebars but it doesn't allow spaces in the tag keys
@@ -330,7 +335,13 @@ app.get('/back', (req, res) => {
 
 app.get('/again', (req, res) => {
   if (card) {
-    const factor = Math.floor(1000 * (1 + 9 * card.interval / secPerYear));
+    const factor = Math.floor(
+      Math.max(
+        config.againMinFactor,
+        config.maxFactor *
+          (1 - Math.exp(-card.interval/config.againIntervalSensitivity))
+      )
+    );
     const due = dueAgain(card);
     updateSeenCard(card, 1, factor, due);
   }
@@ -339,7 +350,9 @@ app.get('/again', (req, res) => {
 
 app.get('/hard', (req, res) => {
   if (card) {
-    const factor = Math.floor(Math.max(1200, card.factor - 50));
+    const factor = Math.floor(
+      Math.max(config.hardMinFactor, card.factor + config.hardFactorAdjust)
+    );
     const due = dueHard(card);
     updateSeenCard(card, 2, factor, due);
   }
@@ -348,7 +361,15 @@ app.get('/hard', (req, res) => {
 
 app.get('/good', (req, res) => {
   if (card) {
-    const factor = Math.floor(Math.max(1200, Math.min(10000, card.factor + 50)));
+    const factor = Math.floor(
+      Math.max(
+        config.goodMinFactor,
+        Math.min(
+          config.maxFactor,
+          card.factor + config.goodFactorAdjust
+        )
+      )
+    );
     const due = dueGood(card);
     updateSeenCard(card, 3, factor, due);
   }
@@ -357,7 +378,9 @@ app.get('/good', (req, res) => {
 
 app.get('/easy', (req, res) => {
   if (card) {
-    const factor = Math.floor(Math.min(10000, card.factor + 200));
+    const factor = Math.floor(
+      Math.min(config.easyMinFactor, card.factor + config.easyFactorAdjust)
+    );
     const due = dueEasy(card);
     updateSeenCard(card, 4, factor, due);
   }
@@ -699,14 +722,18 @@ function buryRelated (card) {
 }
 
 function dueAgain (card) {
-  return (now + 10);
+  return (now + config.againInterval);
 }
 
 function dueHard (card) {
-  if (!card.interval || card.interval === 0) return (now + 30);
+  if (!card.interval || card.interval === 0)
+    return (now + config.hardMinInterval);
   const timeSinceLastSeen = now - card.due + card.interval;
-  let due = now + Math.max(30, Math.floor(timeSinceLastSeen * 0.5));
-  if ((due - now) > 60 * 60 * 24 * 5) {
+  let due = now + Math.max(
+    config.hardMinInterval,
+    Math.floor(timeSinceLastSeen * config.hardIntervalFactor)
+  );
+  if ((due - now) > config.dueTimeRoundingThreshold) {
     due = new Date(due * 1000).setHours(0, 0, 0, 0).valueOf() / 1000;
   }
   return (due);
@@ -719,14 +746,15 @@ function dueGood (card) {
     Math.min(
       secPerYear,
       Math.max(
-        60,
+        config.goodMinInterval,
         Math.floor(
           timeSinceLastSeen * card.factor / 1000 *
-            (5 - Math.random()) / 5
+            (config.intervalRandomFactor - Math.random()) /
+              config.intervalRandomFactor
         )
       )
     );
-  if ((due - now) > 60 * 60 * 24 * 5) {
+  if ((due - now) > config.dueTimeRoundingThreshold) {
     due = new Date(due * 1000).setHours(0, 0, 0, 0).valueOf() / 1000;
   }
   return (due);
@@ -739,14 +767,15 @@ function dueEasy (card) {
     Math.min(
       secPerYear,
       Math.max(
-        secPerDay * 7,
+        config.easyMinInterval,
         Math.floor(
           timeSinceLastSeen * card.factor / 1000 *
-            (5 - Math.random()) / 5
+            (config.intervalRandomFactor - Math.random()) /
+              config.intervalRandomFactor
         )
       )
     );
-  if ((due - now) > 60 * 60 * 24 * 5) {
+  if ((due - now) > config.dueTimeRoundingFactor) {
     due = new Date(due * 1000).setHours(0, 0, 0, 0).valueOf() / 1000;
   }
   return (due);
@@ -777,4 +806,64 @@ function getCountCardsViewedToday () {
 
 function getEstimatedStudyTime (count) {
   return Math.floor(count * averageTimePerCard);
+}
+
+function getConfig () {
+  const defaults = {
+    // The maximum value factor may take.
+    maxFactor: 10000,
+    // The interval beyond which due times are rounded to the start of the
+    // day, in seconds.
+    dueTimeRoundingThreshold: 60 * 60 * 24 * 5,
+    // The factor for randomizing intervals when good or easy are selected.
+    intervalRandomFactor: 5,
+
+    // again
+    // The interval when again is selected, in seconds.
+    againInterval: 10,
+    // The minimum factor when again is selected.
+    againMinFactor: 1500,
+    // The sensitivity of factor to previous interval when again is selected.
+    // The time constant of exponential decay towards maxFactor, in seconds.
+    againIntervalSensitivity: 60*60*24*21,
+
+    // hard
+    // The minimum interval when hard is selected, in seconds.
+    hardMinInterval: 30,
+    // The factor for adjusting interval when hard is selected.
+    hardIntervalFactor: 0.5,
+    // The minimum factor when hard is selected.
+    hardMinFactor: 1500,
+    // The change of factor when hard is selected.
+    hardFactorAdjust: -50,
+
+    // good
+    // The minimum interval when good is selected, in seconds.
+    goodMinInterval: 60,
+    // The minimum factor when good is selected.
+    goodMinFactor: 1100,
+    // The change of factor when good is selected.
+    goodFactorAdjust: 50,
+
+    // easy
+    // The minimum interval when easy is selected, in seconds.
+    easyMinInterval: 60 * 60 * 24 * 7,
+    // The minimum factor when easy is selected.
+    easyMinFactor: 4000,
+    // The change of factor when easy is selected.
+    easyFactorAdjust: 200
+  };
+  try {
+    const configFilePath = path.join(userDataDir, 'srf', 'config');
+    const data = fs.readFileSync(configFilePath, 'utf8');
+    console.log('load config: ', data);
+    const JSON5 = require('json5');
+    const config = JSON5.parse(data);
+    return({
+      ...defaults,
+      ...config
+    });
+  } catch (e) {
+    return(defaults);
+  }
 }

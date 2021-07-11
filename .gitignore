@@ -11,3 +11,4 @@ media/
 .npmrc
 *.anki2
 *.srf
+config

@@ -1,0 +1,44 @@
+{
+    // The maximum value factor may take.
+    maxFactor: 10000,
+    // The interval beyond which due times are rounded to the start of the
+    // day, in seconds.
+    dueTimeRoundingThreshold: 432000, // 5 days
+    // The factor for randomizing intervals when good or easy are selected.
+    intervalRandomFactor: 5,
+
+    // again
+    // The interval when again is selected, in seconds.
+    againInterval: 10,
+    // The minimum factor when again is selected.
+    againMinFactor: 1200,
+    // The sensitivity of factor to previous interval when again is selected.
+    // The time constant of exponential decay towards maxFactor, in seconds.
+    againIntervalSensitivity: 1814400, // 21 days
+
+    // hard
+    // The minimum interval when hard is selected, in seconds.
+    hardMinInterval: 30,
+    // The factor for adjusting interval when hard is selected.
+    hardIntervalFactor: 0.5,
+    // The minimum factor when hard is selected.
+    hardMinFactor: 1200,
+    // The change of factor when hard is selected.
+    hardFactorAdjust: -50,
+
+    // good
+    // The minimum interval when good is selected, in seconds.
+    goodMinInterval: 60,
+    // The minimum factor when good is selected.
+    goodMinFactor: 2000,
+    // The change of factor when good is selected.
+    goodFactorAdjust: 50,
+
+    // easy
+    // The minimum interval when easy is selected, in seconds.
+    easyMinInterval: 432000, // 5 days
+    // The minimum factor when easy is selected.
+    easyMinFactor: 4000,
+    // The change of factor when easy is selected.
+    easyFactorAdjust: 200
+}
