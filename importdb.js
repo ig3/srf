@@ -94,11 +94,41 @@ function lowercaseTableNames () {
  */
 function addColumns () {
   const db = require('better-sqlite3')(dstFile);
-  db.prepare("alter table cards add column new_order integer not null default 0").run();
-  db.prepare("alter table templates add column front text not null default ''").run();
-  db.prepare("alter table templates add column back text not null default ''").run();
-  db.prepare("alter table templates add column css text not null default ''").run();
-  db.prepare("alter table revlog add column lapses integer not null default 0").run();
+  try {
+    db.prepare("alter table cards add column new_order integer not null default 0").run();
+  } catch (e) {
+    if (e.toString() !== 'SqliteError: duplicate column name: new_order') {
+      throw e;
+    }
+  }
+  try {
+    db.prepare("alter table templates add column front text not null default ''").run();
+  } catch (e) {
+    if (e.toString() !== 'SqliteError: duplicate column name: front') {
+      throw e;
+    }
+  }
+  try {
+    db.prepare("alter table templates add column back text not null default ''").run();
+  } catch (e) {
+    if (e.toString() !== 'SqliteError: duplicate column name: back') {
+      throw e;
+    }
+  }
+  try {
+    db.prepare("alter table templates add column css text not null default ''").run();
+  } catch (e) {
+    if (e.toString() !== 'SqliteError: duplicate column name: css') {
+      throw e;
+    }
+  }
+  try {
+    db.prepare("alter table revlog add column lapses integer not null default 0").run();
+  } catch (e) {
+    if (e.toString() !== 'SqliteError: duplicate column name: lapses') {
+      throw e;
+    }
+  }
   db.close();
 }
 
@@ -110,7 +140,14 @@ function addColumns () {
  */
 function renameColumns () {
   const db = require('better-sqlite3')(dstFile);
-  db.prepare("alter table cards rename column ivl to interval").run();
+  try {
+    db.prepare("alter table cards rename column ivl to interval").run();
+  } catch (e) {
+    if (e.toString() !== 'SqliteError: no such column: "ivl"') {
+      console.log('error: ' + e);
+      throw e;
+    }
+  }
   db.close();
 }
 
@@ -147,18 +184,11 @@ function fixDue () {
       //db2.prepare('update cards set ord = ?, due = 0 where id = ?')
       //  .run(card.due + card.ord, card.id);
     } else if  (card.queue === 1) { // (re)learn
-      // Due is epoch seconds interval is ???
-      // left is used to index into the list of delays
-      // Some people have very long steps in learning
-      // but mine are no more than an hour
-      let due = card.due;
-      // I have seen a few strange due values
-      // Probably because I don't understand the database conents
-      // Make sure due isn't more than a year in the future.
-      if (due > dueLimit) due = dueLimit;
-      const interval = 60;
-      db2.prepare('update cards set interval = ?, due = ? where id = ?')
-        .run(interval, due, card.id);
+      // due is epoch seconds. Limit it to dueLimit.
+      // interval is an index into the learning steps. Set it to 60.
+      // Move to queue 2: all cards are review cards in srf
+      db2.prepare('update cards set queue = ?, interval = ?, due = ? where id = ?')
+        .run(2, 60, Math.min(dueLimit, card.due), card.id);
     } else if (
       card.queue === -3 || // manually buried
       card.queue === -2 || // sibling buried
@@ -166,14 +196,14 @@ function fixDue () {
       card.queue === 2 ||  // review queue
       card.queue === 3 // day (re)learn
     ) {
-      // due is a day with crt being day 0
-      let due = crt + card.due * 60 * 60 * 24;
-      console.log('due  ', due, new Date(due*1000).toString());
-      if (due > dueLimit) due = dueLimit;
-      // interval is a number of days.
-      const interval = card.interval * 60 * 60 * 24;
-      db2.prepare('update cards set interval = ?, due = ? where id = ?')
-        .run(interval, due, card.id);
+      if (card.due < crt) {
+        // due is a day with crt being day 0
+        const due = Math.min(dueLimit, crt + card.due * 60 * 60 * 24);
+        // interval is a number of days.
+        const interval = card.interval * 60 * 60 * 24;
+        db2.prepare('update cards set queue = ?, interval = ?, due = ? where id = ?')
+          .run(2, interval, due, card.id);
+      }
     } else {
       console.log('Unsupported queue ', card.queue);
     }
@@ -225,7 +255,7 @@ update revlog set
  */
 function setNewOrder () {
   const db = require('better-sqlite3')(dstFile);
-  db.prepare('update cards set new_order = due where queue = 0').run();
+  db.prepare('update cards set queue = 2, new_order = due where queue = 0 and new_order = 0').run();
   db.close();
 }
 
@@ -245,19 +275,21 @@ function reviseTemplates () {
   const templates = db.prepare('select * from templates');
 
   for (const template of templates.iterate()) {
-    const configString = template.config.toString('binary');
-    const config = parseTemplateConfig(template.config);
-    const noteType = getNoteType(template.ntid);
-    const db = require('better-sqlite3')(dstFile);
-    db.prepare("update templates set front = ?, back = ?, css = ? where ntid = ? and ord = ?")
-      .run(
-        config.front,
-        config.back,
-        noteType.config.css,
-        template.ntid,
-        template.ord
-      );
-    db.close();
+    if (!template.front) {
+      const configString = template.config.toString('binary');
+      const config = parseTemplateConfig(template.config);
+      const noteType = getNoteType(template.ntid);
+      const db = require('better-sqlite3')(dstFile);
+      db.prepare("update templates set front = ?, back = ?, css = ? where ntid = ? and ord = ?")
+        .run(
+          config.front,
+          config.back,
+          noteType.config.css,
+          template.ntid,
+          template.ord
+        );
+      db.close();
+    }
   }
   db.close();
 }
