@@ -317,7 +317,7 @@ user. Each template has a front and a back layout (the 'flashcard').
  * ord - order among cards linked to same note
  * mod - card modification time
  * usn - something to do with syncing in Anki
- * type - ???
+ * type - 0: New, 1: Learn, 2: Review, 3: Relearn
  * queue - the Anki queue
  * due - when the card is due seconds since epoch or day number
  * ivl - (renamed to interval) the interval between views
@@ -378,6 +378,29 @@ The config field holds a serialized data structure (rust/serde) that
 appears to relate to the Anki field content editor: sticky, rtl
 (right-to-left), font_name, font_size and 'other' for a JSON string, I
 think.
+
+From rslib/backend.proto:
+
+```
+message NoteFieldConfig {
+    bool sticky = 1;
+    bool rtl = 2;
+    string font_name = 3;
+    uint32 font_size = 4;
+
+    bytes other = 255;
+}
+```
+
+If sticky is true, then the input is not cleared on save when entering
+notes. Default is false.
+
+If rtl is true then the field text is right-to-left. Default is false.
+
+Font name and size are for the Anki note editor. This doesn't affect
+display of the note/cards. Default is Arial, 20.
+
+Other is unknown. All I see is `{"media":[]}`.
 
 srf uses ntid, ord and name, at least until I add a card/note editor.
 

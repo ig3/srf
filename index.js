@@ -16,6 +16,7 @@ const tc = require('timezonecomplete');
 
 const express = require('express');
 const favicon = require('serve-favicon');
+const { v4: uuidv4 } = require('uuid');
 
 
 // Mustache works for the Anki templates - it allows spaces in the tag keys
@@ -43,6 +44,9 @@ Mustache.escape = function (text) {
 const app = express();
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 const expressHandlebars = require('express-handlebars');
+const hbsFormHelper = require('handlebars-form-helper');
+const hbs = expressHandlebars.create({});
+hbsFormHelper.registerHelpers(hbs.handlebars, { namespace: 'form' });
 app.engine('handlebars', expressHandlebars());
 app.set('views', __dirname + '/views');
 app.set('view engine', 'handlebars');
@@ -396,28 +400,82 @@ app.get('/notes', (req, res) => {
 
 app.get('/note/:id', (req, res) => {
   const note = getNote(req.params.id);
+  note.noteTypes = getNoteTypes();
+  console.log('note: ', note);
   res.render('note', {
     note: note
   });
 });
 
 app.get('/note', (req, res) => {
+  const note = {
+    id: 'new',
+    guid: '',
+    mid: '',
+    noteType: {
+      id: 0,
+      name: ''
+    }
+  };
+  note.noteTypes = getNoteTypes();
+  note.mid = Object.keys(note.noteTypes)[0];
+  note.noteType = getNoteType(note.mid);
+  note.fieldData = {};
+  note.noteType.fields.forEach(field => {
+    note.fieldData[field] = '';
+  });
+  console.log('note: ', note);
+  console.log('about to render');
   res.render('note', {
-    note: {}
+    note: note
   });
 });
 
 app.post('/note/:id', (req, res) => {
   console.log('save note ' + req.params.id);
-  const note = getNote(req.params.id);
-  console.log('note ', note);
-  console.log('body ', req.body);
-  const flds = note.fields.map(field => req.body[field])
-  .join(String.fromCharCode(0x1f));
-  console.log('flds ', flds);
-  db.prepare('update notes set flds = ? where id = ?')
-  .run(flds, req.params.id);
-  res.send('ok');
+  if (req.params.id === 'new') {
+    console.log('new note');
+    console.log('body ', req.body);
+    const flds = Object.keys(req.body.fields)
+      .map(field => req.body.fields[field]||'')
+      .join(String.fromCharCode(0x1f));
+    console.log('flds ', flds);
+    const sfield = req.body.fields[Object.keys(req.body.fields)[0]];
+    console.log('sfield: ', sfield);
+    const info = db.prepare('insert into notes (guid, mid, mod, usn, flds, sfld, tags, csum, flags, data) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    .run(
+      uuidv4(),
+      req.body.noteTypeId,
+      Math.floor(Date.now()/1000),
+      -1,
+      flds,
+      sfield,
+      '',
+      '',
+      '',
+      ''
+    );
+    console.log('insert info: ', info);
+    const noteId = info.lastInsertRowid;
+    createCards(noteId, req.body.noteTypeId);
+    res.send('ok');
+  } else {
+    const note = getNote(req.params.id);
+    console.log('note ', note);
+    console.log('body ', req.body);
+    const flds = note.fields.map(field => req.body.fields[field])
+    .join(String.fromCharCode(0x1f));
+    console.log('flds ', flds);
+    db.prepare('update notes set flds = ? where id = ?')
+    .run(flds, req.params.id);
+    res.send('ok');
+  }
+});
+
+app.get('/rest/notetype/:id', (req, res) => {
+  const noteType = getNoteType(req.params.id);
+  console.log('noteType: ', noteType);
+  res.send(noteType);
 });
 
 app.use((req, res, next) => {
@@ -465,15 +523,12 @@ function getNote (nid) {
     return;
   }
   const noteTypeID = note.mid;
-  const noteType = db.prepare('select * from notetypes where id = ?').get(noteTypeID);
-  if (!noteType) {
+  note.noteType = db.prepare('select * from notetypes where id = ?').get(noteTypeID);
+  if (!note.noteType) {
     console.log('No notetypes for note ', note.id);
     return;
   }
-  note.noteType = parseNoteTypeConfig(noteType.config.toString('binary'));
-  note.noteType.id = noteType.id;
-  note.noteType.name = noteType.name;
-  const fields = db.prepare('select * from fields where ntid = ?').all(noteTypeID);
+  const fields = db.prepare('select name, ord from fields where ntid = ? order by ord').all(noteTypeID);
   if (!fields) {
     console.log('No fields for note ', note.id);
   }
@@ -483,15 +538,42 @@ function getNote (nid) {
   note.fieldData = {};
   note.fields = [];
   fields
-  .sort((a, b) => {
-    return a.ord - b.ord;
-  })
   .forEach(field => {
     note.fieldData[field.name] = tmpFieldValues[field.ord];
     note.fields.push(field.name);
   });
 
   return (note);
+}
+
+/*
+ * Get all note types
+ */
+function getNoteTypes () {
+  const results = db.prepare('select id, name from notetypes').all();
+  const noteTypes = {};
+  results.forEach(result => {
+    noteTypes[result.id] = result.name;
+  });
+  return (noteTypes);
+}
+
+/**
+ * getNoteType returns details of the note type with the given ID
+ */
+function getNoteType (id) {
+  const noteTypeName = db.prepare('select name from notetypes where id = ?').get(id)['name'];
+  console.log('noteTypeName: ', noteTypeName);
+  const fields = db.prepare('select name from fields where ntid = ? order by ord').all(id).map(field => field.name);
+  if (!fields) {
+    console.log('No fields for note type id ', id);
+  }
+  console.log('fields: ', fields);
+  return({
+    id: id,
+    name: noteTypeName,
+    fields: fields
+  });
 }
 
 function getTemplate (ntid, ord) {
@@ -502,59 +584,6 @@ function getTemplate (ntid, ord) {
     return;
   }
   return (template);
-}
-
-/**
- * parseNoteTypeConfig parses the config field on a notetypes record.
- *
- * In Anki, the config field is rust/serde serialized object.
- *
- * See importdb.js for more details and to maintain consistency of parsing.
- *
- *
- */
-function parseNoteTypeConfig (str) {
-  const config = {
-    kind: 'Standard',
-    sortFieldIndex: 0,
-    css: ''
-  };
-
-  let pos = 0;
-  while (true) {
-    const fieldCode = str.charCodeAt(pos);
-    if (fieldCode === 0x08) {
-      // Scan type: 0 - Standard, 1 - Cloze
-      // But, 0 will never be present
-      if (str.charCodeAt(pos + 1) !== 0x01) {
-        console.log('Unexpected value for Kind');
-      } else {
-        config.kind = 'Cloze';
-      }
-      pos += 2;
-    } else if (fieldCode === 0x10) {
-      // Assuming the index will not be more than 128
-      config.sortFieldIndex = str.charCodeAt(pos + 1);
-      pos += 2;
-    } else if (fieldCode === 0x1a) {
-      pos += 1;
-      let len = 0;
-      let n = 0;
-      while (str.charCodeAt(pos) > 0x7f) {
-        len = len | ((str.charCodeAt(pos) & 0x7f) << (n * 7));
-        pos = pos + 1;
-        n = n + 1;
-      }
-      len = len | ((str.charCodeAt(pos) & 0x7f) << (n * 7));
-      pos = pos + 1;
-      config.css = str.substr(pos, len);
-      return (config);
-    } else if (fieldCode === 0x20) {
-      throw new Error('Passed css');
-    } else {
-      throw new Error('Something else');
-    }
-  }
 }
 
 function updateSeenCard (card, ease, factor, due) {
@@ -866,4 +895,41 @@ function getConfig () {
   } catch (e) {
     return(defaults);
   }
+}
+
+/**
+ * createCards creates a set of cards for the note with the given ID
+ */
+function createCards (noteId, noteTypeId) {
+  console.log('createCards ', noteId, noteTypeId);
+  const noteType = getNoteType(noteTypeId);
+  console.log('noteType: ', noteType);
+  const templates = db.prepare('select ord, name, front, back, css from templates where ntid = ?').all(noteTypeId);
+  console.log('templates: ', templates);
+
+  templates.forEach(template => {
+    const ord = template.ord;
+    const info = db.prepare('insert into cards (nid, did, ord, mod, usn, type, queue, due, interval, factor, reps, lapses, left, odue, odid, flags, data, new_order) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    .run(
+      noteId,
+      0,
+      ord,
+      Math.floor(Date.now()/1000),
+      -1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      '',
+      0
+    );
+    console.log('insert info: ', info);
+  });
 }

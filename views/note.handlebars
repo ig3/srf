@@ -12,10 +12,11 @@
 <tr><th>ID</th><td>{{note.id}}</td></tr>
 <tr><th>GUID</th><td>{{note.guid}}</td></tr>
 <tr><th>ntid/name</th><td>{{note.mid}}/{{note.noteType.name}}</td></tr>
+<tr><th>Note Type</th><td>{{form-select 'noteType' note.noteTypes note.noteType.id}}</td></tr>
 </table>
 
 <h2>Fields</h2>
-<table>
+<table id="table-fields">
 {{#each note.fieldData}}
 <tr><th>{{@key}}</th><td><input type="text" id="{{@key}}" value="{{this}}"/></td></tr>
 {{/each}}
@@ -23,11 +24,38 @@
 <button onclick="save()">Save</button>
 <button onclick="cancel()">Cancel</button>
 <script>
+  document
+  .getElementById('field-noteType')
+  .addEventListener('change', e => {
+    document
+    .getElementById('table-fields')
+    .innerHTML = '';
+    fetch('/rest/notetype/' + e.target.value)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('get notetype failed ' + response.statusText);
+      }
+      return response.json();
+    })
+    .then(data => {
+      data.fields.forEach(field => {
+        const row = document.getElementById('table-fields').insertRow();
+        row.innerHTML = '<th>' + field + '</th><td><input type="text" id="'
+        + field + '"/></td>';
+      });
+    })
+    .catch(err => {
+      alert('get notetype failed with ' + err);
+    });
+  });
   function save() {
-    const data = {};
+    const data = {
+      noteTypeId: document.getElementById('field-noteType').value,
+      fields: {}
+    };
     document.querySelectorAll('input')
     .forEach((input) => {
-      data[input.id] = input.value;
+      data.fields[input.id] = input.value;
     });
     console.log('data ', data);
     fetch('/note/{{note.id}}', {

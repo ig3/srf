@@ -8,7 +8,7 @@
 </style>
 <h1><a href="/">Spaced Repetition Flashcards</a></h1>
 <h2>Notes</h2>
-<a href="/note"><button>New</button></a>
+<a href="/note" onclick="return add()"><button>Add</button></a>
 <table border="1" class="sortable">
 <thead>
   <tr>
@@ -29,6 +29,10 @@
 </table>
 <script src="js/sorttable.js"></script>
 <script>
+  function add () {
+    window.open('/note', 'Edit Note', 'height=800,width=600');
+    return false;
+  }
   document.querySelectorAll('table tr')
   .forEach(e => e.addEventListener('click', (event) => {
     const cells = event.currentTarget.getElementsByTagName('td');
