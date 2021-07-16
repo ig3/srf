@@ -16,6 +16,7 @@
 </table>
 
 <h2>Fields</h2>
+<button onclick="attach()">Attach</button>
 <table id="table-fields">
 {{#each note.fieldData}}
 <tr><th>{{@key}}</th><td><input type="text" id="{{@key}}" value="{{this}}"/></td></tr>
@@ -23,9 +24,23 @@
 </table>
 <button onclick="save()">Save</button>
 <button onclick="cancel()">Cancel</button>
+<input type="file" id="input" style="display:none;">
 <script>
-  document
-  .getElementById('field-noteType')
+  // Multiple files might be attached
+  const fileAttachments = [];
+  // On focusout from an input, save element and cursor position in lastInput.
+  const lastInput = {};
+  document.getElementById('table-fields')
+  .addEventListener('focusout',  (e) => {
+    lastInput.element = e.target;
+    lastInput.selStart = e.target.selectionStart;
+    lastInput.selEnd = e.target.selectionEnd;
+    const tr = e.target.closest('tr');
+    lastInput.label = tr.getElementsByTagName('th')[0].innerHTML;
+  });
+
+  // When the note type is changed, update the set of field inputs
+  document.getElementById('field-noteType')
   .addEventListener('change', e => {
     document
     .getElementById('table-fields')
@@ -48,11 +63,15 @@
       alert('get notetype failed with ' + err);
     });
   });
+
+  // When the Save button is clicked
   function save() {
     const data = {
       noteTypeId: document.getElementById('field-noteType').value,
-      fields: {}
+      fields: {},
+      files: fileAttachments
     };
+    console.log('save: ', data);
     document.querySelectorAll('input')
     .forEach((input) => {
       data.fields[input.id] = input.value;
@@ -77,7 +96,76 @@
     });
   }
 
+  // When the Cancel button is clicked
   function cancel() {
     window.close();
   }
+
+  // When the Attach button is clicked
+  function attach () {
+    if (lastInput.element) {
+      document.getElementById('input').click();
+    }
+  }
+
+  document.getElementById('input')
+  .onchange = () => {
+    const selectedFiles = document.getElementById('input').files;
+    console.log('selectedFiles: ', selectedFiles);
+    const file = selectedFiles[0];
+    console.log('file: ', file);
+
+    alert('file changed');
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      alert('got file reader');
+
+      reader.onload = (e) => {
+        resolve(e.target.result);
+      };
+
+      reader.onerror = (e) => {
+        reject(new Error(e));
+      };
+
+      reader.readAsDataURL(file);
+    })
+    .then(data => {
+      file_rfc2397 = data;
+      alert('got file data for: ', file);
+      fileAttachments.push({
+        meta: {
+          lastModified: file.lastModified,
+          name: file.name,
+          size: file.size,
+          type: file.type
+        },
+        data: data
+      });
+      console.log('fileAttachments: ', fileAttachments);
+      const filename = file.name;
+      alert('saved file data');
+
+      let ref = '';
+      if (file.type === 'image/jpeg') {
+        alert('attach jpeg');
+        // todo: what if the filename includes a ']' character?
+        ref = '<img src="' + file.name + '"/>';
+      } else if (file.type === 'audio/mpeg') {
+        ref = '[sound:' + file.name + ']';
+      } else {
+        alert('unsupported file type: ' + file.type);
+      }
+      if (ref) {
+        lastInput.element.value =
+          lastInput.element.value.substring(0, lastInput.selStart) +
+          ref +
+          lastInput.element.value.substring(lastInput.selEnd);
+      }
+    })
+    .catch(err => {
+      alert('file attachment failed with ' + err);
+    });
+  };
+
 </script>

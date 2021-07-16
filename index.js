@@ -52,7 +52,7 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'handlebars');
 app.use(express.static(publicDir));
 app.use(express.static(mediaDir));
-app.use(express.json());
+app.use(express.json({limit: '50MB'}));
 
 process.on('SIGINT', onExit);
 const db = require('better-sqlite3')(databasePath);
@@ -456,6 +456,17 @@ app.post('/note/:id', (req, res) => {
       ''
     );
     console.log('insert info: ', info);
+    const files = req.body.files;
+    if (files && files.length > 0) {
+      files.forEach(file => {
+        console.log('save file: ', file.meta.name);
+        console.log('save file: ', file.meta.type);
+        console.log('save file: ', file.meta);
+        const filepath = path.join(mediaDir, file.meta.name);
+        const buff = Buffer.from(file.data.substring(23), 'base64');
+        fs.writeFileSync(filepath, buff);
+      });
+    }
     const noteId = info.lastInsertRowid;
     createCards(noteId, req.body.noteTypeId);
     res.send('ok');
