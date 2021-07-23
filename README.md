@@ -308,9 +308,183 @@ cards associated with the note. The fields are the attributes for which
 values may be saved. The templates determine how these are presented to the
 user. Each template has a front and a back layout (the 'flashcard').
 
+### Anki source files
 
-### cards
+#### rslib/src/sched/cutoff.rs
 
+This is a set of functions related to timing, including collection creation
+time, days since creation, day rollover time, offset from UTC, etc.
+
+This defines v1_create_date which is the last 4:00 a.m. local time before
+the time the function was called.
+
+#### rslib/src/storage/schema11.sql
+
+This file contains SQL code to create the initial database, identified as
+Schema version 11. When a new database is created, this is the first set of
+tables, indexes, etc. created. Run from rslib/src/storage/sqlite.rs.
+
+#### rslib/src/storage/sqlite.rs
+
+This is code for low level database operations on the Anki database. A key
+function is 'open_or_create_collection_db' which initializes the database
+connection and 'open_or_create' which opens the database and creates Anki
+tables as necessary according to the schema.
+
+#### rslib/src/storage/upgrades/mod.rs
+
+This defines upgrade_to_latest_schema and related constants
+(SCHEMA_MIN_VERSION, SCHEMA_STARTING_VERSION and SCHEMA_MAX_VERSION) but
+not the procedures for the actual upgrades.
+
+### Anki Database Schema
+
+Anki supports multiple database schemas, starting with schema 11.
+Presumably there were earlier schemas, but current code doesn't deal with
+them. When a new database is created, it begins as schema 11.
+
+#### Schema 11
+tables: col, notes, cards, revlog, graves. 
+
+#### Schema 14
+
+Add tables: deck_config, config and tags
+
+Deck configuration is moved from serialized data in col.dconf to the new
+deck_config table, one parameter per record, then col.dconf is cleared.
+Note that the configuration is still serialized data. There is one record
+per selectable deck configuration (deck type). My database has Default and
+Hard.
+
+Tags are moved from col.tags to the new tags table, one tag per record,
+then col.tags is cleared.
+
+Collection configuration is moved from col.conf to the new conf table, one
+parameter per record, then col.conf is cleared.
+
+
+#### Schema 15
+
+Add tables: fields, templates, notetypes, decks, 
+
+Note types are moved from col.models to the new notetypes, fields and
+templates tables, then col.models is cleared.
+
+Decks are moved from col.decks to the new decks table, then col.decks is
+cleared.
+
+Multiply deck initial ease * 100.
+
+#### Schema 16
+
+Divide initial ease of decks by 100 (revert change from Schema 15)
+
+Change initial ease <= 1.3 to 2.5. and update cards with low eases.
+
+
+#### col
+
+Table col contains a single record with parameters of the entire
+collection.
+
+create table col
+(
+    id     integer primary key,
+    crt    integer not null,
+    mod    integer not null,
+    scm    integer not null,
+    ver    integer not null,
+    dty    integer not null,
+    usn    integer not null,
+    ls     integer not null,
+    conf   text    not null,
+    models text    not null,
+    decks  text    not null,
+    dconf  text    not null,
+    tags   text    not null
+);
+
+Fields:
+ * id - always 1
+ * crt - collection creation time in seconds since the epoch
+ * mod - modification time in milliseconds
+ * scm - schema modification time
+ * ver - The database schema version
+ * dty - 0
+ * usn - 0
+ * ls  - Last sync time in milliseconds
+ * conf - serialized collection configuration, before conf table, now ''
+ * models - serialized note types, before notetypes, now ''
+ * decks - Empty string
+ * dconf - serialized deck configuration, before deck_config, now ''
+ * tags - serialized tags before tags, now ''
+
+In schema 11, crt is the last 4:00 a.m. local time before the actual
+creation time, as seconds since the epoch.
+
+At database creation, scm is crt * 1000: that same 4:00 a.m. local time,
+but milliseconds since the epoch.
+
+#### notes
+
+create table notes
+(
+    id    integer primary key,
+    guid  text    not null,
+    mid   integer not null,
+    mod   integer not null,
+    usn   integer not null,
+    tags  text    not null,
+    flds  text    not null,
+    sfld  integer not null,
+    csum  integer not null,
+    flags integer not null,
+    data  text    not null
+);
+
+Fields:
+ * id - primary key
+ * guid - a GUID, probably used in syncing as id can't be consistent
+ * mid - fk to notetype.id
+ * mod - presumably epoch seconds of last modification time
+ * usn - ??? - always -1 in my database - to do with sync
+ * tags - Anki can add tags to cards, maybe notes too? Don't know how to
+     tag a note Vs a card. - probably legacy
+ * flds - the field data, 0x1f as separator (escape???)
+ * sfld - something to do with searching and duplicates
+ * csum - some sort of checksum - some sort of sha1 digest
+ * flags - I guess notes can have flags too - probably legacy
+ * data - always empty - probably legacy
+
+mid was model ID in Schema 11 but Schema 15 added table notetypes so now
+mid is fk to notetypes, but without a name change (it really should be
+ntid, or something like that).
+
+#### cards
+
+create table cards
+(
+    id     integer primary key,
+    nid    integer not null,
+    did    integer not null,
+    ord    integer not null,
+    mod    integer not null,
+    usn    integer not null,
+    type   integer not null,
+    queue  integer not null,
+    due    integer not null,
+    ivl    integer not null,
+    factor integer not null,
+    reps   integer not null,
+    lapses integer not null,
+    left   integer not null,
+    odue   integer not null,
+    odid   integer not null,
+    flags  integer not null,
+    data   text    not null
+);
+
+Fields:
  * id - primary key
  * nid - fk to notes
  * did - fk to decks
@@ -359,7 +533,34 @@ day 0 being the collection creation day, which is stored in the col table.
 In srf, day numbers aren't used. Due is always milliseconds since the
 epoch.
 
-### fields
+#### revlog
+
+create table revlog
+(
+    id      integer primary key,
+    cid     integer not null,
+    usn     integer not null,
+    ease    integer not null,
+    ivl     integer not null,
+    lastIvl integer not null,
+    factor  integer not null,
+    time    integer not null,
+    type    integer not null
+);
+
+#### graves
+
+create table graves
+(
+    usn  integer not null,
+    oid  integer not null,
+    type integer not null
+);
+
+
+
+
+#### fields
 
 CREATE TABLE "fields" (
 	"ntid"	integer NOT NULL,
@@ -408,23 +609,7 @@ Note that this table only holds field names and sort order. The values
 are in the notes table: notes.flds, with all field values serialized into
 the single field.
 
-### notes
-
- * id - primary key
- * guid - a GUID, probably used in syncing as id can't be consistent
- * mid - fk to notetype.id
- * mod - presumably epoch seconds of last modification time
- * usn - ??? - always -1 in my database - to do with sync
- * tags - Anki can add tags to cards, maybe notes too? Don't know how to
-     tag a note Vs a card. - probably legacy
- * flds - the field data, 0x1f as separator (escape???)
- * sfld - something to do with searching and duplicates
- * csum - some sort of checksum - some sort of sha1 digest
- * flags - I guess notes can have flags too - probably legacy
- * data - always empty - probably legacy
-
-
-### notetypes
+#### notetypes
 
  * id - primary key
  * name - text name of notetype
@@ -459,7 +644,7 @@ templates table. In srf, each template has its own CSS.
 Anki has support for using LaTeX to format cards. The latex_\* fields relate
 to this.
 
-### templates
+#### templates
 
 CREATE TABLE "templates" (
 	"ntid"	integer NOT NULL,

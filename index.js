@@ -105,6 +105,13 @@ let lastNewCardTime = now;
 let averageTimePerCard = getAverageTimePerCard();
 console.log('averageTimePerCard ', averageTimePerCard);
 
+// averageCorrect is an estimate of the percentage of cards with a response
+// other than Again (i.e. Hard, Good or Easy), on the premise that the
+// correct answer was recalled for all but Again. This value is used to
+// tune scheduling, to achieve a target percentage. 
+let averageCorrect = getAverageCorrect();
+console.log('averageCorrect: ', Math.floor(averageCorrect) + '%');
+
 // studyTimeToday is the total time studying cards since midnight.
 // Reset when the day rolls over.
 let studyTimeToday = db.prepare('select sum(time) from revlog where id >= ?').get(startOfDay * 1000)['sum(time)'] || 0;
@@ -339,54 +346,32 @@ app.get('/back', (req, res) => {
 
 app.get('/again', (req, res) => {
   if (card) {
-    const factor = Math.floor(
-      Math.max(
-        config.againMinFactor,
-        config.maxFactor *
-          (1 - Math.exp(-card.interval/config.againIntervalSensitivity))
-      )
-    );
-    const due = dueAgain(card);
-    updateSeenCard(card, 1, factor, due);
+    const interval = intervalAgain(card);
+    updateSeenCard(card, 1, interval);
   }
   res.redirect('/front');
 });
 
 app.get('/hard', (req, res) => {
   if (card) {
-    const factor = Math.floor(
-      Math.max(config.hardMinFactor, card.factor + config.hardFactorAdjust)
-    );
-    const due = dueHard(card);
-    updateSeenCard(card, 2, factor, due);
+    const interval = intervalHard(card);
+    updateSeenCard(card, 2, interval);
   }
   res.redirect('/front');
 });
 
 app.get('/good', (req, res) => {
   if (card) {
-    const factor = Math.floor(
-      Math.max(
-        config.goodMinFactor,
-        Math.min(
-          config.maxFactor,
-          card.factor + config.goodFactorAdjust
-        )
-      )
-    );
-    const due = dueGood(card);
-    updateSeenCard(card, 3, factor, due);
+    const interval = intervalGood(card);
+    updateSeenCard(card, 3, interval);
   }
   res.redirect('/front');
 });
 
 app.get('/easy', (req, res) => {
   if (card) {
-    const factor = Math.floor(
-      Math.min(config.easyMinFactor, card.factor + config.easyFactorAdjust)
-    );
-    const due = dueEasy(card);
-    updateSeenCard(card, 4, factor, due);
+    const interval = intervalEasy(card);
+    updateSeenCard(card, 4, interval);
   }
   res.redirect('/front');
 });
@@ -597,8 +582,19 @@ function getTemplate (ntid, ord) {
   return (template);
 }
 
-function updateSeenCard (card, ease, factor, due) {
-  const interval = due - now;
+function updateSeenCard (card, ease, interval) {
+  // averageCorrect is an approximation of the percentage of cards
+  // answered correctly, used for tuning scheduling.
+  averageCorrect = averageCorrect * 0.99;
+  if (ease > 1) averageCorrect += 1;
+  db.prepare('update config set val = ? where key = ?')
+  .run(averageCorrect, 'averageCorrect');
+
+  const factor = newFactor(card, interval);
+  let due = now + interval;
+  if ((due - now) > config.dueTimeRoundingThreshold) {
+    due = new Date(due * 1000).setHours(0, 0, 0, 0).valueOf() / 1000;
+  }
   const lapsed = interval < matureThreshold && card.interval > matureThreshold;
   const lapses = lapsed ? card.lapses + 1 : card.lapses;
   db.prepare('update cards set mod = ?, factor = ?, interval = ?, due = ?, reps = ?, lapses = ? where id = ?')
@@ -623,6 +619,7 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
     formatDue(card.due), // when the card was due
     formatDue(due), // the new due date
     factor, // updated interval factor
+    Math.floor(averageCorrect) + '%',
     buried
   );
   const interval = due - now;
@@ -761,10 +758,19 @@ function buryRelated (card) {
   buried = info.changes > 0 ? '(' + info.changes + ')' : '';
 }
 
+/**
+ * Cards to be seen again get a very short interval: 10 seconds by default.
+ */
 function dueAgain (card) {
   return (now + config.againInterval);
 }
 
+/**
+ * hard cards should be seen again sooner rather than later.
+ *
+ * By default, the interval for a hard card is half the last
+ * interval.
+ */
 function dueHard (card) {
   if (!card.interval || card.interval === 0)
     return (now + config.hardMinInterval);
@@ -779,19 +785,32 @@ function dueHard (card) {
   return (due);
 }
 
+/**
+ * A good card should be the usual case.
+ *
+ * For a new card, the interval is 5 minutes
+ *
+ * For a card that has been seen, the minimum interval is one week.
+ * Otherwise it depends on the previous interval, trending to a 
+ * factor of 2 as the interval increases, according to:
+ *
+ * interval = interval * (2 + 5 * exp(-interval))
+ *
+ * Where the unit of interval is one week.
+ *
+ * The maximum interval is one year.
+ */
 function dueGood (card) {
   if (!card.interval || card.interval === 0) return (now + 300);
   const timeSinceLastSeen = now - card.due + card.interval;
+  const daysSinceLastSeen = timeSinceLastSeen/60/60/24;
+  const factor = 2 + card.factor * Math.exp(-timeSinceLastSeen/60/60/24/7);
   let due = now +
     Math.min(
       secPerYear,
       Math.max(
-        config.goodMinInterval,
-        Math.floor(
-          timeSinceLastSeen * card.factor / 1000 *
-            (config.intervalRandomFactor - Math.random()) /
-              config.intervalRandomFactor
-        )
+        config.easyMinInterval,
+        Math.floor(timeSinceLastSeen * factor)
       )
     );
   if ((due - now) > config.dueTimeRoundingThreshold) {
@@ -800,25 +819,87 @@ function dueGood (card) {
   return (due);
 }
 
+/**
+ * An easy card should not be seen again too soon.
+ *
+ * For a new card, the interval is 1 day.
+ *
+ * For a card that has been seen, the minimum interval is one week.
+ * Otherwise it depends on the previous interval, trending to a 
+ * factor of 2 as the interval increases, according to:
+ *
+ * interval = interval * 2 (1 + 10 * exp(-interval))
+ *
+ * Where the unit of interval is one week.
+ *
+ * The maximum interval is one year.
+ */
 function dueEasy (card) {
   if (!card.interval || card.interval === 0) return (now + secPerDay);
   const timeSinceLastSeen = now - card.due + card.interval;
+  const factor = 3 + card.factor * Math.exp(-timeSinceLastSeen/60/60/24/7);
   let due = now +
     Math.min(
       secPerYear,
       Math.max(
         config.easyMinInterval,
-        Math.floor(
-          timeSinceLastSeen * card.factor / 1000 *
-            (config.intervalRandomFactor - Math.random()) /
-              config.intervalRandomFactor
-        )
+        Math.floor(timeSinceLastSeen * factor)
       )
     );
   if ((due - now) > config.dueTimeRoundingFactor) {
     due = new Date(due * 1000).setHours(0, 0, 0, 0).valueOf() / 1000;
   }
   return (due);
+}
+
+function intervalAgain (card) {
+  return(Math.floor(Math.max(config.againInterval, card.interval * 0.02)));
+}
+
+function intervalHard (card) {
+  if (!card.interval || card.interval === 0)
+    return (config.hardMinInterval);
+  const timeSinceLastSeen = now - card.due + card.interval;
+  return (
+    Math.max(
+      config.hardMinInterval,
+      Math.floor(timeSinceLastSeen * config.hardIntervalFactor)
+    )
+  );
+}
+
+function intervalGood (card) {
+  if (!card.interval || card.interval === 0)
+    return (config.goodMinInterval);
+  const timeSinceLastSeen = now - card.due + card.interval;
+  const factor = 1.0 + averageCorrect/100 +
+    card.factor * Math.exp(-timeSinceLastSeen/60/60/24/7);
+  console.log('factor: ', factor, Math.floor(averageCorrect), card.factor, Math.exp(-timeSinceLastSeen/60/60/24/7));
+  return (
+    Math.min(
+      secPerYear,
+      Math.max(
+        config.goodMinInterval,
+        Math.floor(timeSinceLastSeen * factor)
+      )
+    )
+  );
+}
+
+function intervalEasy (card) {
+  if (!card.interval || card.interval === 0)
+    return (config.easyMinInterval);
+  const timeSinceLastSeen = now - card.due + card.interval;
+  const factor = 3.0 + card.factor * Math.exp(-timeSinceLastSeen/60/60/24/7);
+  return (
+    Math.min(
+      secPerYear,
+      Math.max(
+        config.easyMinInterval,
+        Math.floor(timeSinceLastSeen * factor)
+      )
+    )
+  );
 }
 
 /**
@@ -943,4 +1024,22 @@ function createCards (noteId, noteTypeId) {
     );
     console.log('insert info: ', info);
   });
+}
+
+function newFactor (card, interval) {
+    return (
+      (card.factor||0) * 0.6 +
+      Math.log(1+interval/900) * 0.4
+    ).toFixed(2);
+}
+
+function getAverageCorrect () {
+  const result = db.prepare('select val from config where key = ?')
+    .get('averageCorrect');
+
+  if (!result) {
+    db.prepare('insert into config (key, usn, mtime_secs, val) values (?,?,?,?)')
+    .run('averageCorrect', -1, 0, 0);
+  }
+  return(result ? result['val'] : 0);
 }
