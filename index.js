@@ -71,6 +71,11 @@ const args = yargs(process.argv.slice(2))
   describe: 'data directory',
   default: path.join(process.env.HOME, '.local', 'share', 'srf')
 })
+.option('database', {
+  alias: 'db',
+  describe: 'database name',
+  default: 'srf.db'
+})
 .command('import <file>', 'Import a file',
   () => {},
   importFile
@@ -645,7 +650,7 @@ function runServer (opts) {
 
   const dataDir = opts.dir;
   const mediaDir = path.join(dataDir, 'media');
-  db = require('better-sqlite3')(path.join(dataDir, 'srf.db'));
+  db = require('better-sqlite3')(path.join(dataDir, opts.database));
 
   const express = require('express');
   const app = express();
