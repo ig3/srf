@@ -3,64 +3,28 @@
 
 const fs = require('fs');
 const path = require('path');
-const userDataDir = path.join(process.env.HOME, '.local', 'share');
-console.log('userDataDir: ', userDataDir);
-
-const config = getConfig();
-
-const databasePath = path.join(userDataDir, 'srf', 'srf.db');
-const mediaDir = path.join(userDataDir, 'srf', 'media');
-const publicDir = path.join(__dirname, 'public');
-
 const tc = require('timezonecomplete');
-
-const express = require('express');
-const favicon = require('serve-favicon');
 const { v4: uuidv4 } = require('uuid');
 
+let db; // better-sqlite3 database handle
 
-// Mustache works for the Anki templates - it allows spaces in the tag keys
-// I had first tried Handlebars but it doesn't allow spaces in the tag keys
-// Links to sound and images don't work - Anki uses a 'special' syntax
-// But, maybe I can write a 'helper'
-const Mustache = require('mustache');
-Mustache.escape = function (text) {
-//  console.log('text: ', text);
-  if (/\[sound:.*\]/.test(text)) {
-    const src = [];
-    for (const m of text.matchAll(/\[sound:(.*?)\]/g)) {
-      src.push(m[1]);
-    }
-    let result = '<audio id="myaudio" autoplay controls></audio></br>';
-    result += '<script>';
-    result += 'var audioFiles = ["' + src.join('","') + '"];';
-    result += '</script>';
-    //    console.log('result: ', result);
-    return result;
-  } else {
-    return text;
-  }
-};
-const app = express();
-app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-const expressHandlebars = require('express-handlebars');
-const hbsFormHelper = require('handlebars-form-helper');
-const hbs = expressHandlebars.create({});
-hbsFormHelper.registerHelpers(hbs.handlebars, { namespace: 'form' });
-app.engine('handlebars', expressHandlebars());
-app.set('views', __dirname + '/views');
-app.set('view engine', 'handlebars');
-app.use(express.static(publicDir));
-app.use(express.static(mediaDir));
-app.use(express.json({limit: '50MB'}));
-
-process.on('SIGINT', onExit);
-const db = require('better-sqlite3')(databasePath);
-function onExit () {
+process.on('SIGINT', () => {
   console.log('closing database connection');
   db.close();
   process.exit();
-}
+});
+
+let config;
+
+// startTime is the time when this execution of the server started.
+const startTime = Math.floor(Date.now() / 1000);
+console.log(new Date().toString());
+
+// startOfDay is the epoch time of midnight as the start of the current day.
+let startOfDay;
+
+// endOfDay is the epoch time of midnight at the end of the current day.
+let endOfDay;
 
 // studyTimeNewCardLimit is the limit on total study time today
 // in seconds, after which no more new cards will be shown.
@@ -71,9 +35,6 @@ const secPerDay = 60 * 60 * 24;
 
 // secPerYear is the number of seconds in a year
 const secPerYear = secPerDay * 365;
-
-// startTime is the time when this execution of the server started.
-const startTime = Math.floor(Date.now() / 1000);
 
 // matureThreshold is the interval beyond which a card is considered mature
 // Cards with interval less than this are being learned
@@ -86,36 +47,14 @@ let now = startTime;
 
 // cardStartTime is the time when the current card was shown.
 // It is updated each time a card is shown.
-let cardStartTime = now;
-
-console.log(new Date().toString());
-
-// startOfDay is the epoch time of midnight as the start of the current day.
-let startOfDay = Math.floor(new Date().setHours(0, 0, 0, 0).valueOf() / 1000);
-
-// endOfDay is the epoch time of midnight at the end of the current day.
-let endOfDay = startOfDay + secPerDay;
+let cardStartTime;
 
 // lastNewCardTime is the time the last new card was shown.
-let lastNewCardTime = now;
-
-// averageTimePerCard is the average time viewing each card in ms.
-// Averaged over all cards viewed in the past 10 days.
-// Updated when the day rolls over.
-let averageTimePerCard = getAverageTimePerCard();
-console.log('averageTimePerCard ', averageTimePerCard);
-
-// averageCorrect is an estimate of the percentage of cards with a response
-// other than Again (i.e. Hard, Good or Easy), on the premise that the
-// correct answer was recalled for all but Again. This value is used to
-// tune scheduling, to achieve a target percentage. 
-let averageCorrect = getAverageCorrect();
-console.log('averageCorrect: ', Math.floor(averageCorrect) + '%');
+let lastNewCardTime = startTime;
 
 // studyTimeToday is the total time studying cards since midnight.
 // Reset when the day rolls over.
-let studyTimeToday = db.prepare('select sum(time) from revlog where id >= ?').get(startOfDay * 1000)['sum(time)'] || 0;
-console.log('studyTimeToday ', studyTimeToday);
+let studyTimeToday;
 
 // The number of cards buried
 let buried = '';
@@ -123,367 +62,28 @@ let buried = '';
 // card is the current card. Updated when a new card is shown.
 let card;
 
-// Add middleware for common code to every request
-function initRequest (req, res, next) {
-  now = Math.floor(Date.now() / 1000);
-  req.startTime = now;
-  const newStartOfDay =
-    Math.floor(new Date().setHours(0, 0, 0, 0).valueOf() / 1000);
-  if (newStartOfDay !== startOfDay) {
-    console.log(new Date().toString());
-    startOfDay = newStartOfDay;
-    endOfDay = startOfDay + secPerDay;
-    averageTimePerCard = getAverageTimePerCard();
-    studyTimeToday = 0;
-    timezoneOffset = (new Date().getTimezoneOffset()) * 60;
-  }
-  next();
-}
 
-app.use(initRequest);
 
-app.get('/', (req, res) => {
-  const viewedToday = getCountCardsViewedToday();
-  const dueToday = getCountCardsDueToday();
-  const dueStudyTime = getEstimatedStudyTime(dueToday);
-  const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get().due;
-  const dueNow = getCountCardsDueNow();
-  const timeToNextDue = tc.seconds(nextDue - now);
-  const chart1Data = { x: [], y: [], type: 'bar' };
-  db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from cards where interval != 0 and due > ? and due < ? group by hour').all(timezoneOffset, startOfDay, endOfDay)
-  .forEach(el => {
-    chart1Data.x.push(el.hour);
-    chart1Data.y.push(el['count()']);
-  });
-  res.render('home', {
-    viewedToday: viewedToday,
-    studyTimeToday: Math.floor(studyTimeToday/60),
-    dueToday: dueToday,
-    dueStudyTime: Math.floor(dueStudyTime/60),
-    totalToday: viewedToday + dueToday,
-    totalStudyTime: Math.floor((studyTimeToday + dueStudyTime)/60),
-    dueNow: dueNow,
-    timeToNextDue: timeToNextDue.toFullString().substr(0, 9),
-    chart1Data: JSON.stringify(chart1Data)
-  });
-});
+const yargs = require('yargs/yargs');
+const args = yargs(process.argv.slice(2))
+.option('dir', {
+  alias: 'd',
+  describe: 'data directory',
+  default: path.join(process.env.HOME, '.local', 'share', 'srf')
+})
+.command('import <file>', 'Import a file',
+  () => {},
+  importFile
+)
+.command('$0', 'run the server',
+  () => {},
+  runServer
+)
+.argv;
 
-app.get('/help', (req, res) => {
-  res.render('help');
-});
 
-app.get('/stats', (req, res) => {
-  // revlog.id is ms timestamp
-  const cardsViewedToday = getCountCardsViewedToday();
-  const dueCount = getCountCardsDueToday();
 
-  const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get().due;
 
-  const timeToNextDue = tc.seconds(nextDue - now);
-
-  const dayNumber = Math.floor((Date.now() - timezoneOffset * 1000) / 1000 / 60 / 60 / 24);
-
-  // Cards studied per day
-  let first;
-  let points = [];
-  db.prepare('select cast((id - ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(timezoneOffset * 1000).forEach(el => {
-    if (!first) first = el.day;
-    points[el.day - first] = el['count()'];
-  });
-  const chart1Data = { x: [], y: [] };
-  for (let i = 0; i <= dayNumber - first; i++) {
-    chart1Data.x.push(i);
-    chart1Data.y.push(points[i] || 0);
-  }
-
-  // Minutes studied per day
-  points = [];
-  first = null;
-  db.prepare('select cast((id - ?)/(1000*60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(timezoneOffset * 1000).forEach(el => {
-    if (!first) first = el.day;
-    points[el.day - first] = el.time / 60;
-  });
-  const chart2Data = { x: [], y: [] };
-  for (let i = 0; i <= dayNumber - first; i++) {
-    chart2Data.x.push(i);
-    chart2Data.y.push(points[i] || 0);
-  }
-
-  // Cards due per day
-  points = [];
-  let last;
-  first = null;
-  db.prepare('select cast((due - ?)/(60*60*24) as integer) as day, count() from cards where interval != 0 group by day').all(timezoneOffset).forEach(el => {
-    if (!first) first = el.day - 1;
-    last = el.day - first;
-    points[last] = el['count()'];
-  });
-  const chart3Data = { x: [], y: [] };
-  for (let i = 1; i <= last; i++) {
-    chart3Data.x.push(i);
-    chart3Data.y.push(points[i] || 0);
-  }
-
-  // Cards per interval
-  points = [];
-  db.prepare('select interval/60/60/24 as days, count() from cards where interval != 0 group by days').all().forEach(el => {
-    last = el.days;
-    points[el.days] = el['count()'];
-  });
-  const chart4Data = { x: [], y: [] };
-  for (let i = 0; i < last; i++) {
-    chart4Data.x.push(i);
-    chart4Data.y.push(points[i] || 0);
-  }
-  const cardsSeen = db.prepare('select count() from cards where interval != 0').get()['count()'] || 0;
-  const matureCards = db.prepare('select count() from cards where interval > 364*24*60*60').get()['count()'] || 0;
-
-  // New cards per day
-  points = [];
-  first = null;
-  console.log('timezoneOffset: ', timezoneOffset);
-  db.prepare('select cast(((id - ?)/1000/60/60/24) as int) as day, count() from (select * from revlog group by cid) group by day').all(timezoneOffset * 1000).forEach(el => {
-    if (!first) first = el.day;
-    points[el.day - first] = el['count()'];
-  });
-  const chart5Data = { x: [], y: [] };
-  for (let i = 0; i <= dayNumber - first; i++) {
-    chart5Data.x.push(i);
-    chart5Data.y.push(points[i] || 0);
-  }
-  const newCardsPerDay = dayNumber >= first ? cardsSeen / (dayNumber - first + 1) : 0;
-
-  // Matured & Lapsed per day
-  points = [];
-  first = null;
-  db.prepare('select cast((id - ?)/(24*60*60*1000) as int) as day, count(case when ivl >= 60*60*24*364 and lastivl < 60*60*24*364 then 1 else null end) as matured, count(case when ivl < 60*60*24*364 and lastivl > 60*60*24*364 then 1 else null end) as lapsed from revlog group by day').all(timezoneOffset * 1000).forEach(el => {
-    if (!first) first = el.day;
-    points[el.day - first] = {
-      matured: el.matured,
-      lapsed: el.lapsed
-    };
-  });
-  const chart6Trace1 = {
-    x: [],
-    y: [],
-    mode: 'lines',
-    name: 'Matured'
-  };
-  const chart6Trace2 = {
-    x: [],
-    y: [],
-    mode: 'lines',
-    name: 'Lapsed'
-  };
-  const chart6Trace3 = {
-    x: [],
-    y: [],
-    mode: 'lines',
-    name: 'Net'
-  };
-  const chart6Trace4 = {
-    x: [],
-    y: [],
-    mode: 'lines',
-    name: 'Cumulative',
-    yaxis: 'y2'
-  };
-  let total = 0;
-  for (let i = 0; i <= dayNumber - first; i++) {
-    chart6Trace1.x.push(i);
-    chart6Trace1.y.push(points[i] ? points[i].matured : 0);
-    chart6Trace2.x.push(i);
-    chart6Trace2.y.push(points[i] ? points[i].lapsed : 0);
-    chart6Trace3.x.push(i);
-    chart6Trace3.y.push(points[i] ? points[i].matured - points[i].lapsed : 0);
-    total += points[i] ? points[i].matured - points[i].lapsed : 0;
-    chart6Trace4.x.push(i);
-    chart6Trace4.y.push(total);
-  }
-  const chart6Data = [ chart6Trace1, chart6Trace2, chart6Trace3, chart6Trace4 ];
-
-  res.render('stats', {
-    dueCount: dueCount,
-    timeToNextDue: timeToNextDue.toFullString(),
-    cardsViewedToday: cardsViewedToday,
-    studyTimeToday: tc.seconds(studyTimeToday).toFullString(),
-    estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
-    averageTimePerCard: averageTimePerCard,
-    newCardsPerDay: newCardsPerDay.toFixed(2),
-    cardsSeen: cardsSeen,
-    matureCards: matureCards,
-    chart1Data: JSON.stringify(chart1Data),
-    chart2Data: JSON.stringify(chart2Data),
-    chart3Data: JSON.stringify(chart3Data),
-    chart4Data: JSON.stringify(chart4Data),
-    chart5Data: JSON.stringify(chart5Data),
-    chart6Data: JSON.stringify(chart6Data)
-  });
-});
-
-app.get('/front', (req, res) => {
-  card = getNextCard();
-  if (card) {
-    cardStartTime = now;
-    const note = getNote(card.nid);
-    note.template = getTemplate(note.mid, card.ord);
-    note.front = Mustache.render(note.template.front, note.fieldData);
-    note.fieldData.FrontSide = note.front;
-    note.back = Mustache.render(note.template.back, note.fieldData);
-    card.note = note;
-    res.render('front', note);
-  } else {
-    res.redirect('/');
-  }
-});
-
-app.get('/back', (req, res) => {
-  if (!card) {
-    return res.redirect('/');
-  }
-  res.render('back', card.note);
-});
-
-app.get('/again', (req, res) => {
-  if (card) {
-    const interval = intervalAgain(card);
-    updateSeenCard(card, 1, interval);
-  }
-  res.redirect('/front');
-});
-
-app.get('/hard', (req, res) => {
-  if (card) {
-    const interval = intervalHard(card);
-    updateSeenCard(card, 2, interval);
-  }
-  res.redirect('/front');
-});
-
-app.get('/good', (req, res) => {
-  if (card) {
-    const interval = intervalGood(card);
-    updateSeenCard(card, 3, interval);
-  }
-  res.redirect('/front');
-});
-
-app.get('/easy', (req, res) => {
-  if (card) {
-    const interval = intervalEasy(card);
-    updateSeenCard(card, 4, interval);
-  }
-  res.redirect('/front');
-});
-
-app.get('/notes', (req, res) => {
-  const notes = db.prepare('select * from notes').all();
-  res.render('notes', {
-    notes: notes
-  });
-});
-
-app.get('/note/:id', (req, res) => {
-  const note = getNote(req.params.id);
-  note.noteTypes = getNoteTypes();
-  console.log('note: ', note);
-  res.render('note', {
-    note: note
-  });
-});
-
-app.get('/note', (req, res) => {
-  const note = {
-    id: 'new',
-    guid: '',
-    mid: '',
-    noteType: {
-      id: 0,
-      name: ''
-    }
-  };
-  note.noteTypes = getNoteTypes();
-  note.mid = Object.keys(note.noteTypes)[0];
-  note.noteType = getNoteType(note.mid);
-  note.fieldData = {};
-  note.noteType.fields.forEach(field => {
-    note.fieldData[field] = '';
-  });
-  console.log('note: ', note);
-  console.log('about to render');
-  res.render('note', {
-    note: note
-  });
-});
-
-app.post('/note/:id', (req, res) => {
-  console.log('save note ' + req.params.id);
-  if (req.params.id === 'new') {
-    console.log('new note');
-    console.log('body ', req.body);
-    const flds = Object.keys(req.body.fields)
-      .map(field => req.body.fields[field]||'')
-      .join(String.fromCharCode(0x1f));
-    console.log('flds ', flds);
-    const sfield = req.body.fields[Object.keys(req.body.fields)[0]];
-    console.log('sfield: ', sfield);
-    const info = db.prepare('insert into notes (guid, mid, mod, usn, flds, sfld, tags, csum, flags, data) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-    .run(
-      uuidv4(),
-      req.body.noteTypeId,
-      Math.floor(Date.now()/1000),
-      -1,
-      flds,
-      sfield,
-      '',
-      '',
-      '',
-      ''
-    );
-    console.log('insert info: ', info);
-    const files = req.body.files;
-    if (files && files.length > 0) {
-      files.forEach(file => {
-        console.log('save file: ', file.meta.name);
-        console.log('save file: ', file.meta.type);
-        console.log('save file: ', file.meta);
-        const filepath = path.join(mediaDir, file.meta.name);
-        const buff = Buffer.from(file.data.substring(23), 'base64');
-        fs.writeFileSync(filepath, buff);
-      });
-    }
-    const noteId = info.lastInsertRowid;
-    createCards(noteId, req.body.noteTypeId);
-    res.send('ok');
-  } else {
-    const note = getNote(req.params.id);
-    console.log('note ', note);
-    console.log('body ', req.body);
-    const flds = note.fields.map(field => req.body.fields[field])
-    .join(String.fromCharCode(0x1f));
-    console.log('flds ', flds);
-    db.prepare('update notes set flds = ? where id = ?')
-    .run(flds, req.params.id);
-    res.send('ok');
-  }
-});
-
-app.get('/rest/notetype/:id', (req, res) => {
-  const noteType = getNoteType(req.params.id);
-  console.log('noteType: ', noteType);
-  res.send(noteType);
-});
-
-app.use((req, res, next) => {
-  console.log('404 ', req.path);
-  res.status(404).send('Not found');
-});
-
-const server = app.listen(8000, () => {
-  const host = server.address().address;
-  const port = server.address().port;
-  console.log('Listening on http://%s:%s', host, port);
-});
 
 /**
  * The card contains scheduling information for a combination of note, note
@@ -583,12 +183,6 @@ function getTemplate (ntid, ord) {
 }
 
 function updateSeenCard (card, ease, interval) {
-  // averageCorrect is an approximation of the percentage of cards
-  // answered correctly, used for tuning scheduling.
-  averageCorrect = averageCorrect * 0.99;
-  if (ease > 1) averageCorrect += 1;
-  db.prepare('update config set val = ? where key = ?')
-  .run(averageCorrect, 'averageCorrect');
 
   const factor = newFactor(card, interval);
   let due = now + interval;
@@ -609,6 +203,7 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
   const cardsViewedToday = getCountCardsViewedToday();
   const dueTodayCount = getCountCardsDueToday();
   const time = new Date().toTimeString().substring(0,5);
+  const percentCorrect = getPercentCorrect(10000);
   console.log(
     time,
     cardsViewedToday, // cards viewed today
@@ -619,7 +214,7 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
     formatDue(card.due), // when the card was due
     formatDue(due), // the new due date
     factor, // updated interval factor
-    Math.floor(averageCorrect) + '%',
+    percentCorrect.toFixed(0) + '%',
     buried
   );
   const interval = due - now;
@@ -872,9 +467,11 @@ function intervalGood (card) {
   if (!card.interval || card.interval === 0)
     return (config.goodMinInterval);
   const timeSinceLastSeen = now - card.due + card.interval;
-  const factor = 1.0 + averageCorrect/100 +
-    card.factor * Math.exp(-timeSinceLastSeen/60/60/24/7);
-  console.log('factor: ', factor, Math.floor(averageCorrect), card.factor, Math.exp(-timeSinceLastSeen/60/60/24/7));
+  const percentCorrect = getPercentCorrect(10000);
+  const correctFactor = Math.max(0, percentCorrect - 80) / 10;
+  const factor = 1.5 + 
+    card.factor * correctFactor * Math.exp(-timeSinceLastSeen/60/60/24/7);
+  console.log('factor: ', factor, card.factor, correctFactor, Math.exp(-timeSinceLastSeen/60/60/24/7));
   return (
     Math.min(
       secPerYear,
@@ -926,7 +523,7 @@ function getCountCardsViewedToday () {
 }
 
 function getEstimatedStudyTime (count) {
-  return Math.floor(count * averageTimePerCard);
+  return Math.floor(count * getAverageTimePerCard());
 }
 
 function getConfig () {
@@ -1033,13 +630,432 @@ function newFactor (card, interval) {
     ).toFixed(2);
 }
 
-function getAverageCorrect () {
-  const result = db.prepare('select val from config where key = ?')
-    .get('averageCorrect');
-
-  if (!result) {
-    db.prepare('insert into config (key, usn, mtime_secs, val) values (?,?,?,?)')
-    .run('averageCorrect', -1, 0, 0);
+function getPercentCorrect (n) {
+  let result;
+  if (n) {
+    result = db.prepare('select avg(case ease when 1 then 0 else 1 end) as average from (select ease from revlog order by id desc limit ?)').get(n);
+  } else {
+    result = db.prepare('select avg(case ease when 1 then 0 else 1 end) as average from revlog').get();
   }
-  return(result ? result['val'] : 0);
+  return (result ? result['average'] * 100 : 0);
+}
+
+function runServer (opts) {
+  console.log('run server');
+  const express = require('express');
+  const app = express();
+  const favicon = require('serve-favicon');
+  app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+  const expressHandlebars = require('express-handlebars');
+  const hbsFormHelper = require('handlebars-form-helper');
+  const hbs = expressHandlebars.create({});
+  hbsFormHelper.registerHelpers(hbs.handlebars, { namespace: 'form' });
+  app.engine('handlebars', expressHandlebars());
+  app.set('views', __dirname + '/views');
+  app.set('view engine', 'handlebars');
+  const publicDir = path.join(__dirname, 'public');
+  app.use(express.static(publicDir));
+  const userDataDir = path.join(process.env.HOME, '.local', 'share');
+  const databasePath = path.join(userDataDir, 'srf', 'srf.db');
+  db = require('better-sqlite3')(databasePath);
+  console.log('userDataDir: ', userDataDir);
+  const mediaDir = path.join(userDataDir, 'srf', 'media');
+  app.use(express.static(mediaDir));
+  app.use(express.json({limit: '50MB'}));
+  config = getConfig();
+
+  // Mustache works for the Anki templates - it allows spaces in the tag keys
+  // I had first tried Handlebars but it doesn't allow spaces in the tag keys
+  // Links to sound and images don't work - Anki uses a 'special' syntax
+  // But, maybe I can write a 'helper'
+  const Mustache = require('mustache');
+  Mustache.escape = function (text) {
+  //  console.log('text: ', text);
+    if (/\[sound:.*\]/.test(text)) {
+      const src = [];
+      for (const m of text.matchAll(/\[sound:(.*?)\]/g)) {
+        src.push(m[1]);
+      }
+      let result = '<audio id="myaudio" autoplay controls></audio></br>';
+      result += '<script>';
+      result += 'var audioFiles = ["' + src.join('","') + '"];';
+      result += '</script>';
+      //    console.log('result: ', result);
+      return result;
+    } else {
+      return text;
+    }
+  };
+
+
+  // Add middleware for common code to every request
+  app.use((req, res, next) => {
+    now = Math.floor(Date.now() / 1000);
+    req.startTime = now;
+    const newStartOfDay =
+      Math.floor(new Date().setHours(0, 0, 0, 0).valueOf() / 1000);
+    if (newStartOfDay !== startOfDay) {
+      console.log(new Date().toString());
+      startOfDay = newStartOfDay;
+      endOfDay = startOfDay + secPerDay;
+      studyTimeToday = getStudyTimeToday();
+      timezoneOffset = (new Date().getTimezoneOffset()) * 60;
+    }
+    next();
+  });
+
+  app.get('/', (req, res) => {
+    const viewedToday = getCountCardsViewedToday();
+    const dueToday = getCountCardsDueToday();
+    const dueStudyTime = getEstimatedStudyTime(dueToday);
+    const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get().due;
+    const dueNow = getCountCardsDueNow();
+    const timeToNextDue = tc.seconds(nextDue - now);
+    const chart1Data = { x: [], y: [], type: 'bar' };
+    db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from cards where interval != 0 and due > ? and due < ? group by hour').all(timezoneOffset, startOfDay, endOfDay)
+    .forEach(el => {
+      chart1Data.x.push(el.hour);
+      chart1Data.y.push(el['count()']);
+    });
+    res.render('home', {
+      viewedToday: viewedToday,
+      studyTimeToday: Math.floor(studyTimeToday/60),
+      dueToday: dueToday,
+      dueStudyTime: Math.floor(dueStudyTime/60),
+      totalToday: viewedToday + dueToday,
+      totalStudyTime: Math.floor((studyTimeToday + dueStudyTime)/60),
+      dueNow: dueNow,
+      timeToNextDue: timeToNextDue.toFullString().substr(0, 9),
+      chart1Data: JSON.stringify(chart1Data)
+    });
+  });
+
+  app.get('/help', (req, res) => {
+    res.render('help');
+  });
+
+  app.get('/stats', (req, res) => {
+    // revlog.id is ms timestamp
+    const cardsViewedToday = getCountCardsViewedToday();
+    const dueCount = getCountCardsDueToday();
+
+    const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get().due;
+
+    const timeToNextDue = tc.seconds(nextDue - now);
+
+    const dayNumber = Math.floor((Date.now() - timezoneOffset * 1000) / 1000 / 60 / 60 / 24);
+
+    // Cards studied per day
+    let first;
+    let points = [];
+    db.prepare('select cast((id - ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(timezoneOffset * 1000).forEach(el => {
+      if (!first) first = el.day;
+      points[el.day - first] = el['count()'];
+    });
+    const chart1Data = { x: [], y: [] };
+    for (let i = 0; i <= dayNumber - first; i++) {
+      chart1Data.x.push(i);
+      chart1Data.y.push(points[i] || 0);
+    }
+
+    // Minutes studied per day
+    points = [];
+    first = null;
+    db.prepare('select cast((id - ?)/(1000*60*60*24) as integer) as day, sum(time) as time from revlog group by day').all(timezoneOffset * 1000).forEach(el => {
+      if (!first) first = el.day;
+      points[el.day - first] = el.time / 60;
+    });
+    const chart2Data = { x: [], y: [] };
+    for (let i = 0; i <= dayNumber - first; i++) {
+      chart2Data.x.push(i);
+      chart2Data.y.push(points[i] || 0);
+    }
+
+    // Cards due per day
+    points = [];
+    let last;
+    first = null;
+    db.prepare('select cast((due - ?)/(60*60*24) as integer) as day, count() from cards where interval != 0 group by day').all(timezoneOffset).forEach(el => {
+      if (!first) first = el.day - 1;
+      last = el.day - first;
+      points[last] = el['count()'];
+    });
+    const chart3Data = { x: [], y: [] };
+    for (let i = 1; i <= last; i++) {
+      chart3Data.x.push(i);
+      chart3Data.y.push(points[i] || 0);
+    }
+
+    // Cards per interval
+    points = [];
+    db.prepare('select interval/60/60/24 as days, count() from cards where interval != 0 group by days').all().forEach(el => {
+      last = el.days;
+      points[el.days] = el['count()'];
+    });
+    const chart4Data = { x: [], y: [] };
+    for (let i = 0; i < last; i++) {
+      chart4Data.x.push(i);
+      chart4Data.y.push(points[i] || 0);
+    }
+    const cardsSeen = db.prepare('select count() from cards where interval != 0').get()['count()'] || 0;
+    const matureCards = db.prepare('select count() from cards where interval > 364*24*60*60').get()['count()'] || 0;
+
+    // New cards per day
+    points = [];
+    first = null;
+    console.log('timezoneOffset: ', timezoneOffset);
+    db.prepare('select cast(((id - ?)/1000/60/60/24) as int) as day, count() from (select * from revlog group by cid) group by day').all(timezoneOffset * 1000).forEach(el => {
+      if (!first) first = el.day;
+      points[el.day - first] = el['count()'];
+    });
+    const chart5Data = { x: [], y: [] };
+    for (let i = 0; i <= dayNumber - first; i++) {
+      chart5Data.x.push(i);
+      chart5Data.y.push(points[i] || 0);
+    }
+    const newCardsPerDay = dayNumber >= first ? cardsSeen / (dayNumber - first + 1) : 0;
+
+    // Matured & Lapsed per day
+    points = [];
+    first = null;
+    db.prepare('select cast((id - ?)/(24*60*60*1000) as int) as day, count(case when ivl >= 60*60*24*364 and lastivl < 60*60*24*364 then 1 else null end) as matured, count(case when ivl < 60*60*24*364 and lastivl > 60*60*24*364 then 1 else null end) as lapsed from revlog group by day').all(timezoneOffset * 1000).forEach(el => {
+      if (!first) first = el.day;
+      points[el.day - first] = {
+        matured: el.matured,
+        lapsed: el.lapsed
+      };
+    });
+    const chart6Trace1 = {
+      x: [],
+      y: [],
+      mode: 'lines',
+      name: 'Matured'
+    };
+    const chart6Trace2 = {
+      x: [],
+      y: [],
+      mode: 'lines',
+      name: 'Lapsed'
+    };
+    const chart6Trace3 = {
+      x: [],
+      y: [],
+      mode: 'lines',
+      name: 'Net'
+    };
+    const chart6Trace4 = {
+      x: [],
+      y: [],
+      mode: 'lines',
+      name: 'Cumulative',
+      yaxis: 'y2'
+    };
+    let total = 0;
+    for (let i = 0; i <= dayNumber - first; i++) {
+      chart6Trace1.x.push(i);
+      chart6Trace1.y.push(points[i] ? points[i].matured : 0);
+      chart6Trace2.x.push(i);
+      chart6Trace2.y.push(points[i] ? points[i].lapsed : 0);
+      chart6Trace3.x.push(i);
+      chart6Trace3.y.push(points[i] ? points[i].matured - points[i].lapsed : 0);
+      total += points[i] ? points[i].matured - points[i].lapsed : 0;
+      chart6Trace4.x.push(i);
+      chart6Trace4.y.push(total);
+    }
+    const chart6Data = [ chart6Trace1, chart6Trace2, chart6Trace3, chart6Trace4 ];
+
+    res.render('stats', {
+      dueCount: dueCount,
+      timeToNextDue: timeToNextDue.toFullString(),
+      cardsViewedToday: cardsViewedToday,
+      studyTimeToday: tc.seconds(studyTimeToday).toFullString(),
+      estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
+      averageTimePerCard: getAverageTimePerCard(),
+      newCardsPerDay: newCardsPerDay.toFixed(2),
+      cardsSeen: cardsSeen,
+      matureCards: matureCards,
+      chart1Data: JSON.stringify(chart1Data),
+      chart2Data: JSON.stringify(chart2Data),
+      chart3Data: JSON.stringify(chart3Data),
+      chart4Data: JSON.stringify(chart4Data),
+      chart5Data: JSON.stringify(chart5Data),
+      chart6Data: JSON.stringify(chart6Data)
+    });
+  });
+
+  app.get('/front', (req, res) => {
+    card = getNextCard();
+    if (card) {
+      cardStartTime = now;
+      const note = getNote(card.nid);
+      note.template = getTemplate(note.mid, card.ord);
+      note.front = Mustache.render(note.template.front, note.fieldData);
+      note.fieldData.FrontSide = note.front;
+      note.back = Mustache.render(note.template.back, note.fieldData);
+      card.note = note;
+      res.render('front', note);
+    } else {
+      res.redirect('/');
+    }
+  });
+
+  app.get('/back', (req, res) => {
+    if (!card) {
+      return res.redirect('/');
+    }
+    res.render('back', card.note);
+  });
+
+  app.get('/again', (req, res) => {
+    if (card) {
+      const interval = intervalAgain(card);
+      updateSeenCard(card, 1, interval);
+    }
+    res.redirect('/front');
+  });
+
+  app.get('/hard', (req, res) => {
+    if (card) {
+      const interval = intervalHard(card);
+      updateSeenCard(card, 2, interval);
+    }
+    res.redirect('/front');
+  });
+
+  app.get('/good', (req, res) => {
+    if (card) {
+      const interval = intervalGood(card);
+      updateSeenCard(card, 3, interval);
+    }
+    res.redirect('/front');
+  });
+
+  app.get('/easy', (req, res) => {
+    if (card) {
+      const interval = intervalEasy(card);
+      updateSeenCard(card, 4, interval);
+    }
+    res.redirect('/front');
+  });
+
+  app.get('/notes', (req, res) => {
+    const notes = db.prepare('select * from notes').all();
+    res.render('notes', {
+      notes: notes
+    });
+  });
+
+  app.get('/note/:id', (req, res) => {
+    const note = getNote(req.params.id);
+    note.noteTypes = getNoteTypes();
+    console.log('note: ', note);
+    res.render('note', {
+      note: note
+    });
+  });
+
+  app.get('/note', (req, res) => {
+    const note = {
+      id: 'new',
+      guid: '',
+      mid: '',
+      noteType: {
+        id: 0,
+        name: ''
+      }
+    };
+    note.noteTypes = getNoteTypes();
+    note.mid = Object.keys(note.noteTypes)[0];
+    note.noteType = getNoteType(note.mid);
+    note.fieldData = {};
+    note.noteType.fields.forEach(field => {
+      note.fieldData[field] = '';
+    });
+    console.log('note: ', note);
+    console.log('about to render');
+    res.render('note', {
+      note: note
+    });
+  });
+
+  app.post('/note/:id', (req, res) => {
+    console.log('save note ' + req.params.id);
+    if (req.params.id === 'new') {
+      console.log('new note');
+      console.log('body ', req.body);
+      const flds = Object.keys(req.body.fields)
+        .map(field => req.body.fields[field]||'')
+        .join(String.fromCharCode(0x1f));
+      console.log('flds ', flds);
+      const sfield = req.body.fields[Object.keys(req.body.fields)[0]];
+      console.log('sfield: ', sfield);
+      const info = db.prepare('insert into notes (guid, mid, mod, usn, flds, sfld, tags, csum, flags, data) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .run(
+        uuidv4(),
+        req.body.noteTypeId,
+        Math.floor(Date.now()/1000),
+        -1,
+        flds,
+        sfield,
+        '',
+        '',
+        '',
+        ''
+      );
+      console.log('insert info: ', info);
+      const files = req.body.files;
+      if (files && files.length > 0) {
+        files.forEach(file => {
+          console.log('save file: ', file.meta.name);
+          console.log('save file: ', file.meta.type);
+          console.log('save file: ', file.meta);
+          const filepath = path.join(mediaDir, file.meta.name);
+          const buff = Buffer.from(file.data.substring(23), 'base64');
+          fs.writeFileSync(filepath, buff);
+        });
+      }
+      const noteId = info.lastInsertRowid;
+      createCards(noteId, req.body.noteTypeId);
+      res.send('ok');
+    } else {
+      const note = getNote(req.params.id);
+      console.log('note ', note);
+      console.log('body ', req.body);
+      const flds = note.fields.map(field => req.body.fields[field])
+      .join(String.fromCharCode(0x1f));
+      console.log('flds ', flds);
+      db.prepare('update notes set flds = ? where id = ?')
+      .run(flds, req.params.id);
+      res.send('ok');
+    }
+  });
+
+  app.get('/rest/notetype/:id', (req, res) => {
+    const noteType = getNoteType(req.params.id);
+    console.log('noteType: ', noteType);
+    res.send(noteType);
+  });
+
+  app.use((req, res, next) => {
+    console.log('404 ', req.path);
+    res.status(404).send('Not found');
+  });
+
+
+  const server = app.listen(8000, () => {
+    const host = server.address().address;
+    const port = server.address().port;
+    console.log('Listening on http://%s:%s', host, port);
+  });
+}
+
+function importFile (opts) {
+  console.log('import file');
+}
+
+
+function getStudyTimeToday () {
+  const studyTimeToday = db.prepare('select sum(time) from revlog where id >= ?').get(startOfDay * 1000)['sum(time)'] || 0;
+  console.log('studyTimeToday ', studyTimeToday);
+  return (studyTimeToday);
 }
