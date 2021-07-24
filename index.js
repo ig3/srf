@@ -650,7 +650,9 @@ function runServer (opts) {
 
   const dataDir = opts.dir;
   const mediaDir = path.join(dataDir, 'media');
-  db = require('better-sqlite3')(path.join(dataDir, opts.database));
+  const databasePath = opts.database.substr(0,1) === '/' ?
+    opts.database : path.join(dataDir, opts.database);
+  db = require('better-sqlite3')(databasePath);
 
   const express = require('express');
   const app = express();
