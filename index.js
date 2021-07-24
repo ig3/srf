@@ -572,7 +572,7 @@ function getConfig () {
     easyFactorAdjust: 200
   };
   try {
-    const configFilePath = path.join(userDataDir, 'srf', 'config');
+    const configFilePath = path.join(dataDir, 'config');
     const data = fs.readFileSync(configFilePath, 'utf8');
     console.log('load config: ', data);
     const JSON5 = require('json5');
@@ -641,7 +641,12 @@ function getPercentCorrect (n) {
 }
 
 function runServer (opts) {
-  console.log('run server');
+  console.log('run server ', opts);
+
+  const dataDir = opts.dir;
+  const mediaDir = path.join(dataDir, 'media');
+  db = require('better-sqlite3')(path.join(dataDir, 'srf.db'));
+
   const express = require('express');
   const app = express();
   const favicon = require('serve-favicon');
@@ -653,13 +658,7 @@ function runServer (opts) {
   app.engine('handlebars', expressHandlebars());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'handlebars');
-  const publicDir = path.join(__dirname, 'public');
-  app.use(express.static(publicDir));
-  const userDataDir = path.join(process.env.HOME, '.local', 'share');
-  const databasePath = path.join(userDataDir, 'srf', 'srf.db');
-  db = require('better-sqlite3')(databasePath);
-  console.log('userDataDir: ', userDataDir);
-  const mediaDir = path.join(userDataDir, 'srf', 'media');
+  app.use(express.static(path.join(__dirname, 'public')));
   app.use(express.static(mediaDir));
   app.use(express.json({limit: '50MB'}));
   config = getConfig();
