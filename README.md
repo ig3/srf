@@ -259,6 +259,39 @@ no changes to the front or back templates or to the CSS. No changes to the
 media either, other than to make a copy of it for srf. My media includes
 sounds and images.
 
+## srf database
+
+A fact set records a set of related facts as field/value pairs. These are
+the essential items to be studied.
+
+Templates produce cards from the fact sets. Each card has a front and a
+back side. One views the front side then attempts to remember what will be
+on the back side. The front and back sides are filled with static content
+and the values of select fields.
+
+Each fact set is related to one set of templates.
+
+Each template is related to one set of templates.
+
+Each set of templates has a set of fields that are used in rendering the
+templates. These are the fields for which values may be stored in the fact
+set.
+
+
+
+These fact sets are presented in the form of cards, generated from the fact
+sets by templates. Each template produces a front and back, each presenting
+a different subset of the fields.
+
+Each template consists of html for the front and back and common CSS.
+
+A set of templates produces a set of cards. 
+
+Each study item consists of a set of field/value pairs which record the
+essential, related facts to be learned. Cards are generated from these
+items by way of templates. Typically, a set of cards will be produced for
+each item. 
+
 ## Anki database
 
 See [Anki 2 annotated schema](https://gist.github.com/sartak/3921255)

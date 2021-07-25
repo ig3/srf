@@ -1,5 +1,6 @@
 #!/usr/local/bin/node
 'use strict';
+console.log('TEST');
 
 const fs = require('fs');
 const path = require('path');
@@ -64,31 +65,29 @@ let card;
 
 
 
-const yargs = require('yargs/yargs');
-const args = yargs(process.argv.slice(2))
-.option('dir', {
-  alias: 'd',
-  describe: 'data directory',
-  default: path.join(process.env.HOME, '.local', 'share', 'srf')
-})
-.option('database', {
-  alias: 'db',
-  describe: 'database name',
-  default: 'srf.db'
-})
-.command('import <file>', 'Import a file',
-  () => {},
-  importFile
-)
-.command('$0', 'run the server',
-  () => {},
-  runServer
-)
-.argv;
+const getopts = require('getopts');
+const opts = getopts(process.argv.slice(2), {
+  string: ['directory', 'database'],
+  alias: {
+    directory: ['dir'],
+    database: ['db']
+  },
+  default: {
+    directory: path.join(process.env.HOME, '.local', 'share', 'srftest'),
+    database: 'srftest.db'
+  },
+  stopEarly: true
+});
 
+console.log('opts: ', opts);
 
+const [command, subargv] = opts._;
 
-
+if (command === 'import') {
+  importFile(opts, subargv);
+} else {
+  runServer(opts, subargv);
+}
 
 /**
  * The card contains scheduling information for a combination of note, note
@@ -160,6 +159,32 @@ function getNoteTypes () {
 }
 
 /**
+ * getNoteTypeDetails returns an object keyed by note type ID,
+ * with values being objects with the details of each note type.
+ */
+function getNoteTypeDetails (db) {
+  const noteTypes = {};
+  db.prepare('select id, name from notetype').all()
+  .forEach(record => {
+    noteTypes[record.id] = record;
+  });
+  Object.keys(noteTypes).forEach(id => {
+    noteTypes[id].fields = {};
+    db.prepare('select * from field where notetypeid = ?').all(id)
+    .forEach(record => {
+      noteTypes[id].fields[record.id] = record;
+    });
+    noteTypes[id].templates = {};
+    db.prepare('select * from template where notetypeid = ?').all(id)
+    .forEach(record => {
+      noteTypes[id].templates[record.id] = record;
+    });
+  });
+  return(NoteTypes);
+}
+
+
+/**
  * getNoteType returns details of the note type with the given ID
  */
 function getNoteType (id) {
@@ -177,14 +202,14 @@ function getNoteType (id) {
   });
 }
 
-function getTemplate (ntid, ord) {
-  // Primary key of templates is (ntid, ord)
-  const template = db.prepare('select name, front, back, css from templates where ntid = ? and ord = ?').get(ntid, ord);
+function getTemplate (templateid) {
+  const template = db.prepare('select value from template where id = ?')
+  .get(templateid);
   if (!template) {
     console.log('No template for ntid ', ntid, ' ord ', ord);
     return;
   }
-  return (template);
+  return (JSON.parse(template.value));
 }
 
 function updateSeenCard (card, ease, interval) {
@@ -196,8 +221,8 @@ function updateSeenCard (card, ease, interval) {
   }
   const lapsed = interval < matureThreshold && card.interval > matureThreshold;
   const lapses = lapsed ? card.lapses + 1 : card.lapses;
-  db.prepare('update cards set mod = ?, factor = ?, interval = ?, due = ?, reps = ?, lapses = ? where id = ?')
-  .run(now, factor, interval, due, card.reps + 1, lapses, card.id);
+  db.prepare('update card set modified = ?, factor = ?, interval = ?, due = ?, views = ?, lapses = ? where id = ?')
+  .run(now, factor, interval, due, card.views + 1, lapses, card.id);
   buryRelated(card);
   logReview(card, ease, factor, due, lapsed, lapses);
 }
@@ -241,17 +266,15 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
   //  lapses), so it is redundant and perhaps should be eliminated.
   //
   const type = interval > 60 * 60 * 24 * 21 ? 2 : lapses === 0 ? 0 : 1;
-  const info = db.prepare('insert into revlog (id, cid, usn, ease, ivl, lastivl, factor, time, type, lapses) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+  const info = db.prepare('insert into revlog (id, cardid, ease, interval, lastinterval, factor, time, lapses) values (?,?,?,?,?,?,?,?)')
   .run(
-    now * 1000, // Time the card was seen
+    now * 1000,
     card.id,
-    -1,
     ease,
-    interval, // Time until the card is due to be seen again
-    lastInterval, // Time since card was last seen
-    factor, // Factor for adjusting interval
-    elapsed, // Time spent viewing card
-    type, // 0 - New; 1 - Lapsed; 2 - Review
+    interval,
+    lastInterval,
+    factor,
+    elapsed,
     lapses
   );
   if (info.changes !== 1) {
@@ -322,12 +345,12 @@ function getNextCard () {
 }
 
 function getNewCard () {
-  const card = db.prepare('select * from cards where due < ? and interval = 0 order by new_order limit 1').get(now);
+  const card = db.prepare('select * from card where due < ? and interval = 0 order by ord limit 1').get(now);
   return (card);
 }
 
 function getDueCard () {
-  const card = db.prepare('select * from cards where interval != 0 and due < ? order by interval, due limit 1').get(now);
+  const card = db.prepare('select * from card where interval != 0 and due < ? order by interval, due limit 1').get(now);
   return (card);
 }
 
@@ -347,12 +370,12 @@ function getEstimatedTotalStudyTime () {
  * from now.
  */
 function buryRelated (card) {
-  const info = db.prepare('update cards set mod = ?, due = ? where nid = ? and ord > ? and due < ?')
+  const info = db.prepare('update card set modified = ?, due = ? where factsetid = ? and id != ? and due < ?')
   .run(
     now, // modification time
     now + secPerDay * 5, // new due
-    card.nid, // note ID
-    card.ord, // ord or current card
+    card.factsetid,
+    card.id,
     now + secPerDay * 5 // old due
   );
   buried = info.changes > 0 ? '(' + info.changes + ')' : '';
@@ -510,17 +533,17 @@ function intervalEasy (card) {
  * cards are viewed more than once.
  */
 function getAverageTimePerCard () {
-  const result = db.prepare('select avg(t) from (select sum(time) as t, cast(id/1000/60/60/24 as integer) as d, cid from revlog where id > ? group by d, cid)')
+  const result = db.prepare('select avg(t) from (select sum(time) as t, cast(id/1000/60/60/24 as integer) as d, cardid from revlog where id > ? group by d, cardid)')
   .get((now - 60 * 60 * 24 * 10) * 1000)['avg(t)'] || 30;
   return (Math.round(result, 0));
 }
 
 function getCountCardsDueToday () {
-  return (db.prepare('select count() from cards where interval != 0 and due < ?').get(endOfDay)['count()'] || 0);
+  return (db.prepare('select count() from card where interval != 0 and due < ?').get(endOfDay)['count()'] || 0);
 }
 
 function getCountCardsDueNow () {
-  return (db.prepare('select count() from cards where interval != 0 and due < ?').get(now)['count()'] || 0);
+  return (db.prepare('select count() from card where interval != 0 and due < ?').get(now)['count()'] || 0);
 }
 
 function getCountCardsViewedToday () {
@@ -603,7 +626,7 @@ function createCards (noteId, noteTypeId) {
 
   templates.forEach(template => {
     const ord = template.ord;
-    const info = db.prepare('insert into cards (nid, did, ord, mod, usn, type, queue, due, interval, factor, reps, lapses, left, odue, odid, flags, data, new_order) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    const info = db.prepare('insert into cards (nid, did, ord, mod, usn, type, queue, due, interval, factor, views, lapses, left, odue, odid, flags, data, ord) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
     .run(
       noteId,
       0,
@@ -645,14 +668,13 @@ function getPercentCorrect (n) {
   return (result ? result['average'] * 100 : 0);
 }
 
-function runServer (opts) {
-  console.log('run server ', opts);
+function runServer (opts, args) {
+  console.log('run server ', opts, args);
 
   const dataDir = opts.dir;
   const mediaDir = path.join(dataDir, 'media');
-  const databasePath = opts.database.substr(0,1) === '/' ?
-    opts.database : path.join(dataDir, opts.database);
-  db = require('better-sqlite3')(databasePath);
+  db = getDatabaseHandle(opts);
+  prepareDatabase(db);
 
   const express = require('express');
   const app = express();
@@ -714,11 +736,11 @@ function runServer (opts) {
     const viewedToday = getCountCardsViewedToday();
     const dueToday = getCountCardsDueToday();
     const dueStudyTime = getEstimatedStudyTime(dueToday);
-    const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get().due;
+    const nextDue = db.prepare('select due from card where interval != 0 order by due limit 1').get().due;
     const dueNow = getCountCardsDueNow();
     const timeToNextDue = tc.seconds(nextDue - now);
     const chart1Data = { x: [], y: [], type: 'bar' };
-    db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from cards where interval != 0 and due > ? and due < ? group by hour').all(timezoneOffset, startOfDay, endOfDay)
+    db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from card where interval != 0 and due > ? and due < ? group by hour').all(timezoneOffset, startOfDay, endOfDay)
     .forEach(el => {
       chart1Data.x.push(el.hour);
       chart1Data.y.push(el['count()']);
@@ -745,7 +767,7 @@ function runServer (opts) {
     const cardsViewedToday = getCountCardsViewedToday();
     const dueCount = getCountCardsDueToday();
 
-    const nextDue = db.prepare('select due from cards where interval != 0 order by due limit 1').get().due;
+    const nextDue = db.prepare('select due from card where interval != 0 order by due limit 1').get().due;
 
     const timeToNextDue = tc.seconds(nextDue - now);
 
@@ -781,7 +803,7 @@ function runServer (opts) {
     points = [];
     let last;
     first = null;
-    db.prepare('select cast((due - ?)/(60*60*24) as integer) as day, count() from cards where interval != 0 group by day').all(timezoneOffset).forEach(el => {
+    db.prepare('select cast((due - ?)/(60*60*24) as integer) as day, count() from card where interval != 0 group by day').all(timezoneOffset).forEach(el => {
       if (!first) first = el.day - 1;
       last = el.day - first;
       points[last] = el['count()'];
@@ -794,7 +816,7 @@ function runServer (opts) {
 
     // Cards per interval
     points = [];
-    db.prepare('select interval/60/60/24 as days, count() from cards where interval != 0 group by days').all().forEach(el => {
+    db.prepare('select interval/60/60/24 as days, count() from card where interval != 0 group by days').all().forEach(el => {
       last = el.days;
       points[el.days] = el['count()'];
     });
@@ -803,14 +825,14 @@ function runServer (opts) {
       chart4Data.x.push(i);
       chart4Data.y.push(points[i] || 0);
     }
-    const cardsSeen = db.prepare('select count() from cards where interval != 0').get()['count()'] || 0;
-    const matureCards = db.prepare('select count() from cards where interval > 364*24*60*60').get()['count()'] || 0;
+    const cardsSeen = db.prepare('select count() from card where interval != 0').get()['count()'] || 0;
+    const matureCards = db.prepare('select count() from card where interval > 364*24*60*60').get()['count()'] || 0;
 
     // New cards per day
     points = [];
     first = null;
     console.log('timezoneOffset: ', timezoneOffset);
-    db.prepare('select cast(((id - ?)/1000/60/60/24) as int) as day, count() from (select * from revlog group by cid) group by day').all(timezoneOffset * 1000).forEach(el => {
+    db.prepare('select cast(((id - ?)/1000/60/60/24) as int) as day, count() from (select * from revlog group by cardid) group by day').all(timezoneOffset * 1000).forEach(el => {
       if (!first) first = el.day;
       points[el.day - first] = el['count()'];
     });
@@ -824,7 +846,7 @@ function runServer (opts) {
     // Matured & Lapsed per day
     points = [];
     first = null;
-    db.prepare('select cast((id - ?)/(24*60*60*1000) as int) as day, count(case when ivl >= 60*60*24*364 and lastivl < 60*60*24*364 then 1 else null end) as matured, count(case when ivl < 60*60*24*364 and lastivl > 60*60*24*364 then 1 else null end) as lapsed from revlog group by day').all(timezoneOffset * 1000).forEach(el => {
+    db.prepare('select cast((id - ?)/(24*60*60*1000) as int) as day, count(case when interval >= 60*60*24*364 and lastinterval < 60*60*24*364 then 1 else null end) as matured, count(case when interval < 60*60*24*364 and lastinterval > 60*60*24*364 then 1 else null end) as lapsed from revlog group by day').all(timezoneOffset * 1000).forEach(el => {
       if (!first) first = el.day;
       points[el.day - first] = {
         matured: el.matured,
@@ -893,13 +915,16 @@ function runServer (opts) {
     card = getNextCard();
     if (card) {
       cardStartTime = now;
-      const note = getNote(card.nid);
-      note.template = getTemplate(note.mid, card.ord);
-      note.front = Mustache.render(note.template.front, note.fieldData);
-      note.fieldData.FrontSide = note.front;
-      note.back = Mustache.render(note.template.back, note.fieldData);
-      card.note = note;
-      res.render('front', note);
+      const fields = getFields(card.factsetid);
+      const template = getTemplate(card.templateid);
+      card.template = template;
+      const front = Mustache.render(template.front, fields);
+      const back = Mustache.render(template.back, fields);
+      card.back = back;
+      res.render('front', {
+        front: front,
+        template: template
+      });
     } else {
       res.redirect('/');
     }
@@ -909,7 +934,10 @@ function runServer (opts) {
     if (!card) {
       return res.redirect('/');
     }
-    res.render('back', card.note);
+    res.render('back', {
+      back: card.back,
+      template: card.template
+    });
   });
 
   app.get('/again', (req, res) => {
@@ -1056,7 +1084,77 @@ function runServer (opts) {
 }
 
 function importFile (opts) {
-  console.log('import file');
+  console.log('import file ', opts);
+  const file = opts._[1];
+  console.log('file: ', file);
+  unzip(file)
+  .then(data => {
+    const dstdb = getDatabaseHandle(opts);
+    prepareDatabase(dstdb);
+    if (data['collection.anki21']) {
+      importAnki21(opts, data, dstdb);
+    } else if (data['collection.anki2']) {
+      importAnki2(data, dstdb);
+    } else {
+      throw new Error(file + ' is not an Anki deck package');
+    }
+  })
+  .catch(err => {
+    console.log('failed with ', err);
+  });;
+}
+
+/**
+ * unzip returns a promise that resolves to an object containing
+ * the zip file contents, keyed by filename, with file data as buffers.
+ */
+function unzip (file) {
+  return new Promise((resolve, reject) => {
+    const yauzl = require('yauzl');
+    yauzl.open(file, {lazyEntries: true}, (err, zipFile) => {
+      if (err) throw err;
+
+      const data = {};
+
+      let handleCount = 0;
+      function incrementHandleCount () {
+        handleCount++;
+      }
+      function decrementHandleCount () {
+        handleCount--;
+        if (handleCount === 0) {
+          console.log('all handles are closed');
+          resolve(data);
+        }
+      }
+      
+      incrementHandleCount();
+      zipFile.on('close', decrementHandleCount);
+
+      zipFile.readEntry();
+
+      zipFile.on('entry', entry => {
+        if (/\/$/.test(entry.fileName)) {
+          zipFile.readEntry();
+        } else {
+          zipFile.openReadStream(entry, (err, readStream) => {
+            if (err) throw err;
+            const chunks = [];
+            readStream.on('data', (chunk) => {
+              chunks.push(Buffer.from(chunk));
+            });
+            readStream.on('error', err => {
+              reject(err);
+            });
+            readStream.on('end', () => {
+              data[entry.fileName] = Buffer.concat(chunks);
+              zipFile.readEntry();
+            });
+          });
+        }
+      });
+    });
+  });
 }
 
 
@@ -1064,4 +1162,258 @@ function getStudyTimeToday () {
   const studyTimeToday = db.prepare('select sum(time) from revlog where id >= ?').get(startOfDay * 1000)['sum(time)'] || 0;
   console.log('studyTimeToday ', studyTimeToday);
   return (studyTimeToday);
+}
+
+
+/**
+ * prepareDatabase initializes or updates the database as required
+ */
+function prepareDatabase (db) {
+  try {
+    const result = db.prepare('select value from config where name = ?').get('srf schema version');
+    if (result) {
+      console.log('version: ', result['version']);
+    } else {
+      throw new Error('missing srf schema version');
+    }
+  } catch (e) {
+    console.log('error: ', e);
+    console.log('error: ', e.code);
+    console.log('error: ', e.message);
+    console.log('error: ', e.stack);
+    if (e.message === 'no such table: config') {
+      console.log('OK - setup database');
+      initializeDatabase(db);
+    } else {
+      throw e;
+    }
+  }
+}
+
+/**
+ * Initialize database does initial setup of a new database.
+ */
+function initializeDatabase (db) {
+  const batch = fs.readFileSync('init-schema-v1.sql', 'utf8');
+  db.exec(batch);
+}
+
+function getDatabaseHandle (opts) {
+  const databasePath = opts.database.substr(0,1) === '/' ?
+    opts.database : path.join(opts.dir, opts.database);
+  const databaseDir = path.dirname(databasePath);
+  fs.mkdirSync(databaseDir, { recursive: true }, (err) => {
+    if (err) throw err;
+  });
+  return require('better-sqlite3')(databasePath);
+}
+
+
+/**
+ * importAnki21 imports an Anki 2.1 deck package
+ *
+ * A deck package contains one or more decks. Each deck contains a set of
+ * notes and a set of cards. Each note has a note type, with a related set
+ * of templates. The cards are produced from the notes according to the
+ * templates.
+ *
+ * In the anki21 database, the configuration of notetypes, templates and
+ * fields is stored as a JSON encoded set of 'models' in field models.
+ *
+ * Each model must be mapped to a template set in srf. There are no guids
+ * for the models and each Anki database may use different ID for the same
+ * model, so mapping on repeat import is challenging. But the essential
+ * details are the templates themselves and, in particular, the fronts and
+ * backs. If the set of fronts and backs are the same, the set of templates
+ * will be considered to be the same.
+ */
+function importAnki21 (opts, data, dstdb) {
+  const srcdb = require('better-sqlite3')(data['collection.anki21']);
+  const srccol = srcdb.prepare('select * from col').get();
+  const decks = JSON.parse(srccol.decks);
+  const dconf = JSON.parse(srccol.dconf);
+  const models = JSON.parse(srccol.models);
+  const srfTemplateSetKeys = getTemplateSetKeys(dstdb);
+  dstdb.prepare('begin transaction').run();
+  console.log('import models');
+  const anki21ModelIdToSrfTemplateSetId = {};
+  Object.keys(models).forEach(modelId => {
+    const model = models[modelId];
+    const templateSetId = getTemplateSetIdFromAnki21Model(srfTemplateSetKeys, model, dstdb);
+    anki21ModelIdToSrfTemplateSetId[modelId] = templateSetId;
+  });
+  const factsetGuidToId = {};
+  dstdb.prepare('select id, guid from factset').all()
+  .forEach(record => {
+    factsetGuidToId[record.guid] = record.id;
+  });
+  // Import anki21 notes
+  console.log('import notes');
+  const anki21NoteIdToSrfFactsetId = {};
+  const insertFactset = dstdb.prepare('insert into factset (guid, templatesetid, fields) values (?,?,?)');
+  srcdb.prepare('select * from notes').all()
+  .forEach(record => {
+    const model = models[record.mid];
+    const fieldLabels = model.flds.map(field => field.name);
+    const fieldValues = record.flds.split(String.fromCharCode(0x1f));
+    const fields = {};
+    fieldLabels.forEach((label, i) => {
+      fields[label] = fieldValues[i];
+    });
+    if (factsetGuidToId[record.guid]) {
+      dstdb.prepare('update factset set templatesetid = ?, fields = ? where id = ?')
+      .run(anki21ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields), factsetGuidToId[record.guid]);
+      anki21NoteIdToSrfFactsetId[record.id] = factsetGuidToId[record.guid];
+    } else {
+      const info = insertFactset
+      .run(record.guid, anki21ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields));
+      anki21NoteIdToSrfFactsetId[record.id] = info.lastInsertRowid;
+    }
+  });
+  // Import anki21 cards
+  console.log('import cards');
+  const anki21CardIdToSrfCardId = {};
+  srcdb.prepare('select * from cards').all()
+  .forEach(record => {
+    const factsetId = anki21NoteIdToSrfFactsetId[record.nid];
+    const factsetRecord = dstdb.prepare('select templatesetid from factset where id = ?').get(factsetId);
+    if (!factsetRecord) {
+      console.log('no factset for ', record, ', factsetId: ', factsetId);
+      process.exit(0);
+    }
+    const templatesetId = factsetRecord.templatesetid;
+    const templatesetRecord = dstdb.prepare('select templates from templateset where id = ?').get(templatesetId);
+    const templates = JSON.parse(templatesetRecord.templates);
+    const templateId = templates[record.ord];
+    const cardRecord = dstdb.prepare('select id from card where factsetid = ? and templateid = ?').get(factsetId, templateId);
+    if (cardRecord) {
+      // Update existing record???
+      anki21CardIdToSrfCardId[record.id] = cardRecord.id;
+    } else {
+      // Insert new record
+      let interval = 0;
+      let due = 0;
+      let factor = 0;
+      let views = record.reps;
+      let lapses = record.lapses;
+      let ord = 0;
+      if (record.type === 0) {
+        // New card
+        ord = record.due;
+        views = 0;
+        lapses = 0;
+      } else if (record.type === 1) {
+        // Learn card
+        due = record.due;
+        interval = 60;
+      } else if (record.type === 2) {
+        // review card
+        due = srccol.crt + record.due * 60 * 60 * 24;
+        interval = record.ivl * 60 * 60 * 24;
+        factor = Math.log(1+interval/900) * 0.4;
+      } else if (record.type === 3) {
+        // relearn card
+        due = record.due;
+        interval = 60;
+      } else {
+        console.log('unknown card type for ', record);
+        throw new Error('unknown card type ' + record.type);
+        process.exit(0);
+      }
+      const info = dstdb.prepare('insert into card (factsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
+      .run(factsetId, templateId, Math.floor(Date.now() / 1000), interval, due, factor, views, lapses, ord);
+      anki21CardIdToSrfCardId[record.id] = info.lastInsertRowid;
+    }
+  });
+  // Import anki21 revlog
+  console.log('import revlog');
+  const insertRevlog = dstdb.prepare('insert into revlog (id, cardid, ease, interval, lastinterval, factor, time, lapses) values (?,?,?,?,?,?,?,?)');
+  srcdb.prepare('select * from revlog').all()
+  .forEach(record => {
+    const cardId = anki21CardIdToSrfCardId[record.cid];
+    const ease = record.ease;
+    const interval = record.ivl < 0 ? -record.ivl : record.ivl * 60 * 60 * 24;
+    const lastinterval = record.lastIvl < 0 ? -record.lastIvl : record.lastIvl * 60 * 60 *24;
+    const factor = Math.log(1+interval/900) * 0.4;
+    const time = Math.floor(record.time/1000);
+    insertRevlog
+    .run(record.id, cardId, ease, interval, lastinterval, factor, time, 0);
+  });
+  dstdb.prepare('commit').run();
+  // save media
+  console.log('save media');
+  const mediaDir = path.join(opts.dir, 'media');
+  fs.mkdirSync(mediaDir, { recursive: true }, (err) => {
+    if (err) throw err;
+  });
+  const media = JSON.parse(data['media']);
+  console.log('media: ', media);
+  Object.keys(media).forEach(key => {
+    fs.writeFileSync(path.join(mediaDir, media[key]), data[key]);
+  });
+}
+
+/**
+ * getTemplateSetKeys returns an object that maps template set keys to srf
+ * template set IDs, for each template template set in srf. The key is the
+ * concatenation of the name, front and back of each template in the set,
+ * sorted in ascending order by ord.
+ */
+function getTemplateSetKeys (db) {
+  const result = {};
+  const templateSetRecords = db.prepare('select * from templateset').all();
+  templateSetRecords.forEach(record => {
+    let key = '';
+    JSON.parse(record.templates)
+    .forEach(templateId => {
+      const templateRecord = db.prepare('select value from template where id = ?').get(templateId);
+      const template = JSON.parse(templateRecord.value);
+      key += template.name + template.front + template.back;
+    });
+    result[key] = record.id;
+  });
+  console.log('template set keys: ', result);
+  return (result);
+}
+
+function getTemplateSetIdFromAnki21Model (keyMap, model, db) {
+  let key = '';
+  model.tmpls.forEach(template => {
+    key += template.name + template.qfmt + template.afmt;
+  });
+  if (keyMap[key]) return (keyMap[key]);
+  // create each template
+  const templates = [];
+  model.tmpls.forEach(ankiTemplate => {
+    const srfTemplate = {};
+    srfTemplate.css = model.css;
+    srfTemplate.front = ankiTemplate.qfmt;
+    srfTemplate.back = ankiTemplate.afmt;
+    srfTemplate.name = ankiTemplate.name;
+    const info = db.prepare('insert into template (value) values (?)')
+    .run(JSON.stringify(srfTemplate));
+    const srfTemplateId = info.lastInsertRowid;
+    templates.push(srfTemplateId);
+  });
+  const fields = model.flds.map(field => field.name);
+  const info = db.prepare('insert into templateset (name, templates, fields) values (?,?,?)')
+  .run(model.name, JSON.stringify(templates), JSON.stringify(fields));
+  const srfTemplateSetId = info.lastInsertRowid;
+  keyMap[key] = srfTemplateSetId;
+  return(srfTemplateSetId);
+}
+
+/**
+ * importAnki2 imports an Anki 2.0 deck package
+ */
+function importAnki2 (data, dstdb) {
+  const srcdb = require('better-sqlite3')(data['collection.anki2']);
+  const srccol = srcdb.prepare('select * from col').get();
+  console.log('srccol ', srccol);
+  throw new Error('not implemented');
+}
+
+
+function getFields (factsetId) {
+  return JSON.parse(db.prepare('select fields from factset where id = ?').get(factsetId)['fields']);
 }
