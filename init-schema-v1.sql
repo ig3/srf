@@ -53,7 +53,10 @@ create table templateset (
 -- template set.
 create table template (
   id            integer primary key,
-  value         test not null
+  name          text not null,
+  front         text not null,
+  back          text not null,
+  css           text not null
 );
 
 create table revlog (

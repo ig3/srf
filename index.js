@@ -88,100 +88,58 @@ if (command === 'import') {
 }
 
 /**
- * The card contains scheduling information for a combination of note, note
- * type and template. The data to be studied is in the note. The note type
- * is linked to a set of fields, which determine the data that can be
- * stored in the note, and a set of templates, which define how the note
- * should be presented to the user. For each template, one card is created
- * and independently scheduled.
- *
- * The card is linked to notes by cards.nid.
- *
- * The note is linked to notetypes by notes.mid.
- *
- * The fields are linked to notetypes by fields.ntid.
- *
- * The templates are linked to notetypes by templates.ntid.
- *
- * The primary key of templates is the tuple (ntid, ord). A card is linked
- * to a specific template only indirectly. The card has cards.ord,
- * corresponding to templates.ord, but the note type ID is only available
- * through lookup of the note: notes.mid.
- *
- * The note is linked to notetypes by fk mid
- * A set of fields are linked to notetype by fk ntid
- * A set of templates are linked to notetype by fk ntid
- * The card and template both have ord which determines the template that
- * matches the card.
+ * get factset returns the fact set and ...
  */
-function getNote (nid) {
-  const note = db.prepare('select * from notes where id = ?').get(nid);
-  if (!note) {
-    console.log('No note ID ', nid);
+function getFactset (factsetid) {
+  const factset = db.prepare('select * from factset where id = ?')
+  .get(factsetid);
+  if (!factset) {
+    console.log('No factset ID ', factsetid);
     return;
   }
-  const noteTypeID = note.mid;
-  note.noteType = db.prepare('select * from notetypes where id = ?').get(noteTypeID);
-  if (!note.noteType) {
-    console.log('No notetypes for note ', note.id);
-    return;
-  }
-  const fields = db.prepare('select name, ord from fields where ntid = ? order by ord').all(noteTypeID);
-  if (!fields) {
-    console.log('No fields for note ', note.id);
-  }
-
-  const tmpFieldValues = note.flds.split(String.fromCharCode(0x1f));
-
-  note.fieldData = {};
-  note.fields = [];
-  fields
-  .forEach(field => {
-    note.fieldData[field.name] = tmpFieldValues[field.ord];
-    note.fields.push(field.name);
-  });
-
-  return (note);
+  factset.fields = JSON.parse(factset.fields);
+  factset.templateset = getTemplateset(factset.templatesetid);
+  return (factset);
 }
 
-/*
- * Get all note types
- */
-function getNoteTypes () {
-  const results = db.prepare('select id, name from notetypes').all();
-  const noteTypes = {};
-  results.forEach(result => {
-    noteTypes[result.id] = result.name;
+function getTemplateset (id) {
+  const templateset = db.prepare('select * from templateset where id = ?')
+  .get(id);
+  if (!templateset) {
+    console.log('No templateset with ID', id);
+    return;
+  }
+  templateset.templates = JSON.parse(templateset.templates)
+  .map(id => getTemplate(id));
+  templateset.fields = JSON.parse(templateset.fields);
+  console.log('templateset: ', templateset);
+  return(templateset);
+}
+
+function getTemplatesets () {
+  const templatesets = db.prepare('select * from templateset').all();
+  templatesets.forEach(templateset => {
+    templateset.templates = JSON.parse(templateset.templates)
+    .map(id => getTemplate(id));
+    templateset.fields = JSON.parse(templateset.fields);
   });
-  return (noteTypes);
+  return (templatesets);
 }
 
 /**
- * getNoteType returns details of the note type with the given ID
+ * getTemplate gets a template record by id
+ *
+ * TODO: fix the template table to keep css, front and back in separate
+ * fields. There is no value in the JSON here.
  */
-function getNoteType (id) {
-  const noteTypeName = db.prepare('select name from notetypes where id = ?').get(id).name;
-  console.log('noteTypeName: ', noteTypeName);
-  const fields = db.prepare('select name from fields where ntid = ? order by ord').all(id).map(field => field.name);
-  if (!fields) {
-    console.log('No fields for note type id ', id);
-  }
-  console.log('fields: ', fields);
-  return ({
-    id: id,
-    name: noteTypeName,
-    fields: fields
-  });
-}
-
 function getTemplate (templateid) {
-  const template = db.prepare('select value from template where id = ?')
+  const template = db.prepare('select * from template where id = ?')
   .get(templateid);
   if (!template) {
     console.log('No template for templateid ', templateid);
     return;
   }
-  return (JSON.parse(template.value));
+  return (template);
 }
 
 function updateSeenCard (card, ease, interval) {
@@ -318,9 +276,9 @@ function getEstimatedTotalStudyTime () {
 }
 
 /**
- * For each note there may be several cards. To avoid seeing these related
- * cards too close to each other, if a card later in the order than the
- * current card is due in the next 5 days, push its due date out to 5 days
+ * For each factset there may be several cards. To avoid seeing these related
+ * cards too close to each other, when a card is seen, defer the due date
+ * of any other card in the set that is due in the next 5 days to 5 days
  * from now.
  */
 function buryRelated (card) {
@@ -472,36 +430,26 @@ function getConfig (opts) {
 }
 
 /**
- * createCards creates a set of cards for the note with the given ID
+ * createCards creates a set of cards for the factset with the given id
+ * and templateset.
  */
-function createCards (noteId, noteTypeId) {
-  console.log('createCards ', noteId, noteTypeId);
-  const noteType = getNoteType(noteTypeId);
-  console.log('noteType: ', noteType);
-  const templates = db.prepare('select ord, name, front, back, css from templates where ntid = ?').all(noteTypeId);
-  console.log('templates: ', templates);
+function createCards (factsetid, templatesetid) {
+  console.log('createCards ', factsetid, templatesetid);
+  const templateset = getTemplateset(templatesetid);
+  console.log('templateset: ', templateset);
 
-  templates.forEach(template => {
-    const ord = template.ord;
-    const info = db.prepare('insert into cards (nid, did, ord, mod, usn, type, queue, due, interval, factor, views, lapses, left, odue, odid, flags, data, ord) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+  templateset.templates.forEach(template => {
+    console.log('create card for template: ', template);
+    const info = db.prepare('insert into card (factsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
     .run(
-      noteId,
-      0,
-      ord,
+      factsetid,
+      template.id,
       Math.floor(Date.now() / 1000),
-      -1,
       0,
       0,
       0,
       0,
       0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      '',
       0
     );
     console.log('insert info: ', info);
@@ -828,71 +776,72 @@ function runServer (opts, args) {
     res.redirect('/front');
   });
 
-  app.get('/notes', (req, res) => {
-    const notes = db.prepare('select * from notes').all();
-    res.render('notes', {
-      notes: notes
+  app.get('/factsets', (req, res) => {
+    const factsets = db.prepare('select * from factset').all();
+    res.render('factsets', {
+      factsets: factsets
     });
   });
 
-  app.get('/note/:id', (req, res) => {
-    const note = getNote(req.params.id);
-    note.noteTypes = getNoteTypes();
-    console.log('note: ', note);
-    res.render('note', {
-      note: note
+  app.get('/factset/:id', (req, res) => {
+    const factset = getFactset(req.params.id);
+    console.log('factset: ', factset);
+    // To present a select of template sets the form helper needs an object
+    // keyed by select value with value being the displayed text.
+    const templatesets = {};
+    getTemplatesets().forEach(set => {
+      templatesets[set.id] = set.name;
+    });
+    console.log('templatesets: ', templatesets);
+    res.render('factset', {
+      factset: factset,
+      templatesets: templatesets
     });
   });
 
-  app.get('/note', (req, res) => {
-    const note = {
+  app.get('/factset', (req, res) => {
+    const factset = {
       id: 'new',
       guid: '',
-      mid: '',
-      noteType: {
-        id: 0,
-        name: ''
-      }
+      templatesetid: '',
+      fields: {}
     };
-    note.noteTypes = getNoteTypes();
-    note.mid = Object.keys(note.noteTypes)[0];
-    note.noteType = getNoteType(note.mid);
-    note.fieldData = {};
-    note.noteType.fields.forEach(field => {
-      note.fieldData[field] = '';
+    factset.templatesetid = getTemplatesets()[0].id;
+    factset.templateset = getTemplateset(factset.templatesetid);
+    factset.templateset.fields.forEach(field => {
+      factset.fields[field] = '';
     });
-    console.log('note: ', note);
-    console.log('about to render');
-    res.render('note', {
-      note: note
+    console.log('factset: ', factset);
+    // To present a select of template sets the form helper needs an object
+    // keyed by select value with value being the displayed text.
+    const templatesets = {};
+    getTemplatesets().forEach(set => {
+      templatesets[set.id] = set.name;
+    });
+    res.render('factset', {
+      factset: factset,
+      templatesets: templatesets
     });
   });
 
-  app.post('/note/:id', (req, res) => {
-    console.log('save note ' + req.params.id);
+  app.post('/factset/:id', (req, res) => {
+    console.log('save factset ' + req.params);
     if (req.params.id === 'new') {
-      console.log('new note');
+      console.log('create a new factset');
       console.log('body ', req.body);
-      const flds = Object.keys(req.body.fields)
-      .map(field => req.body.fields[field] || '')
-      .join(String.fromCharCode(0x1f));
-      console.log('flds ', flds);
-      const sfield = req.body.fields[Object.keys(req.body.fields)[0]];
-      console.log('sfield: ', sfield);
-      const info = db.prepare('insert into notes (guid, mid, mod, usn, flds, sfld, tags, csum, flags, data) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      const templatesetid = req.body.templatesetid;
+      console.log('templatesetid: ', templatesetid);
+      const fields = JSON.stringify(req.body.fields);
+      console.log('fields: ', fields);
+      const info = db.prepare('insert into factset (guid, templatesetid, fields) values (?, ?, ?)')
       .run(
         uuidv4(),
-        req.body.noteTypeId,
-        Math.floor(Date.now() / 1000),
-        -1,
-        flds,
-        sfield,
-        '',
-        '',
-        '',
-        ''
+        templatesetid,
+        fields
       );
       console.log('insert info: ', info);
+      const factsetid = info.lastInsertRowid;
+      createCards(factsetid, templatesetid);
       const files = req.body.files;
       if (files && files.length > 0) {
         files.forEach(file => {
@@ -904,26 +853,33 @@ function runServer (opts, args) {
           fs.writeFileSync(filepath, buff);
         });
       }
-      const noteId = info.lastInsertRowid;
-      createCards(noteId, req.body.noteTypeId);
       res.send('ok');
     } else {
-      const note = getNote(req.params.id);
-      console.log('note ', note);
+      console.log('update an existing factset');
       console.log('body ', req.body);
-      const flds = note.fields.map(field => req.body.fields[field])
-      .join(String.fromCharCode(0x1f));
-      console.log('flds ', flds);
-      db.prepare('update notes set flds = ? where id = ?')
-      .run(flds, req.params.id);
+      const factsetid = req.params.id;
+      const templatesetid = req.body.templatesetid;
+      console.log('templatesetid: ', templatesetid);
+      const fields = JSON.stringify(req.body.fields);
+      console.log('fields: ', fields);
+      const oldFactest = getFactset(factsetid);
+      db.prepare('update factset set templatesetid = ?, fields = ? where id = ?')
+      .run(templatesetid, fields, factsetid);
+      // If the templateset has changed, we need a new set of cards
+      if (oldFactset.templatesetid !== templatesetid) {
+        db.prepare('delete card where factsetid = ?').run(factsetid);
+        // TODO: what about revlog? Should the old entries be deleted?
+        // The cards they link to will no longer exists.
+        // On the other hand, the reviews they record did happen.
+        createCards(factsetid, templatesetid);
+      }
       res.send('ok');
     }
   });
 
-  app.get('/rest/notetype/:id', (req, res) => {
-    const noteType = getNoteType(req.params.id);
-    console.log('noteType: ', noteType);
-    res.send(noteType);
+  app.get('/rest/templateset/:id', (req, res) => {
+    const templateset = getTemplateset(req.params.id);
+    res.send(templateset);
   });
 
   app.use((req, res, next) => {
@@ -1216,8 +1172,7 @@ function getTemplateSetKeys (db) {
     let key = '';
     JSON.parse(record.templates)
     .forEach(templateId => {
-      const templateRecord = db.prepare('select value from template where id = ?').get(templateId);
-      const template = JSON.parse(templateRecord.value);
+      const template = getTemplate(templateId);
       key += template.name + template.front + template.back;
     });
     result[key] = record.id;
@@ -1235,15 +1190,9 @@ function getTemplateSetIdFromAnki21Model (keyMap, model, db) {
   // create each template
   const templates = [];
   model.tmpls.forEach(ankiTemplate => {
-    const srfTemplate = {};
-    srfTemplate.css = model.css;
-    srfTemplate.front = ankiTemplate.qfmt;
-    srfTemplate.back = ankiTemplate.afmt;
-    srfTemplate.name = ankiTemplate.name;
-    const info = db.prepare('insert into template (value) values (?)')
-    .run(JSON.stringify(srfTemplate));
-    const srfTemplateId = info.lastInsertRowid;
-    templates.push(srfTemplateId);
+    const info = db.prepare('insert into template (name, front, back, css) values (?, ?, ?, ?)')
+    .run(ankiTemplate.name, ankiTemplate.qfmt, ankiTemplate.afmt, model.css);
+    templates.push(info.lastInsertRowid);
   });
   const fields = model.flds.map(field => field.name);
   const info = db.prepare('insert into templateset (name, templates, fields) values (?,?,?)')
@@ -1262,15 +1211,9 @@ function getTemplateSetIdFromAnki2Model (keyMap, model, db) {
   // create each template
   const templates = [];
   model.tmpls.forEach(ankiTemplate => {
-    const srfTemplate = {};
-    srfTemplate.css = model.css;
-    srfTemplate.front = ankiTemplate.qfmt;
-    srfTemplate.back = ankiTemplate.afmt;
-    srfTemplate.name = ankiTemplate.name;
-    const info = db.prepare('insert into template (value) values (?)')
-    .run(JSON.stringify(srfTemplate));
-    const srfTemplateId = info.lastInsertRowid;
-    templates.push(srfTemplateId);
+    const info = db.prepare('insert into template (name, front, back, css) values (?, ?, ?, ?)')
+    .run(JSON.stringify(ankiTemplate.name, ankiTemplate.qfmt, ankiTemplate.afmt, model.css));
+    templates.push(info.lastInsertRowid);
   });
   const fields = model.flds.map(field => field.name);
   const info = db.prepare('insert into templateset (name, templates, fields) values (?,?,?)')

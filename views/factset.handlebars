@@ -7,18 +7,19 @@
   }
 </style>
 <h1>Spaced Repetition Flashcards</h1>
-<h2>Note</h2>
+<h2>Factset</h2>
 <table>
-<tr><th>ID</th><td>{{note.id}}</td></tr>
-<tr><th>GUID</th><td>{{note.guid}}</td></tr>
-<tr><th>ntid/name</th><td>{{note.mid}}/{{note.noteType.name}}</td></tr>
-<tr><th>Note Type</th><td>{{form-select 'noteType' note.noteTypes note.noteType.id}}</td></tr>
+<tr><th>ID</th><td>{{factset.id}}</td></tr>
+<tr><th>GUID</th><td>{{factset.guid}}</td></tr>
+<tr><th>templatesetid/name</th><td>{{factset.templatesetid}}/{{factset.templateset.name}}</td></tr>
+<tr><th>Template set</th><td>{{form-select 'templatesetid'
+templatesets factset.templatesetid}}</td></tr>
 </table>
 
 <h2>Fields</h2>
 <button onclick="attach()">Attach</button>
 <table id="table-fields">
-{{#each note.fieldData}}
+{{#each factset.fields}}
 <tr><th>{{@key}}</th><td><input type="text" id="{{@key}}" value="{{this}}"/></td></tr>
 {{/each}}
 </table>
@@ -39,16 +40,16 @@
     lastInput.label = tr.getElementsByTagName('th')[0].innerHTML;
   });
 
-  // When the note type is changed, update the set of field inputs
-  document.getElementById('field-noteType')
+  // When the template set is changed, update the set of field inputs
+  document.getElementById('field-templatesetid')
   .addEventListener('change', e => {
     document
     .getElementById('table-fields')
     .innerHTML = '';
-    fetch('/rest/notetype/' + e.target.value)
+    fetch('/rest/templateset/' + e.target.value)
     .then(response => {
       if (!response.ok) {
-        throw new Error('get notetype failed ' + response.statusText);
+        throw new Error('get templateset failed ' + response.statusText);
       }
       return response.json();
     })
@@ -60,24 +61,23 @@
       });
     })
     .catch(err => {
-      alert('get notetype failed with ' + err);
+      alert('get templateset failed with ' + err);
     });
   });
 
   // When the Save button is clicked
   function save() {
     const data = {
-      noteTypeId: document.getElementById('field-noteType').value,
+      templatesetid: document.getElementById('field-templatesetid').value,
       fields: {},
       files: fileAttachments
     };
-    console.log('save: ', data);
     document.querySelectorAll('input')
     .forEach((input) => {
       data.fields[input.id] = input.value;
     });
-    console.log('data ', data);
-    fetch('/note/{{note.id}}', {
+    console.log('save data ', data);
+    fetch('/factset/{{factset.id}}', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)

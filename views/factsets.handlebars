@@ -7,18 +7,18 @@
   }
 </style>
 <h1><a href="/">Spaced Repetition Flashcards</a></h1>
-<h2>Notes</h2>
-<a href="/note" onclick="return add()"><button>Add</button></a>
+<h2>Factsets</h2>
+<a href="/factset" onclick="return add()"><button>Add</button></a>
 <table border="1" class="sortable">
 <thead>
   <tr>
-    {{#each notes.[0]}}
+    {{#each factsets.[0]}}
       <th>{{@key}}</th>
     {{/each}}
   </tr>
 </thead>
 <tbody>
-  {{#each notes}}
+  {{#each factsets}}
     <tr>
       {{#each this}}
         <td>{{this}}</td>
@@ -30,13 +30,13 @@
 <script src="js/sorttable.js"></script>
 <script>
   function add () {
-    window.open('/note', 'Edit Note', 'height=800,width=600');
+    window.open('/factset', 'Edit Note', 'height=800,width=600');
     return false;
   }
   document.querySelectorAll('table tr')
   .forEach(e => e.addEventListener('click', (event) => {
     const cells = event.currentTarget.getElementsByTagName('td');
-    window.open('/note/' + cells[0].innerText, 'Edit Note',
+    window.open('/factset/' + cells[0].innerText, 'Edit Factset',
       'height=800,width=600');
   }));
 </script>
