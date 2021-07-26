@@ -499,7 +499,7 @@ function intervalGood (card) {
   const correctFactor = Math.max(0, percentCorrect - 80) / 10;
   const factor = 1.5 + 
     card.factor * correctFactor * Math.exp(-timeSinceLastSeen/60/60/24/7);
-  console.log('factor: ', factor, card.factor, correctFactor, Math.exp(-timeSinceLastSeen/60/60/24/7));
+  console.log('factor: ', factor.toFixed(2), card.factor.toFixed(2), correctFactor.toFixed(2), Math.exp(-timeSinceLastSeen/60/60/24/7).toFixed(2));
   return (
     Math.min(
       secPerYear,
@@ -740,7 +740,7 @@ function runServer (opts, args) {
     const dueNow = getCountCardsDueNow();
     const timeToNextDue = tc.seconds(nextDue - now);
     const chart1Data = { x: [], y: [], type: 'bar' };
-    db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from card where interval != 0 and due > ? and due < ? group by hour').all(timezoneOffset, startOfDay, endOfDay)
+    db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from card where due > ? and due < ? and interval != 0 group by hour').all(timezoneOffset, startOfDay, endOfDay)
     .forEach(el => {
       chart1Data.x.push(el.hour);
       chart1Data.y.push(el['count()']);

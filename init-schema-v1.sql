@@ -26,6 +26,8 @@ create table card (
   ord         integer not null
 );
 
+create index idx_card_due_interval on card (due, interval);
+
 create table factset (
   id            integer primary key,
   guid          text not null,
@@ -64,6 +66,8 @@ create table revlog (
   time          integer not null,
   lapses        integer not null
 );
+
+create index idx_revlog_id on revlog (id);
 
 insert into config (name, value) values ('srf schema version', 1);
 
