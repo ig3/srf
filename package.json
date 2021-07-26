@@ -42,6 +42,7 @@
     "multi-tape": "^1.6.1"
   },
   "eslintConfig": {
-    "extends": "entrain"
+    "extends": "entrain",
+    "ignorePatterns": ["public/js/sorttable.js"]
   }
 }

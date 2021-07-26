@@ -1,6 +1,5 @@
 'use strict';
 
-const tc = require('timezonecomplete');
 const fs = require('fs');
 
 const srcFile = process.argv[2];
@@ -29,8 +28,6 @@ setNewOrder();
 reviseRevlog();
 reviseTemplates();
 
-
-
 /**
  * Anki uses rust sqlite driver to access its database and this uses
  * a collation function called unicase on several fields. This manifests
@@ -52,7 +49,7 @@ function removeCollationUnicase () {
   db.pragma('writable_schema = 1');
   schemaEntries.forEach((entry, id) => {
     if (/collate unicase/i.test(entry.sql)) {
-      const sql = entry.sql.replace(/ collate unicase/i, "");
+      const sql = entry.sql.replace(/ collate unicase/i, '');
       db.prepare("update sqlite_master set sql = ? where type == 'table' and name = ?").run(sql, entry.name);
     }
   });
@@ -79,13 +76,12 @@ function lowercaseTableNames () {
   tables.forEach(entry => {
     if (entry.name !== entry.name.toLowerCase()) {
       const newName = entry.name.toLowerCase();
-      db.prepare("alter table " + entry.name + " rename to XXX").run();
-      db.prepare("alter table XXX rename to " + newName).run();
+      db.prepare('alter table ' + entry.name + ' rename to XXX').run();
+      db.prepare('alter table XXX rename to ' + newName).run();
     }
   });
   db.close();
 }
-
 
 /**
  * addColumns adds new columns to existing tables.
@@ -95,7 +91,7 @@ function lowercaseTableNames () {
 function addColumns () {
   const db = require('better-sqlite3')(dstFile);
   try {
-    db.prepare("alter table cards add column new_order integer not null default 0").run();
+    db.prepare('alter table cards add column new_order integer not null default 0').run();
   } catch (e) {
     if (e.toString() !== 'SqliteError: duplicate column name: new_order') {
       throw e;
@@ -123,7 +119,7 @@ function addColumns () {
     }
   }
   try {
-    db.prepare("alter table revlog add column lapses integer not null default 0").run();
+    db.prepare('alter table revlog add column lapses integer not null default 0').run();
   } catch (e) {
     if (e.toString() !== 'SqliteError: duplicate column name: lapses') {
       throw e;
@@ -131,7 +127,6 @@ function addColumns () {
   }
   db.close();
 }
-
 
 /**
  * renameColumns renames existing columns
@@ -141,7 +136,7 @@ function addColumns () {
 function renameColumns () {
   const db = require('better-sqlite3')(dstFile);
   try {
-    db.prepare("alter table cards rename column ivl to interval").run();
+    db.prepare('alter table cards rename column ivl to interval').run();
   } catch (e) {
     if (e.toString() !== 'SqliteError: no such column: "ivl"') {
       console.log('error: ' + e);
@@ -150,7 +145,6 @@ function renameColumns () {
   }
   db.close();
 }
-
 
 /**
  * Anki puts various values into due depending on the queue. But srf sets
@@ -162,13 +156,13 @@ function fixDue () {
   const db2 = require('better-sqlite3')(dstFile);
   // crt is the collection creation time in seconds since epoch
   // many due values are relative to this
-  const crt = db.prepare('select crt from col').get()['crt'];
+  const crt = db.prepare('select crt from col').get().crt;
   console.log('crt ', crt);
 
   const cards = db.prepare('select * from cards');
 
   // Limit due to 1 year from now
-  const dueLimit = Date.now()/1000 + 60 * 60 * 24 * 365;
+  const dueLimit = Date.now() / 1000 + 60 * 60 * 24 * 365;
 
   for (const card of cards.iterate()) {
     // console.log('card ', card);
@@ -178,22 +172,22 @@ function fixDue () {
       // select id from cards where did = ? and queue = {QUEUE_TYPE_NEW}
       // order by due,ord limit ?
       // Merge due and ord into ord and set due to 0
-      //console.log('set ord on ' + card.id);
+      // console.log('set ord on ' + card.id);
       // Doing this one at a time is inefficient.
       // See setNewOrder()
-      //db2.prepare('update cards set ord = ?, due = 0 where id = ?')
+      // db2.prepare('update cards set ord = ?, due = 0 where id = ?')
       //  .run(card.due + card.ord, card.id);
-    } else if  (card.queue === 1) { // (re)learn
+    } else if (card.queue === 1) { // (re)learn
       // due is epoch seconds. Limit it to dueLimit.
       // interval is an index into the learning steps. Set it to 60.
       // Move to queue 2: all cards are review cards in srf
       db2.prepare('update cards set queue = ?, interval = ?, due = ? where id = ?')
-        .run(2, 60, Math.min(dueLimit, card.due), card.id);
+      .run(2, 60, Math.min(dueLimit, card.due), card.id);
     } else if (
       card.queue === -3 || // manually buried
       card.queue === -2 || // sibling buried
       card.queue === -1 || // suspended
-      card.queue === 2 ||  // review queue
+      card.queue === 2 || // review queue
       card.queue === 3 // day (re)learn
     ) {
       if (card.due < crt) {
@@ -202,7 +196,7 @@ function fixDue () {
         // interval is a number of days.
         const interval = card.interval * 60 * 60 * 24;
         db2.prepare('update cards set queue = ?, interval = ?, due = ? where id = ?')
-          .run(2, interval, due, card.id);
+        .run(2, interval, due, card.id);
       }
     } else {
       console.log('Unsupported queue ', card.queue);
@@ -231,7 +225,6 @@ update revlog set
   db.prepare('update revlog set lastivl = 0 where id in (select id from revlog group by cid order by cid, id)').run();
   db.close();
 }
-
 
 /**
  * In Anki, the order of presentation of new cards is primarily determined
@@ -276,18 +269,17 @@ function reviseTemplates () {
 
   for (const template of templates.iterate()) {
     if (!template.front) {
-      const configString = template.config.toString('binary');
       const config = parseTemplateConfig(template.config);
       const noteType = getNoteType(template.ntid);
       const db = require('better-sqlite3')(dstFile);
-      db.prepare("update templates set front = ?, back = ?, css = ? where ntid = ? and ord = ?")
-        .run(
-          config.front,
-          config.back,
-          noteType.config.css,
-          template.ntid,
-          template.ord
-        );
+      db.prepare('update templates set front = ?, back = ?, css = ? where ntid = ? and ord = ?')
+      .run(
+        config.front,
+        config.back,
+        noteType.config.css,
+        template.ntid,
+        template.ord
+      );
       db.close();
     }
   }
@@ -340,9 +332,8 @@ function parseTemplateConfig (buffer) {
       throw new Error('Unsupported field code ' + fieldCode + ' in template config ' + JSON.stringify(buf));
     }
   }
-  return(value);
+  return (value);
 }
-
 
 /**
  * serdeGetInt parses an integer value from in.str starting at in.pos.
@@ -357,10 +348,9 @@ function serdeGetInt (buf) {
   let n = 0;
   do {
     value = value | ((buf.str.charCodeAt(buf.pos) & 0x7f) << (n++ * 7));
-  } while(buf.str.charCodeAt(buf.pos++) > 0x7f);
-  return(value);
+  } while (buf.str.charCodeAt(buf.pos++) > 0x7f);
+  return (value);
 }
-
 
 /**
  * getNoteType retuns details of the note type with the given ID.
@@ -370,9 +360,8 @@ function getNoteType (ntid) {
   const noteType = db.prepare('select * from notetypes where id = ?').get(ntid);
   const config = parseNoteTypeConfig(noteType.config);
   noteType.config = config;
-  return(noteType);
+  return (noteType);
 }
-
 
 /**
  * parseNoteTypeConfig takes the buffer returned by SQLite for the config
@@ -457,7 +446,7 @@ function parseNoteTypeConfig (buffer) {
       value.latexPost = buf.str.substr(buf.pos, len);
       buf.pos += len;
     } else if (fieldCode === 0x38) {
-      value.LatexSvg = serdeGetIng(buf);
+      value.LatexSvg = serdeGetInt(buf);
     } else if (fieldCode === 0x42) {
       const len = serdeGetInt(buf);
       const cardReqStr = buf.str.substr(buf.pos, len);
@@ -473,11 +462,8 @@ function parseNoteTypeConfig (buffer) {
     }
   }
   console.log('Note type config: ', value);
-  return(value);
+  return (value);
 }
-
-
-
 
 /**
  * parseCardRequirement takes a string containing the content of one
@@ -522,7 +508,7 @@ function parseNoteTypeConfig (buffer) {
  * but maybe it depends on the type??? Who knows, because I can't find
  * the rust/serde code.
  *
- * The result doesn't look too grosly unreasonable, but there is a good 
+ * The result doesn't look too grosly unreasonable, but there is a good
  * chance this parsing is wrong.
  */
 function parseCardRequirement (str) {
@@ -540,14 +526,14 @@ function parseCardRequirement (str) {
     } else if (fieldCode === 0x1a) {
       const count = serdeGetInt(buf);
       if (!value.fieldOrds) value.fieldOrds = [];
-      for (var i = 0; i < count; i++) {
+      for (let i = 0; i < count; i++) {
         value.fieldOrds.push(serdeGetInt(buf));
       }
     } else {
       throw new Error('Unsupported field code ' + fieldCode + ' in CardRequirement' + JSON.stringify(buf));
     }
   }
-  return(value);
+  return (value);
 }
 
 /**
@@ -603,6 +589,7 @@ function parseCardRequirement (str) {
  * But, it seems there is little or no need for them in srf.
  *
  */
+// eslint-disable-next-line
 function parseFieldsConfig (str) {
   throw new Error('not implemented');
 }

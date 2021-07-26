@@ -63,8 +63,6 @@ let buried = '';
 // card is the current card. Updated when a new card is shown.
 let card;
 
-
-
 const getopts = require('getopts');
 const opts = getopts(process.argv.slice(2), {
   string: ['directory', 'database'],
@@ -159,43 +157,17 @@ function getNoteTypes () {
 }
 
 /**
- * getNoteTypeDetails returns an object keyed by note type ID,
- * with values being objects with the details of each note type.
- */
-function getNoteTypeDetails (db) {
-  const noteTypes = {};
-  db.prepare('select id, name from notetype').all()
-  .forEach(record => {
-    noteTypes[record.id] = record;
-  });
-  Object.keys(noteTypes).forEach(id => {
-    noteTypes[id].fields = {};
-    db.prepare('select * from field where notetypeid = ?').all(id)
-    .forEach(record => {
-      noteTypes[id].fields[record.id] = record;
-    });
-    noteTypes[id].templates = {};
-    db.prepare('select * from template where notetypeid = ?').all(id)
-    .forEach(record => {
-      noteTypes[id].templates[record.id] = record;
-    });
-  });
-  return(NoteTypes);
-}
-
-
-/**
  * getNoteType returns details of the note type with the given ID
  */
 function getNoteType (id) {
-  const noteTypeName = db.prepare('select name from notetypes where id = ?').get(id)['name'];
+  const noteTypeName = db.prepare('select name from notetypes where id = ?').get(id).name;
   console.log('noteTypeName: ', noteTypeName);
   const fields = db.prepare('select name from fields where ntid = ? order by ord').all(id).map(field => field.name);
   if (!fields) {
     console.log('No fields for note type id ', id);
   }
   console.log('fields: ', fields);
-  return({
+  return ({
     id: id,
     name: noteTypeName,
     fields: fields
@@ -206,14 +178,13 @@ function getTemplate (templateid) {
   const template = db.prepare('select value from template where id = ?')
   .get(templateid);
   if (!template) {
-    console.log('No template for ntid ', ntid, ' ord ', ord);
+    console.log('No template for templateid ', templateid);
     return;
   }
   return (JSON.parse(template.value));
 }
 
 function updateSeenCard (card, ease, interval) {
-
   const factor = newFactor(card, interval);
   let due = now + interval;
   if ((due - now) > config.dueTimeRoundingThreshold) {
@@ -232,7 +203,7 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
   studyTimeToday += elapsed;
   const cardsViewedToday = getCountCardsViewedToday();
   const dueTodayCount = getCountCardsDueToday();
-  const time = new Date().toTimeString().substring(0,5);
+  const time = new Date().toTimeString().substring(0, 5);
   const percentCorrect = getPercentCorrect(10000);
   console.log(
     time,
@@ -249,23 +220,6 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
   );
   const interval = due - now;
   const lastInterval = card.interval === 0 ? 0 : now - card.due + card.interval;
-  // Distinguishing cases
-  //  New new card: revlog.lastivl === 0
-  //  New / Learning card: lapses === 0
-  //  Newly lapsed card: revlog.lastivl > matureThreshold &&
-  //    revlog.ivl < matureThreshold
-  //  Lapsed / Relearning card: lapses > 0
-  //  Mature card: revlog.ivl > matureThreshold
-  //
-  //  Type:
-  //    0 - New / Learning card
-  //    1 - Lapsed / Relearing card
-  //    2 - Mature card
-  //
-  //  Note that the type can be derived from base data (ivl, lastivl and
-  //  lapses), so it is redundant and perhaps should be eliminated.
-  //
-  const type = interval > 60 * 60 * 24 * 21 ? 2 : lapses === 0 ? 0 : 1;
   const info = db.prepare('insert into revlog (id, cardid, ease, interval, lastinterval, factor, time, lapses) values (?,?,?,?,?,?,?,?)')
   .run(
     now * 1000,
@@ -381,106 +335,12 @@ function buryRelated (card) {
   buried = info.changes > 0 ? '(' + info.changes + ')' : '';
 }
 
-/**
- * Cards to be seen again get a very short interval: 10 seconds by default.
- */
-function dueAgain (card) {
-  return (now + config.againInterval);
-}
-
-/**
- * hard cards should be seen again sooner rather than later.
- *
- * By default, the interval for a hard card is half the last
- * interval.
- */
-function dueHard (card) {
-  if (!card.interval || card.interval === 0)
-    return (now + config.hardMinInterval);
-  const timeSinceLastSeen = now - card.due + card.interval;
-  let due = now + Math.max(
-    config.hardMinInterval,
-    Math.floor(timeSinceLastSeen * config.hardIntervalFactor)
-  );
-  if ((due - now) > config.dueTimeRoundingThreshold) {
-    due = new Date(due * 1000).setHours(0, 0, 0, 0).valueOf() / 1000;
-  }
-  return (due);
-}
-
-/**
- * A good card should be the usual case.
- *
- * For a new card, the interval is 5 minutes
- *
- * For a card that has been seen, the minimum interval is one week.
- * Otherwise it depends on the previous interval, trending to a 
- * factor of 2 as the interval increases, according to:
- *
- * interval = interval * (2 + 5 * exp(-interval))
- *
- * Where the unit of interval is one week.
- *
- * The maximum interval is one year.
- */
-function dueGood (card) {
-  if (!card.interval || card.interval === 0) return (now + 300);
-  const timeSinceLastSeen = now - card.due + card.interval;
-  const factor = 2 + card.factor * Math.exp(-timeSinceLastSeen/60/60/24/7);
-  let due = now +
-    Math.min(
-      secPerYear,
-      Math.max(
-        config.easyMinInterval,
-        Math.floor(timeSinceLastSeen * factor)
-      )
-    );
-  if ((due - now) > config.dueTimeRoundingThreshold) {
-    due = new Date(due * 1000).setHours(0, 0, 0, 0).valueOf() / 1000;
-  }
-  return (due);
-}
-
-/**
- * An easy card should not be seen again too soon.
- *
- * For a new card, the interval is 1 day.
- *
- * For a card that has been seen, the minimum interval is one week.
- * Otherwise it depends on the previous interval, trending to a 
- * factor of 2 as the interval increases, according to:
- *
- * interval = interval * 2 (1 + 10 * exp(-interval))
- *
- * Where the unit of interval is one week.
- *
- * The maximum interval is one year.
- */
-function dueEasy (card) {
-  if (!card.interval || card.interval === 0) return (now + secPerDay);
-  const timeSinceLastSeen = now - card.due + card.interval;
-  const factor = 3 + card.factor * Math.exp(-timeSinceLastSeen/60/60/24/7);
-  let due = now +
-    Math.min(
-      secPerYear,
-      Math.max(
-        config.easyMinInterval,
-        Math.floor(timeSinceLastSeen * factor)
-      )
-    );
-  if ((due - now) > config.dueTimeRoundingFactor) {
-    due = new Date(due * 1000).setHours(0, 0, 0, 0).valueOf() / 1000;
-  }
-  return (due);
-}
-
 function intervalAgain (card) {
-  return(Math.floor(Math.max(config.againInterval, card.interval * 0.02)));
+  return (Math.floor(Math.max(config.againInterval, card.interval * 0.02)));
 }
 
 function intervalHard (card) {
-  if (!card.interval || card.interval === 0)
-    return (config.hardMinInterval);
+  if (!card.interval || card.interval === 0) { return (config.hardMinInterval); }
   const timeSinceLastSeen = now - card.due + card.interval;
   return (
     Math.max(
@@ -491,14 +351,13 @@ function intervalHard (card) {
 }
 
 function intervalGood (card) {
-  if (!card.interval || card.interval === 0)
-    return (config.goodMinInterval);
+  if (!card.interval || card.interval === 0) { return (config.goodMinInterval); }
   const timeSinceLastSeen = now - card.due + card.interval;
   const percentCorrect = getPercentCorrect(10000);
   const correctFactor = Math.max(0, percentCorrect - 80) / 10;
-  const factor = 1.5 + 
-    card.factor * correctFactor * Math.exp(-timeSinceLastSeen/60/60/24/7);
-  console.log('factor: ', factor.toFixed(2), card.factor.toFixed(2), correctFactor.toFixed(2), Math.exp(-timeSinceLastSeen/60/60/24/7).toFixed(2));
+  const factor = 1.5 +
+    card.factor * correctFactor * Math.exp(-timeSinceLastSeen / 60 / 60 / 24 / 7);
+  console.log('factor: ', factor.toFixed(2), card.factor.toFixed(2), correctFactor.toFixed(2), Math.exp(-timeSinceLastSeen / 60 / 60 / 24 / 7).toFixed(2));
   return (
     Math.min(
       secPerYear,
@@ -511,10 +370,9 @@ function intervalGood (card) {
 }
 
 function intervalEasy (card) {
-  if (!card.interval || card.interval === 0)
-    return (config.easyMinInterval);
+  if (!card.interval || card.interval === 0) { return (config.easyMinInterval); }
   const timeSinceLastSeen = now - card.due + card.interval;
-  const factor = 3.0 + card.factor * Math.exp(-timeSinceLastSeen/60/60/24/7);
+  const factor = 3.0 + card.factor * Math.exp(-timeSinceLastSeen / 60 / 60 / 24 / 7);
   return (
     Math.min(
       secPerYear,
@@ -553,7 +411,7 @@ function getEstimatedStudyTime (count) {
   return Math.floor(count * getAverageTimePerCard());
 }
 
-function getConfig () {
+function getConfig (opts) {
   const defaults = {
     // The maximum value factor may take.
     maxFactor: 10000,
@@ -570,7 +428,7 @@ function getConfig () {
     againMinFactor: 1500,
     // The sensitivity of factor to previous interval when again is selected.
     // The time constant of exponential decay towards maxFactor, in seconds.
-    againIntervalSensitivity: 60*60*24*21,
+    againIntervalSensitivity: 60 * 60 * 24 * 21,
 
     // hard
     // The minimum interval when hard is selected, in seconds.
@@ -599,17 +457,17 @@ function getConfig () {
     easyFactorAdjust: 200
   };
   try {
-    const configFilePath = path.join(dataDir, 'config');
+    const configFilePath = path.join(opts.dir, 'config');
     const data = fs.readFileSync(configFilePath, 'utf8');
     console.log('load config: ', data);
     const JSON5 = require('json5');
     const config = JSON5.parse(data);
-    return({
+    return ({
       ...defaults,
       ...config
     });
   } catch (e) {
-    return(defaults);
+    return (defaults);
   }
 }
 
@@ -630,7 +488,7 @@ function createCards (noteId, noteTypeId) {
       noteId,
       0,
       ord,
-      Math.floor(Date.now()/1000),
+      Math.floor(Date.now() / 1000),
       -1,
       0,
       0,
@@ -651,10 +509,10 @@ function createCards (noteId, noteTypeId) {
 }
 
 function newFactor (card, interval) {
-    return (
-      (card.factor||0) * 0.6 +
-      Math.log(1+interval/900) * 0.4
-    ).toFixed(2);
+  return (
+    (card.factor || 0) * 0.6 +
+      Math.log(1 + interval / 900) * 0.4
+  ).toFixed(2);
 }
 
 function getPercentCorrect (n) {
@@ -664,7 +522,7 @@ function getPercentCorrect (n) {
   } else {
     result = db.prepare('select avg(case ease when 1 then 0 else 1 end) as average from revlog').get();
   }
-  return (result ? result['average'] * 100 : 0);
+  return (result ? result.average * 100 : 0);
 }
 
 function runServer (opts, args) {
@@ -684,12 +542,12 @@ function runServer (opts, args) {
   const hbs = expressHandlebars.create({});
   hbsFormHelper.registerHelpers(hbs.handlebars, { namespace: 'form' });
   app.engine('handlebars', expressHandlebars());
-  app.set('views', __dirname + '/views');
+  app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'handlebars');
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(express.static(mediaDir));
-  app.use(express.json({limit: '50MB'}));
-  config = getConfig();
+  app.use(express.json({ limit: '50MB' }));
+  config = getConfig(opts);
 
   // Mustache works for the Anki templates - it allows spaces in the tag keys
   // I had first tried Handlebars but it doesn't allow spaces in the tag keys
@@ -713,7 +571,6 @@ function runServer (opts, args) {
       return text;
     }
   };
-
 
   // Add middleware for common code to every request
   app.use((req, res, next) => {
@@ -746,11 +603,11 @@ function runServer (opts, args) {
     });
     res.render('home', {
       viewedToday: viewedToday,
-      studyTimeToday: Math.floor(studyTimeToday/60),
+      studyTimeToday: Math.floor(studyTimeToday / 60),
       dueToday: dueToday,
-      dueStudyTime: Math.floor(dueStudyTime/60),
+      dueStudyTime: Math.floor(dueStudyTime / 60),
       totalToday: viewedToday + dueToday,
-      totalStudyTime: Math.floor((studyTimeToday + dueStudyTime)/60),
+      totalStudyTime: Math.floor((studyTimeToday + dueStudyTime) / 60),
       dueNow: dueNow,
       timeToNextDue: timeToNextDue.toFullString().substr(0, 9),
       chart1Data: JSON.stringify(chart1Data)
@@ -889,7 +746,7 @@ function runServer (opts, args) {
       chart6Trace4.x.push(i);
       chart6Trace4.y.push(total);
     }
-    const chart6Data = [ chart6Trace1, chart6Trace2, chart6Trace3, chart6Trace4 ];
+    const chart6Data = [chart6Trace1, chart6Trace2, chart6Trace3, chart6Trace4];
 
     res.render('stats', {
       dueCount: dueCount,
@@ -1017,8 +874,8 @@ function runServer (opts, args) {
       console.log('new note');
       console.log('body ', req.body);
       const flds = Object.keys(req.body.fields)
-        .map(field => req.body.fields[field]||'')
-        .join(String.fromCharCode(0x1f));
+      .map(field => req.body.fields[field] || '')
+      .join(String.fromCharCode(0x1f));
       console.log('flds ', flds);
       const sfield = req.body.fields[Object.keys(req.body.fields)[0]];
       console.log('sfield: ', sfield);
@@ -1026,7 +883,7 @@ function runServer (opts, args) {
       .run(
         uuidv4(),
         req.body.noteTypeId,
-        Math.floor(Date.now()/1000),
+        Math.floor(Date.now() / 1000),
         -1,
         flds,
         sfield,
@@ -1074,7 +931,6 @@ function runServer (opts, args) {
     res.status(404).send('Not found');
   });
 
-
   const server = app.listen(8000, () => {
     const host = server.address().address;
     const port = server.address().port;
@@ -1100,7 +956,7 @@ function importFile (opts) {
   })
   .catch(err => {
     console.log('failed with ', err);
-  });;
+  });
 }
 
 /**
@@ -1110,7 +966,7 @@ function importFile (opts) {
 function unzip (file) {
   return new Promise((resolve, reject) => {
     const yauzl = require('yauzl');
-    yauzl.open(file, {lazyEntries: true}, (err, zipFile) => {
+    yauzl.open(file, { lazyEntries: true }, (err, zipFile) => {
       if (err) throw err;
 
       const data = {};
@@ -1126,7 +982,7 @@ function unzip (file) {
           resolve(data);
         }
       }
-      
+
       incrementHandleCount();
       zipFile.on('close', decrementHandleCount);
 
@@ -1156,13 +1012,11 @@ function unzip (file) {
   });
 }
 
-
 function getStudyTimeToday () {
   const studyTimeToday = db.prepare('select sum(time) from revlog where id >= ?').get(startOfDay * 1000)['sum(time)'] || 0;
   console.log('studyTimeToday ', studyTimeToday);
   return (studyTimeToday);
 }
-
 
 /**
  * prepareDatabase initializes or updates the database as required
@@ -1171,7 +1025,7 @@ function prepareDatabase (db) {
   try {
     const result = db.prepare('select value from config where name = ?').get('srf schema version');
     if (result) {
-      console.log('version: ', result['version']);
+      console.log('version: ', result.version);
     } else {
       throw new Error('missing srf schema version');
     }
@@ -1198,15 +1052,15 @@ function initializeDatabase (db) {
 }
 
 function getDatabaseHandle (opts) {
-  const databasePath = opts.database.substr(0,1) === '/' ?
-    opts.database : path.join(opts.dir, opts.database);
+  const databasePath = opts.database.substr(0, 1) === '/'
+    ? opts.database
+    : path.join(opts.dir, opts.database);
   const databaseDir = path.dirname(databasePath);
   fs.mkdirSync(databaseDir, { recursive: true }, (err) => {
     if (err) throw err;
   });
   return require('better-sqlite3')(databasePath);
 }
-
 
 /**
  * importAnki21 imports an Anki 2.1 deck package
@@ -1229,8 +1083,6 @@ function getDatabaseHandle (opts) {
 function importAnki21 (opts, data, dstdb) {
   const srcdb = require('better-sqlite3')(data['collection.anki21']);
   const srccol = srcdb.prepare('select * from col').get();
-  const decks = JSON.parse(srccol.decks);
-  const dconf = JSON.parse(srccol.dconf);
   const models = JSON.parse(srccol.models);
   const srfTemplateSetKeys = getTemplateSetKeys(dstdb);
   dstdb.prepare('begin transaction').run();
@@ -1309,7 +1161,7 @@ function importAnki21 (opts, data, dstdb) {
         // review card
         due = srccol.crt + record.due * 60 * 60 * 24;
         interval = record.ivl * 60 * 60 * 24;
-        factor = Math.log(1+interval/900) * 0.4;
+        factor = Math.log(1 + interval / 900) * 0.4;
       } else if (record.type === 3) {
         // relearn card
         due = record.due;
@@ -1317,7 +1169,6 @@ function importAnki21 (opts, data, dstdb) {
       } else {
         console.log('unknown card type for ', record);
         throw new Error('unknown card type ' + record.type);
-        process.exit(0);
       }
       const info = dstdb.prepare('insert into card (factsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
       .run(factsetId, templateId, Math.floor(Date.now() / 1000), interval, due, factor, views, lapses, ord);
@@ -1332,9 +1183,9 @@ function importAnki21 (opts, data, dstdb) {
     const cardId = anki21CardIdToSrfCardId[record.cid];
     const ease = record.ease;
     const interval = record.ivl < 0 ? -record.ivl : record.ivl * 60 * 60 * 24;
-    const lastinterval = record.lastIvl < 0 ? -record.lastIvl : record.lastIvl * 60 * 60 *24;
-    const factor = Math.log(1+interval/900) * 0.4;
-    const time = Math.floor(record.time/1000);
+    const lastinterval = record.lastIvl < 0 ? -record.lastIvl : record.lastIvl * 60 * 60 * 24;
+    const factor = Math.log(1 + interval / 900) * 0.4;
+    const time = Math.floor(record.time / 1000);
     insertRevlog
     .run(record.id, cardId, ease, interval, lastinterval, factor, time, 0);
   });
@@ -1345,7 +1196,7 @@ function importAnki21 (opts, data, dstdb) {
   fs.mkdirSync(mediaDir, { recursive: true }, (err) => {
     if (err) throw err;
   });
-  const media = JSON.parse(data['media']);
+  const media = JSON.parse(data.media);
   console.log('media: ', media);
   Object.keys(media).forEach(key => {
     fs.writeFileSync(path.join(mediaDir, media[key]), data[key]);
@@ -1399,7 +1250,7 @@ function getTemplateSetIdFromAnki21Model (keyMap, model, db) {
   .run(model.name, JSON.stringify(templates), JSON.stringify(fields));
   const srfTemplateSetId = info.lastInsertRowid;
   keyMap[key] = srfTemplateSetId;
-  return(srfTemplateSetId);
+  return (srfTemplateSetId);
 }
 
 function getTemplateSetIdFromAnki2Model (keyMap, model, db) {
@@ -1426,7 +1277,7 @@ function getTemplateSetIdFromAnki2Model (keyMap, model, db) {
   .run(model.name, JSON.stringify(templates), JSON.stringify(fields));
   const srfTemplateSetId = info.lastInsertRowid;
   keyMap[key] = srfTemplateSetId;
-  return(srfTemplateSetId);
+  return (srfTemplateSetId);
 }
 
 /**
@@ -1435,8 +1286,6 @@ function getTemplateSetIdFromAnki2Model (keyMap, model, db) {
 function importAnki2 (data, dstdb) {
   const srcdb = require('better-sqlite3')(data['collection.anki2']);
   const srccol = srcdb.prepare('select * from col').get();
-  const decks = JSON.parse(srccol.decks);
-  const dconf = JSON.parse(srccol.dconf);
   const models = JSON.parse(srccol.models);
   const srfTemplateSetKeys = getTemplateSetKeys(dstdb);
   dstdb.prepare('begin transaction').run();
@@ -1515,7 +1364,7 @@ function importAnki2 (data, dstdb) {
         // review card
         due = srccol.crt + record.due * 60 * 60 * 24;
         interval = record.ivl * 60 * 60 * 24;
-        factor = Math.log(1+interval/900) * 0.4;
+        factor = Math.log(1 + interval / 900) * 0.4;
       } else if (record.type === 3) {
         // relearn card
         due = record.due;
@@ -1523,7 +1372,6 @@ function importAnki2 (data, dstdb) {
       } else {
         console.log('unknown card type for ', record);
         throw new Error('unknown card type ' + record.type);
-        process.exit(0);
       }
       const info = dstdb.prepare('insert into card (factsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
       .run(factsetId, templateId, Math.floor(Date.now() / 1000), interval, due, factor, views, lapses, ord);
@@ -1538,9 +1386,9 @@ function importAnki2 (data, dstdb) {
     const cardId = anki2CardIdToSrfCardId[record.cid];
     const ease = record.ease;
     const interval = record.ivl < 0 ? -record.ivl : record.ivl * 60 * 60 * 24;
-    const lastinterval = record.lastIvl < 0 ? -record.lastIvl : record.lastIvl * 60 * 60 *24;
-    const factor = Math.log(1+interval/900) * 0.4;
-    const time = Math.floor(record.time/1000);
+    const lastinterval = record.lastIvl < 0 ? -record.lastIvl : record.lastIvl * 60 * 60 * 24;
+    const factor = Math.log(1 + interval / 900) * 0.4;
+    const time = Math.floor(record.time / 1000);
     insertRevlog
     .run(record.id, cardId, ease, interval, lastinterval, factor, time, 0);
   });
@@ -1551,14 +1399,13 @@ function importAnki2 (data, dstdb) {
   fs.mkdirSync(mediaDir, { recursive: true }, (err) => {
     if (err) throw err;
   });
-  const media = JSON.parse(data['media']);
+  const media = JSON.parse(data.media);
   console.log('media: ', media);
   Object.keys(media).forEach(key => {
     fs.writeFileSync(path.join(mediaDir, media[key]), data[key]);
   });
 }
 
-
 function getFields (factsetId) {
-  return JSON.parse(db.prepare('select fields from factset where id = ?').get(factsetId)['fields']);
+  return JSON.parse(db.prepare('select fields from factset where id = ?').get(factsetId).fields);
 }
