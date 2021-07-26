@@ -1402,14 +1402,160 @@ function getTemplateSetIdFromAnki21Model (keyMap, model, db) {
   return(srfTemplateSetId);
 }
 
+function getTemplateSetIdFromAnki2Model (keyMap, model, db) {
+  let key = '';
+  model.tmpls.forEach(template => {
+    key += template.name + template.qfmt + template.afmt;
+  });
+  if (keyMap[key]) return (keyMap[key]);
+  // create each template
+  const templates = [];
+  model.tmpls.forEach(ankiTemplate => {
+    const srfTemplate = {};
+    srfTemplate.css = model.css;
+    srfTemplate.front = ankiTemplate.qfmt;
+    srfTemplate.back = ankiTemplate.afmt;
+    srfTemplate.name = ankiTemplate.name;
+    const info = db.prepare('insert into template (value) values (?)')
+    .run(JSON.stringify(srfTemplate));
+    const srfTemplateId = info.lastInsertRowid;
+    templates.push(srfTemplateId);
+  });
+  const fields = model.flds.map(field => field.name);
+  const info = db.prepare('insert into templateset (name, templates, fields) values (?,?,?)')
+  .run(model.name, JSON.stringify(templates), JSON.stringify(fields));
+  const srfTemplateSetId = info.lastInsertRowid;
+  keyMap[key] = srfTemplateSetId;
+  return(srfTemplateSetId);
+}
+
 /**
  * importAnki2 imports an Anki 2.0 deck package
  */
 function importAnki2 (data, dstdb) {
   const srcdb = require('better-sqlite3')(data['collection.anki2']);
   const srccol = srcdb.prepare('select * from col').get();
-  console.log('srccol ', srccol);
-  throw new Error('not implemented');
+  const decks = JSON.parse(srccol.decks);
+  const dconf = JSON.parse(srccol.dconf);
+  const models = JSON.parse(srccol.models);
+  const srfTemplateSetKeys = getTemplateSetKeys(dstdb);
+  dstdb.prepare('begin transaction').run();
+  console.log('import models');
+  const anki2ModelIdToSrfTemplateSetId = {};
+  Object.keys(models).forEach(modelId => {
+    const model = models[modelId];
+    const templateSetId = getTemplateSetIdFromAnki2Model(srfTemplateSetKeys, model, dstdb);
+    anki2ModelIdToSrfTemplateSetId[modelId] = templateSetId;
+  });
+  const factsetGuidToId = {};
+  dstdb.prepare('select id, guid from factset').all()
+  .forEach(record => {
+    factsetGuidToId[record.guid] = record.id;
+  });
+  // Import anki2 notes
+  console.log('import notes');
+  const anki2NoteIdToSrfFactsetId = {};
+  const insertFactset = dstdb.prepare('insert into factset (guid, templatesetid, fields) values (?,?,?)');
+  srcdb.prepare('select * from notes').all()
+  .forEach(record => {
+    const model = models[record.mid];
+    const fieldLabels = model.flds.map(field => field.name);
+    const fieldValues = record.flds.split(String.fromCharCode(0x1f));
+    const fields = {};
+    fieldLabels.forEach((label, i) => {
+      fields[label] = fieldValues[i];
+    });
+    if (factsetGuidToId[record.guid]) {
+      dstdb.prepare('update factset set templatesetid = ?, fields = ? where id = ?')
+      .run(anki2ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields), factsetGuidToId[record.guid]);
+      anki2NoteIdToSrfFactsetId[record.id] = factsetGuidToId[record.guid];
+    } else {
+      const info = insertFactset
+      .run(record.guid, anki2ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields));
+      anki2NoteIdToSrfFactsetId[record.id] = info.lastInsertRowid;
+    }
+  });
+  // Import anki2 cards
+  console.log('import cards');
+  const anki2CardIdToSrfCardId = {};
+  srcdb.prepare('select * from cards').all()
+  .forEach(record => {
+    const factsetId = anki2NoteIdToSrfFactsetId[record.nid];
+    const factsetRecord = dstdb.prepare('select templatesetid from factset where id = ?').get(factsetId);
+    if (!factsetRecord) {
+      console.log('no factset for ', record, ', factsetId: ', factsetId);
+      process.exit(0);
+    }
+    const templatesetId = factsetRecord.templatesetid;
+    const templatesetRecord = dstdb.prepare('select templates from templateset where id = ?').get(templatesetId);
+    const templates = JSON.parse(templatesetRecord.templates);
+    const templateId = templates[record.ord];
+    const cardRecord = dstdb.prepare('select id from card where factsetid = ? and templateid = ?').get(factsetId, templateId);
+    if (cardRecord) {
+      // Update existing record???
+      anki2CardIdToSrfCardId[record.id] = cardRecord.id;
+    } else {
+      // Insert new record
+      let interval = 0;
+      let due = 0;
+      let factor = 0;
+      let views = record.reps;
+      let lapses = record.lapses;
+      let ord = 0;
+      if (record.type === 0) {
+        // New card
+        ord = record.due;
+        views = 0;
+        lapses = 0;
+      } else if (record.type === 1) {
+        // Learn card
+        due = record.due;
+        interval = 60;
+      } else if (record.type === 2) {
+        // review card
+        due = srccol.crt + record.due * 60 * 60 * 24;
+        interval = record.ivl * 60 * 60 * 24;
+        factor = Math.log(1+interval/900) * 0.4;
+      } else if (record.type === 3) {
+        // relearn card
+        due = record.due;
+        interval = 60;
+      } else {
+        console.log('unknown card type for ', record);
+        throw new Error('unknown card type ' + record.type);
+        process.exit(0);
+      }
+      const info = dstdb.prepare('insert into card (factsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
+      .run(factsetId, templateId, Math.floor(Date.now() / 1000), interval, due, factor, views, lapses, ord);
+      anki2CardIdToSrfCardId[record.id] = info.lastInsertRowid;
+    }
+  });
+  // Import anki21 revlog
+  console.log('import revlog');
+  const insertRevlog = dstdb.prepare('insert into revlog (id, cardid, ease, interval, lastinterval, factor, time, lapses) values (?,?,?,?,?,?,?,?)');
+  srcdb.prepare('select * from revlog').all()
+  .forEach(record => {
+    const cardId = anki2CardIdToSrfCardId[record.cid];
+    const ease = record.ease;
+    const interval = record.ivl < 0 ? -record.ivl : record.ivl * 60 * 60 * 24;
+    const lastinterval = record.lastIvl < 0 ? -record.lastIvl : record.lastIvl * 60 * 60 *24;
+    const factor = Math.log(1+interval/900) * 0.4;
+    const time = Math.floor(record.time/1000);
+    insertRevlog
+    .run(record.id, cardId, ease, interval, lastinterval, factor, time, 0);
+  });
+  dstdb.prepare('commit').run();
+  // save media
+  console.log('save media');
+  const mediaDir = path.join(opts.dir, 'media');
+  fs.mkdirSync(mediaDir, { recursive: true }, (err) => {
+    if (err) throw err;
+  });
+  const media = JSON.parse(data['media']);
+  console.log('media: ', media);
+  Object.keys(media).forEach(key => {
+    fs.writeFileSync(path.join(mediaDir, media[key]), data[key]);
+  });
 }
 
 
