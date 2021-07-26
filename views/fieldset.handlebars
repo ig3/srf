@@ -7,19 +7,19 @@
   }
 </style>
 <h1>Spaced Repetition Flashcards</h1>
-<h2>Factset</h2>
+<h2>Fieldset</h2>
 <table>
-<tr><th>ID</th><td>{{factset.id}}</td></tr>
-<tr><th>GUID</th><td>{{factset.guid}}</td></tr>
-<tr><th>templatesetid/name</th><td>{{factset.templatesetid}}/{{factset.templateset.name}}</td></tr>
+<tr><th>ID</th><td>{{fieldset.id}}</td></tr>
+<tr><th>GUID</th><td>{{fieldset.guid}}</td></tr>
+<tr><th>templatesetid/name</th><td>{{fieldset.templatesetid}}/{{fieldset.templateset.name}}</td></tr>
 <tr><th>Template set</th><td>{{form-select 'templatesetid'
-templatesets factset.templatesetid}}</td></tr>
+templatesets fieldset.templatesetid}}</td></tr>
 </table>
 
 <h2>Fields</h2>
 <button onclick="attach()">Attach</button>
 <table id="table-fields">
-{{#each factset.fields}}
+{{#each fieldset.fields}}
 <tr><th>{{@key}}</th><td><input type="text" id="{{@key}}" value="{{this}}"/></td></tr>
 {{/each}}
 </table>
@@ -77,7 +77,7 @@ templatesets factset.templatesetid}}</td></tr>
       data.fields[input.id] = input.value;
     });
     console.log('save data ', data);
-    fetch('/factset/{{factset.id}}', {
+    fetch('/fieldset/{{fieldset.id}}', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)

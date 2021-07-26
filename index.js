@@ -88,18 +88,18 @@ if (command === 'import') {
 }
 
 /**
- * get factset returns the fact set and ...
+ * getFieldset returns the field set and ...
  */
-function getFactset (factsetid) {
-  const factset = db.prepare('select * from factset where id = ?')
-  .get(factsetid);
-  if (!factset) {
-    console.log('No factset ID ', factsetid);
+function getFieldset (fieldsetid) {
+  const fieldset = db.prepare('select * from fieldset where id = ?')
+  .get(fieldsetid);
+  if (!fieldset) {
+    console.log('No fieldset ID ', fieldsetid);
     return;
   }
-  factset.fields = JSON.parse(factset.fields);
-  factset.templateset = getTemplateset(factset.templatesetid);
-  return (factset);
+  fieldset.fields = JSON.parse(fieldset.fields);
+  fieldset.templateset = getTemplateset(fieldset.templatesetid);
+  return (fieldset);
 }
 
 function getTemplateset (id) {
@@ -276,17 +276,17 @@ function getEstimatedTotalStudyTime () {
 }
 
 /**
- * For each factset there may be several cards. To avoid seeing these related
+ * For each fieldset there may be several cards. To avoid seeing these related
  * cards too close to each other, when a card is seen, defer the due date
  * of any other card in the set that is due in the next 5 days to 5 days
  * from now.
  */
 function buryRelated (card) {
-  const info = db.prepare('update card set modified = ?, due = ? where factsetid = ? and id != ? and due < ?')
+  const info = db.prepare('update card set modified = ?, due = ? where fieldsetid = ? and id != ? and due < ?')
   .run(
     now, // modification time
     now + secPerDay * 5, // new due
-    card.factsetid,
+    card.fieldsetid,
     card.id,
     now + secPerDay * 5 // old due
   );
@@ -430,19 +430,19 @@ function getConfig (opts) {
 }
 
 /**
- * createCards creates a set of cards for the factset with the given id
+ * createCards creates a set of cards for the fieldset with the given id
  * and templateset.
  */
-function createCards (factsetid, templatesetid) {
-  console.log('createCards ', factsetid, templatesetid);
+function createCards (fieldsetid, templatesetid) {
+  console.log('createCards ', fieldsetid, templatesetid);
   const templateset = getTemplateset(templatesetid);
   console.log('templateset: ', templateset);
 
   templateset.templates.forEach(template => {
     console.log('create card for template: ', template);
-    const info = db.prepare('insert into card (factsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    const info = db.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
     .run(
-      factsetid,
+      fieldsetid,
       template.id,
       Math.floor(Date.now() / 1000),
       0,
@@ -719,7 +719,7 @@ function runServer (opts, args) {
     card = getNextCard();
     if (card) {
       cardStartTime = now;
-      const fields = getFields(card.factsetid);
+      const fields = getFields(card.fieldsetid);
       const template = getTemplate(card.templateid);
       card.template = template;
       const front = Mustache.render(template.front, fields);
@@ -776,16 +776,16 @@ function runServer (opts, args) {
     res.redirect('/front');
   });
 
-  app.get('/factsets', (req, res) => {
-    const factsets = db.prepare('select * from factset').all();
-    res.render('factsets', {
-      factsets: factsets
+  app.get('/fieldsets', (req, res) => {
+    const fieldsets = db.prepare('select * from fieldset').all();
+    res.render('fieldsets', {
+      fieldsets: fieldsets
     });
   });
 
-  app.get('/factset/:id', (req, res) => {
-    const factset = getFactset(req.params.id);
-    console.log('factset: ', factset);
+  app.get('/fieldset/:id', (req, res) => {
+    const fieldset = getFieldset(req.params.id);
+    console.log('fieldset: ', fieldset);
     // To present a select of template sets the form helper needs an object
     // keyed by select value with value being the displayed text.
     const templatesets = {};
@@ -793,55 +793,55 @@ function runServer (opts, args) {
       templatesets[set.id] = set.name;
     });
     console.log('templatesets: ', templatesets);
-    res.render('factset', {
-      factset: factset,
+    res.render('fieldset', {
+      fieldset: fieldset,
       templatesets: templatesets
     });
   });
 
-  app.get('/factset', (req, res) => {
-    const factset = {
+  app.get('/fieldset', (req, res) => {
+    const fieldset = {
       id: 'new',
       guid: '',
       templatesetid: '',
       fields: {}
     };
-    factset.templatesetid = getTemplatesets()[0].id;
-    factset.templateset = getTemplateset(factset.templatesetid);
-    factset.templateset.fields.forEach(field => {
-      factset.fields[field] = '';
+    fieldset.templatesetid = getTemplatesets()[0].id;
+    fieldset.templateset = getTemplateset(fieldset.templatesetid);
+    fieldset.templateset.fields.forEach(field => {
+      fieldset.fields[field] = '';
     });
-    console.log('factset: ', factset);
+    console.log('fieldset: ', fieldset);
     // To present a select of template sets the form helper needs an object
     // keyed by select value with value being the displayed text.
     const templatesets = {};
     getTemplatesets().forEach(set => {
       templatesets[set.id] = set.name;
     });
-    res.render('factset', {
-      factset: factset,
+    res.render('fieldset', {
+      fieldset: fieldset,
       templatesets: templatesets
     });
   });
 
-  app.post('/factset/:id', (req, res) => {
-    console.log('save factset ' + req.params);
+  app.post('/fieldset/:id', (req, res) => {
+    console.log('save fieldset ' + req.params);
     if (req.params.id === 'new') {
-      console.log('create a new factset');
+      console.log('create a new fieldset');
       console.log('body ', req.body);
       const templatesetid = req.body.templatesetid;
       console.log('templatesetid: ', templatesetid);
       const fields = JSON.stringify(req.body.fields);
       console.log('fields: ', fields);
-      const info = db.prepare('insert into factset (guid, templatesetid, fields) values (?, ?, ?)')
+      const info = db.prepare('insert into fieldset (guid, templatesetid, fields) values (?, ?, ?)')
       .run(
         uuidv4(),
         templatesetid,
         fields
       );
       console.log('insert info: ', info);
-      const factsetid = info.lastInsertRowid;
-      createCards(factsetid, templatesetid);
+      const fieldsetid = info.lastInsertRowid;
+      createCards(fieldsetid, templatesetid);
       const files = req.body.files;
       if (files && files.length > 0) {
         files.forEach(file => {
@@ -855,23 +855,23 @@ function runServer (opts, args) {
       }
       res.send('ok');
     } else {
-      console.log('update an existing factset');
+      console.log('update an existing fieldset');
       console.log('body ', req.body);
-      const factsetid = req.params.id;
+      const fieldsetid = req.params.id;
       const templatesetid = req.body.templatesetid;
       console.log('templatesetid: ', templatesetid);
       const fields = JSON.stringify(req.body.fields);
       console.log('fields: ', fields);
-      const oldFactest = getFactset(factsetid);
-      db.prepare('update factset set templatesetid = ?, fields = ? where id = ?')
-      .run(templatesetid, fields, factsetid);
+      const oldFieldset = getFieldset(fieldsetid);
+      db.prepare('update fieldset set templatesetid = ?, fields = ? where id = ?')
+      .run(templatesetid, fields, fieldsetid);
       // If the templateset has changed, we need a new set of cards
-      if (oldFactset.templatesetid !== templatesetid) {
-        db.prepare('delete card where factsetid = ?').run(factsetid);
+      if (oldFieldset.templatesetid !== templatesetid) {
+        db.prepare('delete card where fieldsetid = ?').run(fieldsetid);
         // TODO: what about revlog? Should the old entries be deleted?
         // The cards they link to will no longer exists.
         // On the other hand, the reviews they record did happen.
-        createCards(factsetid, templatesetid);
+        createCards(fieldsetid, templatesetid);
       }
       res.send('ok');
     }
@@ -1049,15 +1049,15 @@ function importAnki21 (opts, data, dstdb) {
     const templateSetId = getTemplateSetIdFromAnki21Model(srfTemplateSetKeys, model, dstdb);
     anki21ModelIdToSrfTemplateSetId[modelId] = templateSetId;
   });
-  const factsetGuidToId = {};
-  dstdb.prepare('select id, guid from factset').all()
+  const fieldsetGuidToId = {};
+  dstdb.prepare('select id, guid from fieldset').all()
   .forEach(record => {
-    factsetGuidToId[record.guid] = record.id;
+    fieldsetGuidToId[record.guid] = record.id;
   });
   // Import anki21 notes
   console.log('import notes');
-  const anki21NoteIdToSrfFactsetId = {};
-  const insertFactset = dstdb.prepare('insert into factset (guid, templatesetid, fields) values (?,?,?)');
+  const anki21NoteIdToSrfFieldsetId = {};
+  const insertFieldset = dstdb.prepare('insert into fieldset (guid, templatesetid, fields) values (?,?,?)');
   srcdb.prepare('select * from notes').all()
   .forEach(record => {
     const model = models[record.mid];
@@ -1067,14 +1067,14 @@ function importAnki21 (opts, data, dstdb) {
     fieldLabels.forEach((label, i) => {
       fields[label] = fieldValues[i];
     });
-    if (factsetGuidToId[record.guid]) {
-      dstdb.prepare('update factset set templatesetid = ?, fields = ? where id = ?')
-      .run(anki21ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields), factsetGuidToId[record.guid]);
-      anki21NoteIdToSrfFactsetId[record.id] = factsetGuidToId[record.guid];
+    if (fieldsetGuidToId[record.guid]) {
+      dstdb.prepare('update fieldset set templatesetid = ?, fields = ? where id = ?')
+      .run(anki21ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields), fieldsetGuidToId[record.guid]);
+      anki21NoteIdToSrfFieldsetId[record.id] = fieldsetGuidToId[record.guid];
     } else {
-      const info = insertFactset
+      const info = insertFieldset
       .run(record.guid, anki21ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields));
-      anki21NoteIdToSrfFactsetId[record.id] = info.lastInsertRowid;
+      anki21NoteIdToSrfFieldsetId[record.id] = info.lastInsertRowid;
     }
   });
   // Import anki21 cards
@@ -1082,17 +1082,17 @@ function importAnki21 (opts, data, dstdb) {
   const anki21CardIdToSrfCardId = {};
   srcdb.prepare('select * from cards').all()
   .forEach(record => {
-    const factsetId = anki21NoteIdToSrfFactsetId[record.nid];
-    const factsetRecord = dstdb.prepare('select templatesetid from factset where id = ?').get(factsetId);
-    if (!factsetRecord) {
-      console.log('no factset for ', record, ', factsetId: ', factsetId);
+    const fieldsetId = anki21NoteIdToSrfFieldsetId[record.nid];
+    const fieldsetRecord = dstdb.prepare('select templatesetid from fieldset where id = ?').get(fieldsetId);
+    if (!fieldsetRecord) {
+      console.log('no fieldset for ', record, ', fieldsetId: ', fieldsetId);
       process.exit(0);
     }
-    const templatesetId = factsetRecord.templatesetid;
+    const templatesetId = fieldsetRecord.templatesetid;
     const templatesetRecord = dstdb.prepare('select templates from templateset where id = ?').get(templatesetId);
     const templates = JSON.parse(templatesetRecord.templates);
     const templateId = templates[record.ord];
-    const cardRecord = dstdb.prepare('select id from card where factsetid = ? and templateid = ?').get(factsetId, templateId);
+    const cardRecord = dstdb.prepare('select id from card where fieldsetid = ? and templateid = ?').get(fieldsetId, templateId);
     if (cardRecord) {
       // Update existing record???
       anki21CardIdToSrfCardId[record.id] = cardRecord.id;
@@ -1126,8 +1126,8 @@ function importAnki21 (opts, data, dstdb) {
         console.log('unknown card type for ', record);
         throw new Error('unknown card type ' + record.type);
       }
-      const info = dstdb.prepare('insert into card (factsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
-      .run(factsetId, templateId, Math.floor(Date.now() / 1000), interval, due, factor, views, lapses, ord);
+      const info = dstdb.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
+      .run(fieldsetId, templateId, Math.floor(Date.now() / 1000), interval, due, factor, views, lapses, ord);
       anki21CardIdToSrfCardId[record.id] = info.lastInsertRowid;
     }
   });
@@ -1239,15 +1239,15 @@ function importAnki2 (data, dstdb) {
     const templateSetId = getTemplateSetIdFromAnki2Model(srfTemplateSetKeys, model, dstdb);
     anki2ModelIdToSrfTemplateSetId[modelId] = templateSetId;
   });
-  const factsetGuidToId = {};
-  dstdb.prepare('select id, guid from factset').all()
+  const fieldsetGuidToId = {};
+  dstdb.prepare('select id, guid from fieldset').all()
   .forEach(record => {
-    factsetGuidToId[record.guid] = record.id;
+    fieldsetGuidToId[record.guid] = record.id;
   });
   // Import anki2 notes
   console.log('import notes');
-  const anki2NoteIdToSrfFactsetId = {};
-  const insertFactset = dstdb.prepare('insert into factset (guid, templatesetid, fields) values (?,?,?)');
+  const anki2NoteIdToSrfFieldsetId = {};
+  const insertFieldset = dstdb.prepare('insert into fieldset (guid, templatesetid, fields) values (?,?,?)');
   srcdb.prepare('select * from notes').all()
   .forEach(record => {
     const model = models[record.mid];
@@ -1257,14 +1257,14 @@ function importAnki2 (data, dstdb) {
     fieldLabels.forEach((label, i) => {
       fields[label] = fieldValues[i];
     });
-    if (factsetGuidToId[record.guid]) {
-      dstdb.prepare('update factset set templatesetid = ?, fields = ? where id = ?')
-      .run(anki2ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields), factsetGuidToId[record.guid]);
-      anki2NoteIdToSrfFactsetId[record.id] = factsetGuidToId[record.guid];
+    if (fieldsetGuidToId[record.guid]) {
+      dstdb.prepare('update fieldset set templatesetid = ?, fields = ? where id = ?')
+      .run(anki2ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields), fieldsetGuidToId[record.guid]);
+      anki2NoteIdToSrfFieldsetId[record.id] = fieldsetGuidToId[record.guid];
     } else {
-      const info = insertFactset
+      const info = insertFieldset
       .run(record.guid, anki2ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields));
-      anki2NoteIdToSrfFactsetId[record.id] = info.lastInsertRowid;
+      anki2NoteIdToSrfFieldsetId[record.id] = info.lastInsertRowid;
     }
   });
   // Import anki2 cards
@@ -1272,17 +1272,17 @@ function importAnki2 (data, dstdb) {
   const anki2CardIdToSrfCardId = {};
   srcdb.prepare('select * from cards').all()
   .forEach(record => {
-    const factsetId = anki2NoteIdToSrfFactsetId[record.nid];
-    const factsetRecord = dstdb.prepare('select templatesetid from factset where id = ?').get(factsetId);
-    if (!factsetRecord) {
-      console.log('no factset for ', record, ', factsetId: ', factsetId);
+    const fieldsetId = anki2NoteIdToSrfFieldsetId[record.nid];
+    const fieldsetRecord = dstdb.prepare('select templatesetid from fieldset where id = ?').get(fieldsetId);
+    if (!fieldsetRecord) {
+      console.log('no fieldset for ', record, ', fieldsetId: ', fieldsetId);
       process.exit(0);
     }
-    const templatesetId = factsetRecord.templatesetid;
+    const templatesetId = fieldsetRecord.templatesetid;
     const templatesetRecord = dstdb.prepare('select templates from templateset where id = ?').get(templatesetId);
     const templates = JSON.parse(templatesetRecord.templates);
     const templateId = templates[record.ord];
-    const cardRecord = dstdb.prepare('select id from card where factsetid = ? and templateid = ?').get(factsetId, templateId);
+    const cardRecord = dstdb.prepare('select id from card where fieldsetid = ? and templateid = ?').get(fieldsetId, templateId);
     if (cardRecord) {
       // Update existing record???
       anki2CardIdToSrfCardId[record.id] = cardRecord.id;
@@ -1316,8 +1316,8 @@ function importAnki2 (data, dstdb) {
         console.log('unknown card type for ', record);
         throw new Error('unknown card type ' + record.type);
       }
-      const info = dstdb.prepare('insert into card (factsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
-      .run(factsetId, templateId, Math.floor(Date.now() / 1000), interval, due, factor, views, lapses, ord);
+      const info = dstdb.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
+      .run(fieldsetId, templateId, Math.floor(Date.now() / 1000), interval, due, factor, views, lapses, ord);
       anki2CardIdToSrfCardId[record.id] = info.lastInsertRowid;
     }
   });
@@ -1349,6 +1349,6 @@ function importAnki2 (data, dstdb) {
   });
 }
 
-function getFields (factsetId) {
-  return JSON.parse(db.prepare('select fields from factset where id = ?').get(factsetId).fields);
+function getFields (fieldsetId) {
+  return JSON.parse(db.prepare('select fields from fieldset where id = ?').get(fieldsetId).fields);
 }

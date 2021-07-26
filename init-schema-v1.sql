@@ -9,7 +9,7 @@ create table config (
 -- multiple cards per note
 create table card (
   id          integer primary key,
-  factsetid   integer not null,
+  fieldsetid   integer not null,
   templateid  integer not null,
   modified    integer not null,
   -- seconds from last seen to due
@@ -26,14 +26,17 @@ create table card (
   ord         integer not null
 );
 
+create index idx_card_id on card (id);
 create index idx_card_due_interval on card (due, interval);
 
-create table factset (
+create table fieldset (
   id            integer primary key,
   guid          text not null,
   templatesetid integer not null,
   fields        text not null
 );
+
+create index idx_fieldset_id on fieldset (id);
 
 -- A template set is an ordered set of templates used to produce a set of
 -- cards from a fact set. The individual templates are stored in table
