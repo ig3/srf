@@ -7,7 +7,8 @@
     "srf": "./index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "eslint . && c8 multi-tape test/*.js",
+    "quicktest": "multi-tape test/*.js"
   },
   "repository": {
     "type": "git",
@@ -34,5 +35,13 @@
     "uuid": "^8.3.2",
     "yargs": "^17.0.1",
     "yauzl": "^2.10.0"
+  },
+  "devDependencies": {
+    "c8": "^7.7.3",
+    "eslint-config-entrain": "^2.0.3",
+    "multi-tape": "^1.6.1"
+  },
+  "eslintConfig": {
+    "extends": "entrain"
   }
 }
