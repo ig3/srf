@@ -22,9 +22,9 @@ Anki, but I want something a little different in the scheduler and to spend
 more time using the tool and less time developing and maintaining it. 
 
 I just spent all my free time (and a lot of time that really wasn't free,
-and I should have been doing other things, like sleeping) for a couple of
-weeks to adapt my Anki scheduling add-on to more recent versions of Anki
-and, in particular, to the shift of scheduling function to the back-end and
+and I should have been doing other things) for a couple of weeks, to adapt
+my Anki scheduling add-on to more recent versions of Anki and, in
+particular, to the shift of scheduling function to the back-end and
 elimination of the hooks I had been using. While the outcome was some
 improvement in the approach (necessity is the mother of invention, as they
 say) overall the cost/benefit was not good.
@@ -32,8 +32,15 @@ say) overall the cost/benefit was not good.
 It took me only three days to get this to the point I could get back to
 studying - significantly less time than the last iteration of my Anki
 add-ons, and I still didn't have the scheduling I actually wanted in Anki.
+It has taken considerably longer to bring it to its current state, and it
+still needs a lot of work, but it is good enough for my immediate needs.
 
-Now, with this, I can do whatever I want with scheduling.
+With this, I can do whatever I want with scheduling, and I like this
+schedule much more than the Anki scheduler, old or new. In particular, a
+backlog of cards is easy to work through, as opposed to the 'ease hell' of
+Anki. This is because of the prioritization of cards with shorter
+intervals. It is not possible to become so overwhelmed and fail to make
+progress, regardless of the backlog.
 
 The biggest challenges were reverse engineering the serialization of the
 blobs in the database (because after hours of searching I still couldn't
@@ -47,6 +54,11 @@ don't need it. But I couldn't decide this until I found what it was. Once I
 had determined I didn't need or want it, it only took me a little while to
 learn how to remove it from the database.
 
+Subsequently, I have abandoned conversion of the Anki database. I have
+written an import from an Anki export. The Anki export is similar to the
+Anki database, but all the serialized data is JSON, which is much easier to
+work with.
+
 ## Pros
 
 * Pure JavaScript on Node
@@ -59,9 +71,10 @@ learn how to remove it from the database.
 ## Cons
 
 * Very much alpha code - just an experiment at this point
-* No configuration interface, not even a configuration file - edit the code
+* Very little for configuration - need to edit the code for most changes
 * No reports - just rudimentary stats to the browser or server console
 * No deck import
+* No decks, tags or flags - just one pool of cards
 * Not well tested
 * No support for cloze cards
 
@@ -71,41 +84,32 @@ learn how to remove it from the database.
 $ git clone https://github.com/ig3/srf.git
 $ cd srv
 $ npm install
+$ node index.js import <export file>
 $ node index.js
 ```
+The import only supports an Anki21 export file at the moment (.apkg file).
+Recent versions of Anki produce this on export. Most of the downloadable
+decks are an older format that the import doesn't yet handle, but one can
+import to Anki, then export then import to srf. Export with media and logs,
+and all will be imported to srf. Some of the scheduling detail of new and
+relearn cards isn't preserved, but it doesn't matter much. Intervals and
+due dates are preserved for review cards.
 
 The server listens on port 8000 by default.
 
-The database must be in ~/.local/share/srf/srf.db.
-
-Media files must bein in ~/.local/share/srf/media.
-
-The script `importdb.js` reads an Anki database and makes changes so that
-it will work with srf. There aren't many changes. Read the script for
-details. For my decks, I am then able to study cards without further
-modification, but I use only simple card types. Closures will not work, for
-example. It preserves the due dates of cards. It preserves the due times of
-day learn cards but ignores the intervals - setting interval to 1 minute.
-This is OK for me. A small percentage of my collection are learning and my
-learning intervals are all under 1 hours, so no big loss being set back to
-1 minute interval.
-
-`importdb.js` requires two arguments: the path of the Anki database file,
-which it reads, and the path of the srf database to produce, which it
-writes. You can try this script on your database and maybe it will suffice.
-
-Copy the imported database to: `~/.local/share/srf/srf.db`.
-
-I will probably write something to import a published Anki deck, but not
-yet.
-
-Copy all the Anki media to the media subdirectory: `~/.local/share/srf/media`.
+The data is in ~/.local/share/srf by default, including database (srf.db)
+and media files. The database in ~/.local/share/srf/srf.db. Media files
+must bein in ~/.local/share/srf/media.
 
 ## Config
 
 Scheduling is tuned by configuration parameters in file
 `~/.local/share/srf/config`. The file
 content must be in [JSON5](https://json5.org/) format.
+
+This is out of date: I have revised the database schema and various aspects
+of the scheduler, but haven't settled the changes yet so haven't updated
+the documentation.
 
 For example:
 
@@ -163,7 +167,7 @@ Cards have a due time (seconds since the epoch).
 The cards to be studied are the cards with a due time before the current
 time. Cards with later due times are to be studied later / in the future.
 
-Of the cards to be studied, then next card to be studied is the card with
+Of the cards to be studied, the next card to be studied is the card with
 shortest interval and earliest due time.
 
 After a break (a few hours, a day, a week or whatever) there will be many
@@ -171,43 +175,38 @@ cards due with various intervals. As you study, some of these will be
 scheduled to be seen again in the next few seconds, minutes or hours.
 Sorting by interval ensures that these cards are seen again as scheduled,
 rather than being blocked until the backlog of due cards (some of which
-might have much longer intervals) has been cleared.
+might have much longer intervals) has been cleared. 
 
 When a card is seen, it can be updated with one of four buttons:
 
 ### Again
 For cards you don't remember.
 
-Factor is set to 2000. This factor determines how quickly the interval
-increases for Good and Easy cards (see below).
-
-Next due is in 10 seconds.
+The interval is reduced to 2% of its previous interval or
+config.againInterval, whichever is greater.
 
 ### Hard
 For cards you remember with difficulty.
 
-Factor is decreased by 50, to a minimum of 1200.
-
-Next due is 50% of the interval from when the card was last seen. For
-example, if the card was last seen 4 days ago, it will be due in 2 days, if
-the card was last seen 2 hours ago, it will be due in 1 hour, etc. The
-minimum interval is 30 seconds.
+Interval is reduced to 50% of its previous interval or
+config.hardMinInterval, whichever is greater. The 50% factor is
+configurable with config.hardIntervalFactor, wich is 0.5 by default.
 
 ### Good
 For cards that you remember well.
 
-Factor is increased by 50, to a maximum of 10000 and a minimum of 1200.
-
-Next due is time since last seen multipied by factor/1000, with a minimum
-of 60 seconds and a maximum of one year.
+Interval is changed by a factor which depends on recent history of the
+interval. The algorithm is a bit complex. I will document it at some point,
+but it is still in flux. See the code for details: intervalGood() and
+newFactor() in particular.
 
 ### Easy
 For cards that you remember very well, that you are viewing too frequently.
 
-Factor is increased by 200, to a maximum of 10000.
-
-Next due is time since last seen multipied by factor/1000, with a minimum
-of one day and a maximum of one year.
+Similarly to Good, but with a more aggressive factor and a minimum interval
+of one week. The point of Easy is to avoid reviewing an easy card over and
+over. If it is still good or easy in a week, interval will grow quite
+quickly from there.
 
 ## New Cards
 
@@ -215,7 +214,7 @@ Workload is managed by controlling the introduction of new cards.
 
 All cards are initially considered to be 'new'. Technically, this is
 determined by cards.interval being 0. After a card has been seen,
-cards.interval is set to some non-zero value: the time, in seconds, until
+its interval is set to some non-zero value: the time, in seconds, until
 the card is due to be seen again.
 
 New cards are allowed when the estimate of total time to complete all due
@@ -224,8 +223,7 @@ hard-coded in server.js as one hour (60\*60)).
 
 While new cards are allowed, a new card will be presented if it is more
 than 5 minutes since the last new card was presented or there are no cards
-due for review (i.e. their due time is before current time - there may well
-be more cards due later in the day).
+currently due for review.
 
 Total time to view all cards due by end of day is estimated. This is based
 on actual study time, the number of cards due and historic time per card
@@ -261,6 +259,11 @@ sounds and images.
 
 ## srf database
 
+Initially I used a slight modification of the Anki database but
+subsequently started over with a new, simplified database schema. Notes
+here are incomplete and probably out of date. The database structure is
+still evolving.
+
 A fact set records a set of related facts as field/value pairs. These are
 the essential items to be studied.
 
@@ -293,6 +296,13 @@ items by way of templates. Typically, a set of cards will be produced for
 each item. 
 
 ## Anki database
+
+Understanding details of the Anki database was essential to the initial
+implementation of srf: it used a slightly modified Anki database. Anki
+exports include a database that is similar but simpler than the database
+used by Anki itself, but some of these details are still helpful to
+interpreting the database in the export. The main advantage of the export
+is that all data serialization is to JSON rather than rust serde.
 
 See [Anki 2 annotated schema](https://gist.github.com/sartak/3921255)
 
@@ -744,29 +754,39 @@ download, zoom, pan, values on hover and all sorts. Seems quite awesome.
 ### NodeJS
 The server runs on NodeJS
 
-### better-sqlite3
-Interface to the SQLite database
+### fs and path
+Dealing with file system. I haven't tried this on Windows. It probably
+doesn't handle paths in a Windows compatible way, but it shouldn't take too
+much work to make it compatible. It doesn't deal with files too much. On
+the other hand, it's not a priority for me: I don't use Windows unless I
+have to.
 
-### body-parser
-For parsing JSON in POST bodies.
+### timezonecomplete and tzdata
+For some timezone and time data processing.
 
-### cookie-parser
-Because some template for using Express said to use this.
+### uuid
+For generating UUID/GUID.
+
+### getopts
+For command line argument processing. I tried a few. This one is simple and
+adequate.
+
+### json5
+For parsing config file, which is JSON, but with support for comments.
 
 ### express
 The is the web server framework. It handles parsing and routing of requests
 and production of responses.
 
+### serve-favicon
+To serve a favicon.
+
 ### express-handlebars
 This is template middleware for express. The website pages are generated
 from handlebars templates.
 
-### handlebars
-This is the handlebars template engine. It is an extension of, or at least
-largely compatible with the Mustache template engine.
-
-### multer
-Because some template for using Express said to use this.
+### handlebars-form-helper
+For dealing with form fields.
 
 ### mustache
 Another template engine. This one is, by default, a bit more compatible
@@ -776,11 +796,11 @@ documentation says that it is compatible with Mustache, so perhaps there is
 a way to consolidate on just Handlebars, in which case Mustache can be
 dropped.
 
-### timezonecomplete
-For some timezone and time data processing.
+### yauzl
+For unzipping Anki export files.
 
-### tzdata
-Timezone data from timezonecomplete.
+### better-sqlite3
+Interface to the SQLite database
 
 ## Potential Dependencies
 
