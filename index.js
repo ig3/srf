@@ -426,7 +426,6 @@ function dueHard (card) {
 function dueGood (card) {
   if (!card.interval || card.interval === 0) return (now + 300);
   const timeSinceLastSeen = now - card.due + card.interval;
-  const daysSinceLastSeen = timeSinceLastSeen/60/60/24;
   const factor = 2 + card.factor * Math.exp(-timeSinceLastSeen/60/60/24/7);
   let due = now +
     Math.min(
