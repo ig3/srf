@@ -67,25 +67,46 @@ const getopts = require('getopts');
 const opts = getopts(process.argv.slice(2), {
   string: ['directory', 'database'],
   alias: {
+    help: ['h'],
     directory: ['dir'],
     database: ['db']
   },
   default: {
-    directory: path.join(process.env.HOME, '.local', 'share', 'srftest'),
-    database: 'srftest.db'
+    directory: path.join(process.env.HOME, '.local', 'share', 'srf'),
+    database: 'srf.db'
   },
   stopEarly: true
 });
 
 console.log('opts: ', opts);
 
-const [command, subargv] = opts._;
-
-if (command === 'import') {
-  importFile(opts, subargv);
+if (opts.help) {
+  console.log(process.argv);
+  console.log(path.basename(process.argv[1]));
+  console.log('usage:');
+  console.log('  ' + 
+    path.basename(process.argv[1]) +
+    ' --help');
+  console.log('  ' + 
+    path.basename(process.argv[1]) +
+    ' [--directory <root-directory>]' +
+    ' [--database <database-name>]');
+  console.log('  ' + 
+    path.basename(process.argv[1]) +
+    ' [--directory <root-directory>]' +
+    ' [--database <database-name>]' +
+    ' import <filename>');
 } else {
-  runServer(opts, subargv);
+  const [command, subargv] = opts._;
+
+  if (command === 'import') {
+    importFile(opts, subargv);
+  } else {
+    runServer(opts, subargv);
+  }
 }
+process.exit(0);
+
 
 /**
  * getFieldset returns the field set and ...
@@ -476,7 +497,9 @@ function getPercentCorrect (n) {
 function runServer (opts, args) {
   console.log('run server ', opts, args);
 
-  const dataDir = opts.dir;
+  const dataDir = opts.dir.substr(0,1) === '/'
+    ? opts.dir
+    : path.join(process.env.HOME, '.local', 'share', opts.dir);
   const mediaDir = path.join(dataDir, 'media');
   db = getDatabaseHandle(opts);
   prepareDatabase(db);

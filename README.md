@@ -101,6 +101,49 @@ The data is in ~/.local/share/srf by default, including database (srf.db)
 and media files. The database in ~/.local/share/srf/srf.db. Media files
 must bein in ~/.local/share/srf/media.
 
+## Command Synopsis
+
+```
+usage:
+  index.js --help
+  index.js [--directory <root-directory>] [--database <database-name>]
+  index.js [--directory <root-directory>] [--database <database-name>] import <filename>
+```
+
+### options
+
+#### --help|-h
+Display usage and exit.
+
+#### --directory|--dir
+Set the root directory, in which the database and media files are located.
+
+Default is ~/.local/share/srf
+
+If the given directory is absolute (i.e. begins with '/') it is used as
+given. If it is relative (i.e. does not begin with '/') it is relative to
+`~/.local/share`.
+
+For example: `/tmp/testing` would use that directory but `testing` would
+use `~/.local/share/testing` and `testing/a` would use
+`~/.local/share/testing/a`.
+
+Media files are located in the `media` subdirectory of this directory.
+
+The srf database is, by default, `srf.db` in this directory, but see option
+`--database` below.
+
+#### --database|--db
+Set the sqlite3 database name.
+
+Default is ~/.local/share/srf/srf.db or, if --directory is specified then
+srf.db in that directory.
+
+If the given path is absolute (i.e. begins with '/') it is used as given -
+the database file can be outside the data directory. If it is relative,
+then it is relative to the data directory (see option `--directory` above).
+
+
 ## Config
 
 Scheduling is tuned by configuration parameters in file
