@@ -106,8 +106,8 @@ must bein in ~/.local/share/srf/media.
 ```
 usage:
   index.js --help
-  index.js [--directory <root-directory>] [--database <database-name>]
-  index.js [--directory <root-directory>] [--database <database-name>] import <filename>
+  index.js [--directory <root-directory>] [--config <config-file>] [--database <database-name>] [--media <media-directory>]
+  index.js [--directory <root-directory>] [--config <config-file>] [--database <database-name>] [--media <media-directory>] import <filename>
 ```
 
 ### options
@@ -133,6 +133,15 @@ Media files are located in the `media` subdirectory of this directory.
 The srf database is, by default, `srf.db` in this directory, but see option
 `--database` below.
 
+#### --config|-c
+Set the configuration filename.
+
+Default is `config.json`
+
+If the given path is absolute (i.e. begins with '/') it is used as given.
+If it is relative (i.e. does not begin with '/') it is relative to the path
+of the --directory option.
+
 #### --database|--db
 Set the sqlite3 database name.
 
@@ -141,8 +150,20 @@ srf.db in that directory.
 
 If the given path is absolute (i.e. begins with '/') it is used as given -
 the database file can be outside the data directory. If it is relative,
-then it is relative to the data directory (see option `--directory` above).
+then it is relative to the path of the --directory option.
 
+The directory to contain the database is created if it doesn't exist.
+
+#### --media|-m
+Set the path of the media directory.
+
+Default is `media`
+
+If the given path is absolute (i.e. begins with '/') it is used as given.
+If it is relative (i.e. does not begin with '/') it is relative to the path
+of the --directory option.
+
+The directory is created if it doesn't exist.
 
 ## Config
 

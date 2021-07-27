@@ -65,15 +65,19 @@ let card;
 
 const getopts = require('getopts');
 const opts = getopts(process.argv.slice(2), {
-  string: ['directory', 'database'],
+  string: ['directory', 'database', 'media', 'config'],
   alias: {
     help: ['h'],
     directory: ['dir'],
-    database: ['db']
+    database: ['db'],
+    media: ['m'],
+    config: ['c']
   },
   default: {
     directory: path.join(process.env.HOME, '.local', 'share', 'srf'),
-    database: 'srf.db'
+    database: 'srf.db',
+    media: 'media',
+    config: 'config.json'
   },
   stopEarly: true
 });
@@ -90,14 +94,47 @@ if (opts.help) {
   console.log('  ' + 
     path.basename(process.argv[1]) +
     ' [--directory <root-directory>]' +
+    ' [--config <config-file>]' +
+    ' [--media <media-directory>]' +
     ' [--database <database-name>]');
   console.log('  ' + 
     path.basename(process.argv[1]) +
     ' [--directory <root-directory>]' +
+    ' [--config <config-file>]' +
+    ' [--media <media-directory>]' +
     ' [--database <database-name>]' +
     ' import <filename>');
 } else {
   const [command, subargv] = opts._;
+
+  // Clean up the opts object
+  delete opts.directory;
+  delete opts.db;
+  delete opts.m;
+  delete opts.c;
+
+  // Make paths absolute
+  if (opts.dir.substr(0,1) !== '/') {
+    opts.dir = path.join(process.env.HOME, '.local', 'share', opts.dir);
+  }
+  if (opts.config.substr(0,1) !== '/') {
+    opts.config = path.join(opts.dir, opts.config);
+  }
+  if (opts.database.substr(0,1) !== '/') {
+    opts.database = path.join(opts.dir, opts.database);
+  }
+  if (opts.media.substr(0,1) !== '/') {
+    opts.media = path.join(opts.dir, opts.media);
+  }
+
+  // Make sure directories for media and database exist
+  const databaseDir = path.dirname(opts.database);
+  fs.mkdirSync(databaseDir, { recursive: true }, (err) => {
+    if (err) throw err;
+  });
+  fs.mkdirSync(opts.media, { recursive: true }, (err) => {
+    if (err) throw err;
+  });
 
   if (command === 'import') {
     importFile(opts, subargv);
@@ -436,8 +473,7 @@ function getConfig (opts) {
     easyFactorAdjust: 200
   };
   try {
-    const configFilePath = path.join(opts.dir, 'config');
-    const data = fs.readFileSync(configFilePath, 'utf8');
+    const data = fs.readFileSync(opts.config, 'utf8');
     console.log('load config: ', data);
     const JSON5 = require('json5');
     const config = JSON5.parse(data);
@@ -497,10 +533,7 @@ function getPercentCorrect (n) {
 function runServer (opts, args) {
   console.log('run server ', opts, args);
 
-  const dataDir = opts.dir.substr(0,1) === '/'
-    ? opts.dir
-    : path.join(process.env.HOME, '.local', 'share', opts.dir);
-  const mediaDir = path.join(dataDir, 'media');
+  const mediaDir = opts.media;
   db = getDatabaseHandle(opts);
   prepareDatabase(db);
 
@@ -1031,14 +1064,7 @@ function initializeDatabase (db) {
 }
 
 function getDatabaseHandle (opts) {
-  const databasePath = opts.database.substr(0, 1) === '/'
-    ? opts.database
-    : path.join(opts.dir, opts.database);
-  const databaseDir = path.dirname(databasePath);
-  fs.mkdirSync(databaseDir, { recursive: true }, (err) => {
-    if (err) throw err;
-  });
-  return require('better-sqlite3')(databasePath);
+  return require('better-sqlite3')(opts.database);
 }
 
 /**
@@ -1171,14 +1197,10 @@ function importAnki21 (opts, data, dstdb) {
   dstdb.prepare('commit').run();
   // save media
   console.log('save media');
-  const mediaDir = path.join(opts.dir, 'media');
-  fs.mkdirSync(mediaDir, { recursive: true }, (err) => {
-    if (err) throw err;
-  });
   const media = JSON.parse(data.media);
   console.log('media: ', media);
   Object.keys(media).forEach(key => {
-    fs.writeFileSync(path.join(mediaDir, media[key]), data[key]);
+    fs.writeFileSync(path.join(opts.media, media[key]), data[key]);
   });
 }
 
@@ -1361,14 +1383,10 @@ function importAnki2 (data, dstdb) {
   dstdb.prepare('commit').run();
   // save media
   console.log('save media');
-  const mediaDir = path.join(opts.dir, 'media');
-  fs.mkdirSync(mediaDir, { recursive: true }, (err) => {
-    if (err) throw err;
-  });
   const media = JSON.parse(data.media);
   console.log('media: ', media);
   Object.keys(media).forEach(key => {
-    fs.writeFileSync(path.join(mediaDir, media[key]), data[key]);
+    fs.writeFileSync(path.join(opts.media, media[key]), data[key]);
   });
 }
 
