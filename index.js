@@ -777,11 +777,13 @@ function runServer (opts, args) {
       const fields = getFields(card.fieldsetid);
       const template = getTemplate(card.templateid);
       card.template = template;
-      const front = Mustache.render(template.front, fields);
-      const back = Mustache.render(template.back, fields);
-      card.back = back;
+      // TODO: handle the special fields {{Tags}}, {{Type}}, {{Deck}},
+      // {{Subdeck}}, {{Card}} and {{FrontSide}}
+      card.front = Mustache.render(template.front, fields);
+      fields.FrontSide = card.front;
+      card.back = Mustache.render(template.back, fields);
       res.render('front', {
-        front: front,
+        front: card.front,
         template: template
       });
     } else {
@@ -1256,7 +1258,7 @@ function getTemplateSetIdFromAnki2Model (keyMap, model, db) {
   const templates = [];
   model.tmpls.forEach(ankiTemplate => {
     const info = db.prepare('insert into template (name, front, back, css) values (?, ?, ?, ?)')
-    .run(JSON.stringify(ankiTemplate.name, ankiTemplate.qfmt, ankiTemplate.afmt, model.css));
+    .run(ankiTemplate.name, ankiTemplate.qfmt, ankiTemplate.afmt, model.css);
     templates.push(info.lastInsertRowid);
   });
   const fields = model.flds.map(field => field.name);
