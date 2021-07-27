@@ -142,7 +142,6 @@ if (opts.help) {
     runServer(opts, subargv);
   }
 }
-process.exit(0);
 
 
 /**
