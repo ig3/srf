@@ -208,7 +208,7 @@ function updateSeenCard (card, ease, interval) {
   const lapsed = interval < matureThreshold && card.interval > matureThreshold;
   const lapses = lapsed ? card.lapses + 1 : card.lapses;
   db.prepare('update card set modified = ?, factor = ?, interval = ?, due = ?, views = ?, lapses = ? where id = ?')
-  .run(now, factor, interval, due, card.views + 1, lapses, card.id);
+  .run(now, factor.toFixed(2), interval, due, card.views + 1, lapses, card.id);
   buryRelated(card);
   logReview(card, ease, factor, due, lapsed, lapses);
 }
