@@ -599,7 +599,7 @@ function runServer (opts, args) {
     const dueNow = getCountCardsDueNow();
     const timeToNextDue = tc.seconds(nextDue - now);
     const chart1Data = { x: [], y: [], type: 'bar' };
-    db.prepare('select cast((due+?)/(60*60)%24 as integer) as hour, count() from card where due > ? and due < ? and interval != 0 group by hour').all(timezoneOffset, startOfDay, endOfDay)
+    db.prepare('select cast((due-?)/(60*60)%24 as integer) as hour, count() from card where due > ? and due < ? and interval != 0 group by hour').all(timezoneOffset, startOfDay, endOfDay)
     .forEach(el => {
       chart1Data.x.push(el.hour);
       chart1Data.y.push(el['count()']);
@@ -635,6 +635,7 @@ function runServer (opts, args) {
     // Cards studied per day
     let first;
     let points = [];
+    console.log('timezoneOffset: ', timezoneOffset);
     db.prepare('select cast((id - ?)/(1000*60*60*24) as integer) as day, count() from revlog group by day').all(timezoneOffset * 1000).forEach(el => {
       if (!first) first = el.day;
       points[el.day - first] = el['count()'];
