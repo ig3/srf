@@ -10,13 +10,7 @@ $ npm install
 $ node index.js import <export file>
 $ node index.js
 ```
-The import only supports an Anki21 export file at the moment (.apkg file).
-Recent versions of Anki produce this on export. Most of the downloadable
-decks are an older format that the import doesn't yet handle, but one can
-import to Anki, then export then import to srf. Export with media and logs,
-and all will be imported to srf. Some of the scheduling detail of new and
-relearn cards isn't preserved, but it doesn't matter much. Intervals and
-due dates are preserved for review cards.
+The import supports Anki exports and shared decks (.apkg files).
 
 The server listens on port 8000 by default.
 
