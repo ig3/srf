@@ -173,6 +173,40 @@ function getTemplateset (id) {
   return(templateset);
 }
 
+function updateTemplateset (templateset) {
+  templateset.fields = getTemplatesetFields(templateset);
+  db.prepare('update templateset set name = ?, templates = ?, fields = ?')
+  .run(
+    templateset.name,
+    JSON.stringify(templateset.templates.map(template => template.id)),
+    JSON.stringify(templateset.fields)
+  );
+}
+
+/**
+ * getTemplatesetFields returns an array of all fields for the template
+ * set.
+ *
+ * Every field in every template in the set must be in the field set, but
+ * the field set may contain fields that are not in any of the templates.
+ *
+ * New fields are appended to the end of the field array.
+ */
+function getTemplatesetFields (templateset) {
+  const fields = {};
+  templateset.templates.forEach(template => {
+    getMustacheTags(template.front).forEach(field => { fields[field] = 1; });
+    getMustacheTags(template.back).forEach(field => { fields[field] = 1; });
+  });
+  const fieldsArray = [...templateset.fields];
+  Object.keys(fields).forEach(field => {
+    if (fieldsArray.indexOf(field) === -1) {
+      fieldsArray.push(field);
+    }
+  });
+  return fieldsArray;
+}
+
 function getTemplatesets () {
   const templatesets = db.prepare('select * from templateset').all();
   templatesets.forEach(templateset => {
@@ -192,10 +226,7 @@ function getTemplatesets () {
 function getTemplate (templateid) {
   const template = db.prepare('select * from template where id = ?')
   .get(templateid);
-  if (!template) {
-    console.log('No template for templateid ', templateid);
-    return;
-  }
+  if (!template) throw new Error('No template with ID ' + templateid);
   return (template);
 }
 
@@ -208,7 +239,7 @@ function updateSeenCard (card, ease, interval) {
   const lapsed = interval < matureThreshold && card.interval > matureThreshold;
   const lapses = lapsed ? card.lapses + 1 : card.lapses;
   db.prepare('update card set modified = ?, factor = ?, interval = ?, due = ?, views = ?, lapses = ? where id = ?')
-  .run(now, factor.toFixed(2), interval, due, card.views + 1, lapses, card.id);
+  .run(now, factor, interval, due, card.views + 1, lapses, card.id);
   buryRelated(card);
   logReview(card, ease, factor, due, lapsed, lapses);
 }
@@ -510,6 +541,31 @@ function createCards (fieldsetid, templatesetid) {
     );
     console.log('insert info: ', info);
   });
+}
+
+function createMissingCardsForTemplateset (templateset) {
+  // TODO: Consider the JSON1 extension and json_each to iterate over
+  // templates
+  db.prepare('start transaction').run();
+  templateset.templates.forEach(template => {
+    db.prepare('select id from fieldset where templatesetid = ? and id not in (select fieldsetid from card where templateid = ?)')
+    .all(templateset.id, template.id)
+    .forEach(fieldset => {
+      const info = db.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .run(
+        fieldset.id,
+        template.id,
+        Math.floor(Date.now() / 1000),
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      );
+    });
+  });
+  db.prepare('commit').run();
 }
 
 function newFactor (card, interval) {
@@ -931,6 +987,59 @@ function runServer (opts, args) {
         // On the other hand, the reviews they record did happen.
         createCards(fieldsetid, templatesetid);
       }
+      res.send('ok');
+    }
+  });
+
+  app.get('/templates', (req, res) => {
+    const templates = db.prepare('select * from template').all();
+    res.render('templates', {
+      templates: templates
+    });
+  });
+
+  app.get('/template/:id', (req, res) => {
+    const template = getTemplate(req.params.id);
+    console.log('template: ', template);
+    res.render('template', template);
+  });
+
+  app.get('/template', (req, res) => {
+    const template = {
+      id: 'new',
+      name: '',
+      front: '',
+      back: '',
+      css: ''
+    };
+    res.render('template', template);
+  });
+
+  app.post('/template/:id', (req, res) => {
+    console.log('save template ' + req.params);
+    if (req.params.id === 'new') {
+      console.log('create a new template');
+      console.log('body ', req.body);
+      const info = db.prepare('insert into template (name, front, back, css) values (?, ?, ?, ?)')
+      .run(
+        req.body.name,
+        req.body.front,
+        req.body.back,
+        req.body.css
+      );
+      console.log('insert info: ', info);
+      res.send('ok');
+    } else {
+      console.log('update an existing template');
+      console.log('body ', req.body);
+      db.prepare('update template set name = ?, front = ?, back = ?, css = ? where id = ?')
+      .run(
+        req.body.name,
+        req.body.front,
+        req.body.back,
+        req.body.css,
+        req.params.id
+      );
       res.send('ok');
     }
   });
@@ -1394,4 +1503,16 @@ function importAnki2 (data, dstdb) {
 
 function getFields (fieldsetId) {
   return JSON.parse(db.prepare('select fields from fieldset where id = ?').get(fieldsetId).fields);
+}
+
+/**
+ * getMustacheTags returns an array of all the tags in the given template.
+ *
+ */
+function getMustacheTags (template) {
+  return [...new Set(
+    require('mustache').parse(template)
+    .filter(item => item[0] === 'name')
+    .map(item => item[1])
+  )];
 }

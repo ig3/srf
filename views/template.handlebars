@@ -1,0 +1,59 @@
+<style>
+  th {
+    text-align: left;
+  }
+  td {
+    text-align: right;
+  }
+  textarea {
+    height: 200px;
+    width: 500px;
+  }
+</style>
+<h1>Spaced Repetition Flashcards</h1>
+<h2>Template</h2>
+<table>
+<tr><th>ID</th><td>{{id}}</td></tr>
+<tr><th>Name</th><td><input type="text" id="name" value="{{name}}"/></td></tr>
+<tr><th>Front</th><td><textarea id="front">{{front}}</textarea></td></tr>
+<tr><th>Back</th><td><textarea id="back">{{back}}</textarea></td></tr>
+<tr><th>CSS</th><td><textarea id="css">{{css}}</textarea></td></tr>
+</table>
+<button onclick="save()">Save</button>
+<button onclick="cancel()">Cancel</button>
+<script>
+  // When the Save button is clicked
+  function save() {
+    const data = {
+      templateid: {{id}},
+      name: document.getElementById('name').value,
+      front: document.getElementById('front').value,
+      back: document.getElementById('back').value,
+      css: document.getElementById('css').value
+    };
+    console.log('save data ', data);
+    fetch('/template/{{id}}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    .then( response => {
+      if (!response.ok) {
+        throw new Error(response.url + ': ' + response.status + ': ' +
+          response.statusText);
+      }
+      console.log('response ', response);
+      window.close();
+    })
+    .catch( err => {
+      alert('failed');
+      console.log('err ', err);
+    });
+  }
+
+  // When the Cancel button is clicked
+  function cancel() {
+    window.close();
+  }
+
+</script>
