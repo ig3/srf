@@ -238,6 +238,56 @@ no changes to the front or back templates or to the CSS. No changes to the
 media either, other than to make a copy of it for srf. My media includes
 sounds and images.
 
+### Anki features not supported
+
+#### Text to Speech
+
+In Anki 2.1.20 or later on Windows, MacOS or iOS, or Linux with an add-on,
+a field of the from `{{tts en_US:Front}}` will read the Front field in a
+U.S. English voice.
+
+A field of the from {{tts-voices:}} will produce a list of all supported
+voices. And various options can be given to specify the voice, speed, etc.
+
+None of these are supported in srf.
+
+#### Special Fields
+
+The special fields `{{tags}}`, `{{Type}}`, `{{Deck}}`, `{{Subdeck}}`,
+`{{Card}}` are not supported in srf.
+
+The special field `{{FrontSide}}` is supported in srf.
+
+#### Hint Fields
+
+Fields of the form `{{hint:MyField}}` are not supported in srf.
+
+#### HTML Stripping
+
+Fields of the form `{{text:Expression}}` to strip HTML from the value are
+not supported in srf.
+
+#### Checking Your Answer
+
+Fields of the form `{{type:Foreign Word}}` are not supported in srf.
+
+#### Conditional Replacement
+
+Sections bracketed by `{{#FieldName}}` and `{{/FieldName}}` do not work in
+srf as in Anki. 
+
+In srf, the section will not be displayed if the field value is false or an
+empty list. If the value is a non-empty list, the section will be displayed
+once for each value in the list, with the list element as context for
+interpreting the field reference (i.e. the value should be a hash/object
+with an attribute matching the field reference). If the value is not a list
+and not false, the block will be rendered once with the value as context.
+
+#### Cloze Templates
+Cloze templates are not supported in srf.
+
+
+
 ## srf database
 
 Initially I used a slight modification of the Anki database but
