@@ -286,6 +286,50 @@ and not false, the block will be rendered once with the value as context.
 #### Cloze Templates
 Cloze templates are not supported in srf.
 
+### Anki implementation
+
+In Anki, the implementation of template rendering is split between pythong
+and rust. While the form of the templates appears to be much like Mustache,
+and there is at least one comment in the code that refers to the `{{` and
+`}}` as mustaches, there does not appear to be an implementation of the
+mustache templates included in the code, so the implementation is all
+local. The rust code has comments that mention 'handlebars' but appears not
+to use a handlebars package (crate or whatever the rust incantation is).
+
+[Anki Scripting: Automate your flashcards](https://www.juliensobczak.com/write/2016/12/26/anki-scripting.html) is from 2016.
+It doesn't mention the version of Anki investigated, but it is quite
+different from Anki in 2021. Correlating with tags in the Anki git
+repository, it would have been Anki 2.0.35 or earlier. There was a long
+break from 2.0.35 (2016) to the next tag 2.1.0 (2018). None the less, there
+is some good information here, including the comment: 'Anki uses a modified
+version of Pystache to provide Mustache-like syntax.' Indeed, Anki 2.0.34
+included a copy of pystache, with files not modified for 7 to 9 years.
+
+Anki 2.1.0 updated the pystache readme to:
+
+```
+Anki uses a modified version of Pystache to provide Mustache-like syntax.
+Behaviour is a little different from standard Mustache:
+
+- {{text}} returns text verbatim with no HTML escaping
+- {{{text}}} does the same and exists for backwards compatibility
+- partial rendering is disabled for security reasons
+- certain keywords like 'cloze' are treated specially
+```
+
+This persisted until Anki 2.0.52 (8 Mar 2020) but was removed from Anki
+2.1.21 (9 Mar 2020), which is about when I started using Anki. My oldest
+archive of the source is 2.1.16, Dec 22, 2019. 2.1 tags before 2.1.21 have
+been removed, it seems. Anyway, the template folder was still present in
+2.1.16 but gone by 2.1.28, my next archive. This was the beginning of the
+pervasive changes, including the move to rust and fragmentation of the
+implementations of various features that put me of developing Anki addons
+or trying to improve the Anki scheduler. Quite an aside to templating, but
+template rendering is just one more feature that is now fragmented between
+python and rust code. And it seems no longer using anything like an
+external implementation of mustache: the current implementation maintains
+some of the syntax and semantics of mustache but the implementation is all
+local to Anki, since about Anki version 2.1.28.
 
 
 ## srf database
