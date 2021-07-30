@@ -1,5 +1,16 @@
 # srf
-Spaced Repetition Flashcards.
+Spaced Repetition Flashcards,
+based loosely on [Anki](https://github.com/ankitects/anki).
+
+## Background
+I used [Anki](https://github.com/ankitects/anki) for a couple of years but
+wanted a better scheduler. An Anki addon to add a scheduler
+was practically impossible and even simple modifications (e.g. [Anki -
+limit new](https://github.com/ig3/anki-limitnew) was difficult and
+excessivly time consuming to maintain due to frequent changes in the Anki
+fundamentals. So I wrote this. It is much simpler than Anki
+(i.e. has a small subset of Anki features) but the scheduler is much
+better for my purposes: studying language.
 
 ## Getting Started
 
