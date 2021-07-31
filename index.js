@@ -314,10 +314,10 @@ function formatDue (due) {
     let hours = d.getHours();
     let minutes = d.getMinutes();
 
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-    if (hours.lengh < 2) hours = '0' + hours;
-    if (minutes.length < 2) minutes = '0' + minutes;
+    month = ('0' + month).slice(-2);
+    day = ('0' + day).slice(-2);
+    hours = ('0' + hours).slice(-2);
+    minutes = ('0' + minutes).slice(-2);
     // return([year, month, day].join('-'));
     return ([year, month, day].join('-') + 'T' + [hours, minutes].join(':'));
   }

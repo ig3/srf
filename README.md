@@ -939,6 +939,9 @@ add-ons, and I still didn't have the scheduling I actually wanted in Anki.
 It has taken considerably longer to bring it to its current state, and it
 still needs a lot of work, but it is good enough for my immediate needs.
 
+I'm not the only one frustrated by Anki and writing an alternative. See
+[Where Anki falls short](https://verbally.flimzy.com/pet-peeves-about-anki/)
+
 With this, I can do whatever I want with scheduling, and I like this
 schedule much more than the Anki scheduler, old or new. In particular, a
 backlog of cards is easy to work through, as opposed to the 'ease hell' of
