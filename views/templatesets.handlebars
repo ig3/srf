@@ -7,18 +7,18 @@
   }
 </style>
 <h1><a href="/">Spaced Repetition Flashcards</a></h1>
-<h2>Templates</h2>
-<a href="/fieldset" onclick="return add()"><button>Add</button></a>
+<h2>Template Sets</h2>
+<a href="/templateset" onclick="return add()"><button>Add</button></a>
 <table border="1" class="sortable">
 <thead>
   <tr>
-    {{#each templates.[0]}}
+    {{#each templatesets.[0]}}
       <th>{{@key}}</th>
     {{/each}}
   </tr>
 </thead>
 <tbody>
-  {{#each templates}}
+  {{#each templatesets}}
     <tr>
       {{#each this}}
         <td>{{this}}</td>
@@ -30,13 +30,13 @@
 <script src="js/sorttable.js"></script>
 <script>
   function add () {
-    window.open('/template', 'Edit Template', 'height=800,width=650');
+    window.open('/templateset', 'Edit Templateset', 'height=800,width=600');
     return false;
   }
   document.querySelectorAll('table tr')
   .forEach(e => e.addEventListener('click', (event) => {
     const cells = event.currentTarget.getElementsByTagName('td');
-    window.open('/template/' + cells[0].innerText, 'Edit Template',
+    window.open('/templateset/' + cells[0].innerText, 'Edit Templateset',
       'height=800,width=600');
   }));
 </script>

@@ -13,13 +13,10 @@
 <h1>Spaced Repetition Flashcards</h1>
 <h2>Template</h2>
 <table>
-<tr><th>ID</th><td>{{template.id}}</td></tr>
-<tr><th>Templateset</th><td>{{form-select 'templatesetid'
-templatesets template.templatesetid}}</td></tr>
-<tr><th>Name</th><td><input type="text" id="name" value="{{template.name}}"/></td></tr>
-<tr><th>Front</th><td><textarea id="front">{{template.front}}</textarea></td></tr>
-<tr><th>Back</th><td><textarea id="back">{{template.back}}</textarea></td></tr>
-<tr><th>CSS</th><td><textarea id="css">{{template.css}}</textarea></td></tr>
+<tr><th>ID</th><td>{{id}}</td></tr>
+<tr><th>Name</th><td><input type="text" id="name" value="{{name}}"/></td></tr>
+<tr><th>Templates</th><td><input type="text" id="templates" value="{{templatesJSON}}"/></td></tr>
+<tr><th>Fields</th><td><input type="text" id="fields" value="{{fieldsJSON}}"/></td></tr>
 </table>
 <button onclick="save()">Save</button>
 <button onclick="cancel()">Cancel</button>
@@ -27,15 +24,13 @@ templatesets template.templatesetid}}</td></tr>
   // When the Save button is clicked
   function save() {
     const data = {
-      templateid: {{template.id}},
-      templatesetid: document.getElementById('field-templatesetid').value,
+      templateset: {{id}},
       name: document.getElementById('name').value,
-      front: document.getElementById('front').value,
-      back: document.getElementById('back').value,
-      css: document.getElementById('css').value
+      templates: document.getElementById('templates').value,
+      fields: document.getElementById('fields').value
     };
     console.log('save data ', data);
-    fetch('/template/{{template.id}}', {
+    fetch('/templateset/{{id}}', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)

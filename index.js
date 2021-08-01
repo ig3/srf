@@ -166,19 +166,17 @@ function getTemplateset (id) {
     console.log('No templateset with ID', id);
     return;
   }
-  templateset.templates = JSON.parse(templateset.templates)
-  .map(id => getTemplate(id));
+  templateset.templates = getTemplatesInTemplateset(id);
+  templateset.fieldsJSON = templateset.fields;
   templateset.fields = JSON.parse(templateset.fields);
-  console.log('templateset: ', templateset);
   return(templateset);
 }
 
 function updateTemplateset (templateset) {
   templateset.fields = getTemplatesetFields(templateset);
-  db.prepare('update templateset set name = ?, templates = ?, fields = ?')
+  db.prepare('update templateset set name = ?, fields = ?')
   .run(
     templateset.name,
-    JSON.stringify(templateset.templates.map(template => template.id)),
     JSON.stringify(templateset.fields)
   );
 }
@@ -210,8 +208,8 @@ function getTemplatesetFields (templateset) {
 function getTemplatesets () {
   const templatesets = db.prepare('select * from templateset').all();
   templatesets.forEach(templateset => {
-    templateset.templates = JSON.parse(templateset.templates)
-    .map(id => getTemplate(id));
+    templateset.templates = getTemplatesInTemplateset(templateset.id);
+    templateset.fieldsJSON = templateset.fields;
     templateset.fields = JSON.parse(templateset.fields);
   });
   return (templatesets);
@@ -228,6 +226,12 @@ function getTemplate (templateid) {
   .get(templateid);
   if (!template) throw new Error('No template with ID ' + templateid);
   return (template);
+}
+
+function getTemplatesInTemplateset (templatesetid) {
+  const templates = db.prepare('select * from template where templatesetid = ? order by id')
+  .all(templatesetid);
+  return (templates);
 }
 
 function updateSeenCard (card, ease, interval) {
@@ -350,7 +354,7 @@ function getNewCard () {
 }
 
 function getDueCard () {
-  const card = db.prepare('select * from card where interval != 0 and due < ? order by interval, due limit 1').get(now);
+  const card = db.prepare('select * from card where interval != 0 and due < ? order by interval, due, templateid limit 1').get(now);
   return (card);
 }
 
@@ -522,50 +526,29 @@ function getConfig (opts) {
  */
 function createCards (fieldsetid, templatesetid) {
   console.log('createCards ', fieldsetid, templatesetid);
-  const templateset = getTemplateset(templatesetid);
-  console.log('templateset: ', templateset);
+  const templates = getTemplatesInTemplateset(templatesetid);
 
-  templateset.templates.forEach(template => {
+  templates.forEach(template => {
     console.log('create card for template: ', template);
-    const info = db.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-    .run(
-      fieldsetid,
-      template.id,
-      Math.floor(Date.now() / 1000),
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    );
-    console.log('insert info: ', info);
+    createCard(fieldsetid, template.id);
   });
 }
 
-function createMissingCardsForTemplateset (templateset) {
-  // TODO: Consider the JSON1 extension and json_each to iterate over
-  // templates
-  db.prepare('start transaction').run();
-  templateset.templates.forEach(template => {
-    db.prepare('select id from fieldset where templatesetid = ? and id not in (select fieldsetid from card where templateid = ?)')
-    .all(templateset.id, template.id)
-    .forEach(fieldset => {
-      const info = db.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .run(
-        fieldset.id,
-        template.id,
-        Math.floor(Date.now() / 1000),
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      );
-    });
-  });
-  db.prepare('commit').run();
+function createCard (fieldsetid, templateid) {
+  const info = db.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+  .run(
+    fieldsetid,
+    templateid,
+    Math.floor(Date.now() / 1000),
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
+  console.log('insert info: ', info);
+  return(info.lastInsertRowid);
 }
 
 function newFactor (card, interval) {
@@ -590,7 +573,7 @@ function runServer (opts, args) {
 
   const mediaDir = opts.media;
   db = getDatabaseHandle(opts);
-  prepareDatabase(db);
+  prepareDatabase();
 
   const express = require('express');
   const app = express();
@@ -651,9 +634,12 @@ function runServer (opts, args) {
     const viewedToday = getCountCardsViewedToday();
     const dueToday = getCountCardsDueToday();
     const dueStudyTime = getEstimatedStudyTime(dueToday);
-    const nextDue = db.prepare('select due from card where interval != 0 order by due limit 1').get().due;
+    const nextDue = db.prepare('select due from card where interval != 0 order by due limit 1').get();
+
     const dueNow = getCountCardsDueNow();
-    const timeToNextDue = tc.seconds(nextDue - now);
+    const newCardsAllowed = getEstimatedTotalStudyTime() < studyTimeNewCardLimit;
+    const studyNow = dueNow > 0 || newCardsAllowed;
+    const timeToNextDue = tc.seconds((nextDue ? nextDue.due : now) - now);
     const chart1Data = { x: [], y: [], type: 'bar' };
     db.prepare('select cast((due-?)/(60*60)%24 as integer) as hour, count() from card where due > ? and due < ? and interval != 0 group by hour').all(timezoneOffset, startOfDay, endOfDay)
     .forEach(el => {
@@ -669,7 +655,8 @@ function runServer (opts, args) {
       totalStudyTime: Math.floor((studyTimeToday + dueStudyTime) / 60),
       dueNow: dueNow,
       timeToNextDue: timeToNextDue.toFullString().substr(0, 9),
-      chart1Data: JSON.stringify(chart1Data)
+      chart1Data: JSON.stringify(chart1Data),
+      studyNow: studyNow
     });
   });
 
@@ -991,6 +978,65 @@ function runServer (opts, args) {
     }
   });
 
+  app.get('/templatesets', (req, res) => {
+    const templatesets = db.prepare('select * from templateset').all();
+    res.render('templatesets', {
+      templatesets: templatesets
+    });
+  });
+
+  app.get('/templateset/:id', (req, res) => {
+    const templateset = getTemplateset(req.params.id);
+    res.render('templateset', templateset);
+  });
+
+  app.get('/templateset', (req, res) => {
+    res.render('templateset', {
+      id: 0,
+      name: 'new',
+      templatesJSON: '[]',
+      fieldsJSON: '[]'
+    });
+  });
+
+  app.post('/templateset/:id', (req, res) => {
+    let id = req.params.id;
+    const name = req.body.name;
+    const fields = JSON.stringify(JSON.parse(req.body.fields));
+    if (id === '0') {
+      const info = db.prepare('insert into templateset (name, fields) values (?, ?)')
+      .run(
+        name,
+        fields
+      );
+      id = info.lastInsertRowid;
+    } else {
+      db.prepare('update templateset set name = ?, fields = ? where id = ?')
+      .run(
+        name,
+        fields,
+        id
+      );
+    }
+    const fieldsets = db.prepare('select id from fieldset where templatesetid = ?')
+    .all(id)
+    .forEach(record => {
+      const fieldsetid = record.id;
+      JSON.parse(templates)
+      .forEach(templateid => {
+        try {
+          const id = createCard(fieldsetid, templateid);
+          console.log('created card id ', id);
+        } catch (e) {
+          if (e.message !== 'UNIQUE constraint failed: card.fieldsetid, card.templateid') {
+            throw e;
+          }
+        }
+      });
+    });
+    res.send('ok');
+  });
+
   app.get('/templates', (req, res) => {
     const templates = db.prepare('select * from template').all();
     res.render('templates', {
@@ -1001,16 +1047,38 @@ function runServer (opts, args) {
   app.get('/template/:id', (req, res) => {
     const template = getTemplate(req.params.id);
     console.log('template: ', template);
-    res.render('template', template);
+    // To present a select of template sets the form helper needs an object
+    // keyed by select value with value being the displayed text.
+    const templatesets = {};
+    getTemplatesets().forEach(set => {
+      templatesets[set.id] = set.name;
+    });
+    console.log('templatesets: ', templatesets);
+    res.render('template', {
+      template: template,
+      templatesets: templatesets
+    });
   });
 
   app.get('/template', (req, res) => {
-    res.render('template', {
+    const template = {
       id: 0,
+      templatesetid: getTemplatesets()[0].id,
       name: '',
       front: '',
       back: '',
       css: ''
+    };
+    // To present a select of template sets the form helper needs an object
+    // keyed by select value with value being the displayed text.
+    const templatesets = {};
+    getTemplatesets().forEach(set => {
+      templatesets[set.id] = set.name;
+    });
+    console.log('templatesets: ', templatesets);
+    res.render('template', {
+      template: template,
+      templatesets: templatesets
     });
   });
 
@@ -1020,8 +1088,9 @@ function runServer (opts, args) {
     if (req.params.id === '0') {
       console.log('create a new template');
       console.log('body ', req.body);
-      const info = db.prepare('insert into template (name, front, back, css) values (?, ?, ?, ?)')
+      const info = db.prepare('insert into template (templatesetid, name, front, back, css) values (?, ?, ?, ?, ?)')
       .run(
+        req.body.templatesetid,
         req.body.name,
         req.body.front,
         req.body.back,
@@ -1032,8 +1101,9 @@ function runServer (opts, args) {
     } else {
       console.log('update an existing template');
       console.log('body ', req.body);
-      db.prepare('update template set name = ?, front = ?, back = ?, css = ? where id = ?')
+      db.prepare('update template set templatesetid = ?, name = ?, front = ?, back = ?, css = ? where id = ?')
       .run(
+        req.body.templatesetid,
         req.body.name,
         req.body.front,
         req.body.back,
@@ -1067,12 +1137,12 @@ function importFile (opts) {
   console.log('file: ', file);
   unzip(file)
   .then(data => {
-    const dstdb = getDatabaseHandle(opts);
-    prepareDatabase(dstdb);
+    db = getDatabaseHandle(opts);
+    prepareDatabase();
     if (data['collection.anki21']) {
-      importAnki21(opts, data, dstdb);
+      importAnki21(opts, data);
     } else if (data['collection.anki2']) {
-      importAnki2(data, dstdb);
+      importAnki2(data);
     } else {
       throw new Error(file + ' is not an Anki deck package');
     }
@@ -1144,7 +1214,7 @@ function getStudyTimeToday () {
 /**
  * prepareDatabase initializes or updates the database as required
  */
-function prepareDatabase (db) {
+function prepareDatabase () {
   try {
     const result = db.prepare('select value from config where name = ?').get('srf schema version');
     if (result) {
@@ -1153,13 +1223,9 @@ function prepareDatabase (db) {
       throw new Error('missing srf schema version');
     }
   } catch (e) {
-    console.log('error: ', e);
-    console.log('error: ', e.code);
-    console.log('error: ', e.message);
-    console.log('error: ', e.stack);
     if (e.message === 'no such table: config') {
       console.log('OK - setup database');
-      initializeDatabase(db);
+      initializeDatabase();
     } else {
       throw e;
     }
@@ -1169,7 +1235,7 @@ function prepareDatabase (db) {
 /**
  * Initialize database does initial setup of a new database.
  */
-function initializeDatabase (db) {
+function initializeDatabase () {
   const batch = fs.readFileSync('init-schema-v1.sql', 'utf8');
   db.exec(batch);
 }
@@ -1196,28 +1262,28 @@ function getDatabaseHandle (opts) {
  * backs. If the set of fronts and backs are the same, the set of templates
  * will be considered to be the same.
  */
-function importAnki21 (opts, data, dstdb) {
+function importAnki21 (opts, data) {
   const srcdb = require('better-sqlite3')(data['collection.anki21']);
   const srccol = srcdb.prepare('select * from col').get();
   const models = JSON.parse(srccol.models);
-  const srfTemplateSetKeys = getTemplateSetKeys(dstdb);
-  dstdb.prepare('begin transaction').run();
+  const srfTemplateSetKeys = getTemplatesetKeys();
+  db.prepare('begin transaction').run();
   console.log('import models');
   const anki21ModelIdToSrfTemplateSetId = {};
   Object.keys(models).forEach(modelId => {
     const model = models[modelId];
-    const templateSetId = getTemplateSetIdFromAnki21Model(srfTemplateSetKeys, model, dstdb);
+    const templateSetId = getTemplateSetIdFromAnkiModel(srfTemplateSetKeys, model);
     anki21ModelIdToSrfTemplateSetId[modelId] = templateSetId;
   });
   const fieldsetGuidToId = {};
-  dstdb.prepare('select id, guid from fieldset').all()
+  db.prepare('select id, guid from fieldset').all()
   .forEach(record => {
     fieldsetGuidToId[record.guid] = record.id;
   });
   // Import anki21 notes
   console.log('import notes');
   const anki21NoteIdToSrfFieldsetId = {};
-  const insertFieldset = dstdb.prepare('insert into fieldset (guid, templatesetid, fields) values (?,?,?)');
+  const insertFieldset = db.prepare('insert into fieldset (guid, templatesetid, fields) values (?,?,?)');
   srcdb.prepare('select * from notes').all()
   .forEach(record => {
     const model = models[record.mid];
@@ -1228,7 +1294,7 @@ function importAnki21 (opts, data, dstdb) {
       fields[label] = fieldValues[i];
     });
     if (fieldsetGuidToId[record.guid]) {
-      dstdb.prepare('update fieldset set templatesetid = ?, fields = ? where id = ?')
+      db.prepare('update fieldset set templatesetid = ?, fields = ? where id = ?')
       .run(anki21ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields), fieldsetGuidToId[record.guid]);
       anki21NoteIdToSrfFieldsetId[record.id] = fieldsetGuidToId[record.guid];
     } else {
@@ -1243,57 +1309,56 @@ function importAnki21 (opts, data, dstdb) {
   srcdb.prepare('select * from cards').all()
   .forEach(record => {
     const fieldsetId = anki21NoteIdToSrfFieldsetId[record.nid];
-    const fieldsetRecord = dstdb.prepare('select templatesetid from fieldset where id = ?').get(fieldsetId);
-    if (!fieldsetRecord) {
+    const fieldset = getFieldset(fieldsetId);
+    if (!fieldset) {
       console.log('no fieldset for ', record, ', fieldsetId: ', fieldsetId);
       process.exit(0);
     }
-    const templatesetId = fieldsetRecord.templatesetid;
-    const templatesetRecord = dstdb.prepare('select templates from templateset where id = ?').get(templatesetId);
-    const templates = JSON.parse(templatesetRecord.templates);
-    const templateId = templates[record.ord];
-    const cardRecord = dstdb.prepare('select id from card where fieldsetid = ? and templateid = ?').get(fieldsetId, templateId);
-    if (cardRecord) {
-      // Update existing record???
-      anki21CardIdToSrfCardId[record.id] = cardRecord.id;
+    const templatesetId = fieldset.templatesetid;
+    const templates = getTemplatesInTemplateset(templatesetId);
+    const templateId = templates[record.ord].id;
+    // Insert new record
+    let interval = 0;
+    let due = 0;
+    let factor = 0;
+    let views = record.reps;
+    let lapses = record.lapses;
+    let ord = 0;
+    if (record.type === 0) {
+      // New card
+      ord = record.due;
+      views = 0;
+      lapses = 0;
+    } else if (record.type === 1) {
+      // Learn card
+      due = record.due;
+      interval = 60;
+    } else if (record.type === 2) {
+      // review card
+      due = srccol.crt + record.due * 60 * 60 * 24;
+      interval = record.ivl * 60 * 60 * 24;
+      factor = Math.log(1 + interval / 900) * 0.4;
+    } else if (record.type === 3) {
+      // relearn card
+      due = record.due;
+      interval = 60;
     } else {
-      // Insert new record
-      let interval = 0;
-      let due = 0;
-      let factor = 0;
-      let views = record.reps;
-      let lapses = record.lapses;
-      let ord = 0;
-      if (record.type === 0) {
-        // New card
-        ord = record.due;
-        views = 0;
-        lapses = 0;
-      } else if (record.type === 1) {
-        // Learn card
-        due = record.due;
-        interval = 60;
-      } else if (record.type === 2) {
-        // review card
-        due = srccol.crt + record.due * 60 * 60 * 24;
-        interval = record.ivl * 60 * 60 * 24;
-        factor = Math.log(1 + interval / 900) * 0.4;
-      } else if (record.type === 3) {
-        // relearn card
-        due = record.due;
-        interval = 60;
-      } else {
-        console.log('unknown card type for ', record);
-        throw new Error('unknown card type ' + record.type);
-      }
-      const info = dstdb.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
+      console.log('unknown card type for ', record);
+      throw new Error('unknown card type ' + record.type);
+    }
+    try {
+      const info = db.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
       .run(fieldsetId, templateId, Math.floor(Date.now() / 1000), interval, due, factor, views, lapses, ord);
       anki21CardIdToSrfCardId[record.id] = info.lastInsertRowid;
+    } catch (e) {
+      if (e.message !== 'UNIQUE constraint failed: card.fieldsetid, card.templateid') {
+        throw e;
+      }
     }
   });
   // Import anki21 revlog
   console.log('import revlog');
-  const insertRevlog = dstdb.prepare('insert into revlog (id, cardid, ease, interval, lastinterval, factor, time, lapses) values (?,?,?,?,?,?,?,?)');
+  const insertRevlog = db.prepare('insert into revlog (id, cardid, ease, interval, lastinterval, factor, time, lapses) values (?,?,?,?,?,?,?,?)');
   srcdb.prepare('select * from revlog').all()
   .forEach(record => {
     const cardId = anki21CardIdToSrfCardId[record.cid];
@@ -1305,76 +1370,57 @@ function importAnki21 (opts, data, dstdb) {
     insertRevlog
     .run(record.id, cardId, ease, interval, lastinterval, factor, time, 0);
   });
-  dstdb.prepare('commit').run();
+  db.prepare('commit').run();
   // save media
   console.log('save media');
   const media = JSON.parse(data.media);
-  console.log('media: ', media);
   Object.keys(media).forEach(key => {
     fs.writeFileSync(path.join(opts.media, media[key]), data[key]);
   });
 }
 
 /**
- * getTemplateSetKeys returns an object that maps template set keys to srf
- * template set IDs, for each template template set in srf. The key is the
+ * getTemplatesetKeys returns an object that maps template set keys to srf
+ * template set IDs, for each template set in srf. The key is the
  * concatenation of the name, front and back of each template in the set,
  * sorted in ascending order by ord.
  */
-function getTemplateSetKeys (db) {
+function getTemplatesetKeys () {
   const result = {};
-  const templateSetRecords = db.prepare('select * from templateset').all();
-  templateSetRecords.forEach(record => {
+  const templatesets = getTemplatesets();
+  templatesets.forEach(templateset => {
     let key = '';
-    JSON.parse(record.templates)
-    .forEach(templateId => {
-      const template = getTemplate(templateId);
+    templateset.templates
+    .forEach(template => {
       key += template.name + template.front + template.back;
     });
     result[key] = record.id;
   });
-  console.log('template set keys: ', result);
   return (result);
 }
 
-function getTemplateSetIdFromAnki21Model (keyMap, model, db) {
+function getTemplateSetIdFromAnkiModel (keyMap, model) {
   let key = '';
   model.tmpls.forEach(template => {
     key += template.name + template.qfmt + template.afmt;
   });
   if (keyMap[key]) return (keyMap[key]);
-  // create each template
-  const templates = [];
-  model.tmpls.forEach(ankiTemplate => {
-    const info = db.prepare('insert into template (name, front, back, css) values (?, ?, ?, ?)')
-    .run(ankiTemplate.name, ankiTemplate.qfmt, ankiTemplate.afmt, model.css);
-    templates.push(info.lastInsertRowid);
-  });
+  // Create the templateset
   const fields = model.flds.map(field => field.name);
-  const info = db.prepare('insert into templateset (name, templates, fields) values (?,?,?)')
-  .run(model.name, JSON.stringify(templates), JSON.stringify(fields));
+  const info = db.prepare('insert into templateset (name, fields) values (?,?)')
+  .run(model.name, JSON.stringify(fields));
   const srfTemplateSetId = info.lastInsertRowid;
-  keyMap[key] = srfTemplateSetId;
-  return (srfTemplateSetId);
-}
-
-function getTemplateSetIdFromAnki2Model (keyMap, model, db) {
-  let key = '';
-  model.tmpls.forEach(template => {
-    key += template.name + template.qfmt + template.afmt;
-  });
-  if (keyMap[key]) return (keyMap[key]);
   // create each template
-  const templates = [];
   model.tmpls.forEach(ankiTemplate => {
-    const info = db.prepare('insert into template (name, front, back, css) values (?, ?, ?, ?)')
-    .run(ankiTemplate.name, ankiTemplate.qfmt, ankiTemplate.afmt, model.css);
-    templates.push(info.lastInsertRowid);
+    const info = db.prepare('insert into template (templatesetid, name, front, back, css) values (?, ?, ?, ?, ?)')
+    .run(
+      srfTemplateSetId,
+      ankiTemplate.name,
+      ankiTemplate.qfmt,
+      ankiTemplate.afmt,
+      model.css
+    );
   });
-  const fields = model.flds.map(field => field.name);
-  const info = db.prepare('insert into templateset (name, templates, fields) values (?,?,?)')
-  .run(model.name, JSON.stringify(templates), JSON.stringify(fields));
-  const srfTemplateSetId = info.lastInsertRowid;
   keyMap[key] = srfTemplateSetId;
   return (srfTemplateSetId);
 }
@@ -1382,28 +1428,28 @@ function getTemplateSetIdFromAnki2Model (keyMap, model, db) {
 /**
  * importAnki2 imports an Anki 2.0 deck package
  */
-function importAnki2 (data, dstdb) {
+function importAnki2 (data) {
   const srcdb = require('better-sqlite3')(data['collection.anki2']);
   const srccol = srcdb.prepare('select * from col').get();
   const models = JSON.parse(srccol.models);
-  const srfTemplateSetKeys = getTemplateSetKeys(dstdb);
-  dstdb.prepare('begin transaction').run();
+  const srfTemplateSetKeys = getTemplatesetKeys();
+  db.prepare('begin transaction').run();
   console.log('import models');
   const anki2ModelIdToSrfTemplateSetId = {};
   Object.keys(models).forEach(modelId => {
     const model = models[modelId];
-    const templateSetId = getTemplateSetIdFromAnki2Model(srfTemplateSetKeys, model, dstdb);
+    const templateSetId = getTemplateSetIdFromAnkiModel(srfTemplateSetKeys, model);
     anki2ModelIdToSrfTemplateSetId[modelId] = templateSetId;
   });
   const fieldsetGuidToId = {};
-  dstdb.prepare('select id, guid from fieldset').all()
+  db.prepare('select id, guid from fieldset').all()
   .forEach(record => {
     fieldsetGuidToId[record.guid] = record.id;
   });
   // Import anki2 notes
   console.log('import notes');
   const anki2NoteIdToSrfFieldsetId = {};
-  const insertFieldset = dstdb.prepare('insert into fieldset (guid, templatesetid, fields) values (?,?,?)');
+  const insertFieldset = db.prepare('insert into fieldset (guid, templatesetid, fields) values (?,?,?)');
   srcdb.prepare('select * from notes').all()
   .forEach(record => {
     const model = models[record.mid];
@@ -1414,7 +1460,7 @@ function importAnki2 (data, dstdb) {
       fields[label] = fieldValues[i];
     });
     if (fieldsetGuidToId[record.guid]) {
-      dstdb.prepare('update fieldset set templatesetid = ?, fields = ? where id = ?')
+      db.prepare('update fieldset set templatesetid = ?, fields = ? where id = ?')
       .run(anki2ModelIdToSrfTemplateSetId[record.mid], JSON.stringify(fields), fieldsetGuidToId[record.guid]);
       anki2NoteIdToSrfFieldsetId[record.id] = fieldsetGuidToId[record.guid];
     } else {
@@ -1429,57 +1475,56 @@ function importAnki2 (data, dstdb) {
   srcdb.prepare('select * from cards').all()
   .forEach(record => {
     const fieldsetId = anki2NoteIdToSrfFieldsetId[record.nid];
-    const fieldsetRecord = dstdb.prepare('select templatesetid from fieldset where id = ?').get(fieldsetId);
-    if (!fieldsetRecord) {
+    const fieldset = getFieldset(fieldsetId);
+    if (!fieldset) {
       console.log('no fieldset for ', record, ', fieldsetId: ', fieldsetId);
       process.exit(0);
     }
-    const templatesetId = fieldsetRecord.templatesetid;
-    const templatesetRecord = dstdb.prepare('select templates from templateset where id = ?').get(templatesetId);
-    const templates = JSON.parse(templatesetRecord.templates);
-    const templateId = templates[record.ord];
-    const cardRecord = dstdb.prepare('select id from card where fieldsetid = ? and templateid = ?').get(fieldsetId, templateId);
-    if (cardRecord) {
-      // Update existing record???
-      anki2CardIdToSrfCardId[record.id] = cardRecord.id;
+    const templatesetId = fieldset.templatesetid;
+    const templates = getTemplatesInTemplateset(templatesetId);
+    const templateId = templates[record.ord].id;
+    // Insert new record
+    let interval = 0;
+    let due = 0;
+    let factor = 0;
+    let views = record.reps;
+    let lapses = record.lapses;
+    let ord = 0;
+    if (record.type === 0) {
+      // New card
+      ord = record.due;
+      views = 0;
+      lapses = 0;
+    } else if (record.type === 1) {
+      // Learn card
+      due = record.due;
+      interval = 60;
+    } else if (record.type === 2) {
+      // review card
+      due = srccol.crt + record.due * 60 * 60 * 24;
+      interval = record.ivl * 60 * 60 * 24;
+      factor = Math.log(1 + interval / 900) * 0.4;
+    } else if (record.type === 3) {
+      // relearn card
+      due = record.due;
+      interval = 60;
     } else {
-      // Insert new record
-      let interval = 0;
-      let due = 0;
-      let factor = 0;
-      let views = record.reps;
-      let lapses = record.lapses;
-      let ord = 0;
-      if (record.type === 0) {
-        // New card
-        ord = record.due;
-        views = 0;
-        lapses = 0;
-      } else if (record.type === 1) {
-        // Learn card
-        due = record.due;
-        interval = 60;
-      } else if (record.type === 2) {
-        // review card
-        due = srccol.crt + record.due * 60 * 60 * 24;
-        interval = record.ivl * 60 * 60 * 24;
-        factor = Math.log(1 + interval / 900) * 0.4;
-      } else if (record.type === 3) {
-        // relearn card
-        due = record.due;
-        interval = 60;
-      } else {
-        console.log('unknown card type for ', record);
-        throw new Error('unknown card type ' + record.type);
-      }
-      const info = dstdb.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
+      console.log('unknown card type for ', record);
+      throw new Error('unknown card type ' + record.type);
+    }
+    try {
+      const info = db.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?,?,?,?,?,?,?,?,?)')
       .run(fieldsetId, templateId, Math.floor(Date.now() / 1000), interval, due, factor, views, lapses, ord);
       anki2CardIdToSrfCardId[record.id] = info.lastInsertRowid;
+    } catch (e) {
+      if (e.message !== 'UNIQUE constraint failed: card.fieldsetid, card.templateid') {
+        throw e;
+      }
     }
   });
   // Import anki21 revlog
   console.log('import revlog');
-  const insertRevlog = dstdb.prepare('insert into revlog (id, cardid, ease, interval, lastinterval, factor, time, lapses) values (?,?,?,?,?,?,?,?)');
+  const insertRevlog = db.prepare('insert into revlog (id, cardid, ease, interval, lastinterval, factor, time, lapses) values (?,?,?,?,?,?,?,?)');
   srcdb.prepare('select * from revlog').all()
   .forEach(record => {
     const cardId = anki2CardIdToSrfCardId[record.cid];
@@ -1491,11 +1536,10 @@ function importAnki2 (data, dstdb) {
     insertRevlog
     .run(record.id, cardId, ease, interval, lastinterval, factor, time, 0);
   });
-  dstdb.prepare('commit').run();
+  db.prepare('commit').run();
   // save media
   console.log('save media');
   const media = JSON.parse(data.media);
-  console.log('media: ', media);
   Object.keys(media).forEach(key => {
     fs.writeFileSync(path.join(opts.media, media[key]), data[key]);
   });

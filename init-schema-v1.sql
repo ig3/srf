@@ -28,6 +28,7 @@ create table card (
 
 create index idx_card_id on card (id);
 create index idx_card_due_interval on card (due, interval);
+create unique index idx_card_fieldsetid_templateid on card (fieldsetid, templateid);
 
 create table fieldset (
   id            integer primary key,
@@ -46,7 +47,6 @@ create index idx_fieldset_id on fieldset (id);
 create table templateset (
   id            integer primary key,
   name          text not null,
-  templates     text not null,
   fields        text not null
 );
 
@@ -56,6 +56,7 @@ create table templateset (
 -- template set.
 create table template (
   id            integer primary key,
+  templatesetid integer not null,
   name          text not null,
   front         text not null,
   back          text not null,
