@@ -1005,19 +1005,19 @@ function runServer (opts, args) {
   });
 
   app.get('/template', (req, res) => {
-    const template = {
-      id: 'new',
+    res.render('template', {
+      id: 0,
       name: '',
       front: '',
       back: '',
       css: ''
-    };
-    res.render('template', template);
+    });
   });
 
   app.post('/template/:id', (req, res) => {
-    console.log('save template ' + req.params);
-    if (req.params.id === 'new') {
+    console.log('save template ', req.params);
+    console.log('id ' + typeof req.params.id);
+    if (req.params.id === '0') {
       console.log('create a new template');
       console.log('body ', req.body);
       const info = db.prepare('insert into template (name, front, back, css) values (?, ?, ?, ?)')
