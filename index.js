@@ -706,7 +706,8 @@ function runServer (opts, args) {
     points = [];
     let last;
     first = null;
-    db.prepare('select cast((due - ?)/(60*60*24) as integer) as day, count() from card where interval != 0 group by day').all(timezoneOffset).forEach(el => {
+    db.prepare('select cast((due - ?)/(60*60*24) as integer) as day, count() from card where interval != 0 and due >= ? group by day')
+    .all(timezoneOffset, startOfDay).forEach(el => {
       if (!first) first = el.day - 1;
       last = el.day - first;
       points[last] = el['count()'];
@@ -716,6 +717,7 @@ function runServer (opts, args) {
       chart3Data.x.push(i);
       chart3Data.y.push(points[i] || 0);
     }
+    chart3Data.y[0] += db.prepare('select count() from card where interval != 0 and due < ?').get(startOfDay)['count()'] || 0;
 
     // Cards per interval
     points = [];
