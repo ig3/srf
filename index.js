@@ -708,12 +708,12 @@ function runServer (opts, args) {
     first = null;
     db.prepare('select cast((due - ?)/(60*60*24) as integer) as day, count() from card where interval != 0 and due >= ? group by day')
     .all(timezoneOffset, startOfDay).forEach(el => {
-      if (!first) first = el.day - 1;
+      if (!first) first = el.day;
       last = el.day - first;
       points[last] = el['count()'];
     });
     const chart3Data = { x: [], y: [] };
-    for (let i = 1; i <= last; i++) {
+    for (let i = 0; i <= last; i++) {
       chart3Data.x.push(i);
       chart3Data.y.push(points[i] || 0);
     }
