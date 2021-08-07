@@ -1020,14 +1020,15 @@ function runServer (opts, args) {
         id
       );
     }
+    db.prepare('begin transaction').run();
+    const templates = getTemplatesInTemplateset(id);
     const fieldsets = db.prepare('select id from fieldset where templatesetid = ?')
-    .all(id)
-    .forEach(record => {
-      const fieldsetid = record.id;
-      JSON.parse(templates)
-      .forEach(templateid => {
+    .all(id);
+
+    fieldsets.forEach(fieldset => {
+      templates.forEach(template => {
         try {
-          const id = createCard(fieldsetid, templateid);
+          const id = createCard(fieldset.id, template.id);
           console.log('created card id ', id);
         } catch (e) {
           if (e.message !== 'UNIQUE constraint failed: card.fieldsetid, card.templateid') {
@@ -1036,6 +1037,8 @@ function runServer (opts, args) {
         }
       });
     });
+    db.prepare('delete from card where fieldsetid in (select id from fieldset where templatesetid = @id) and templateid not in (select id from template where templatesetid = @id)').run({id:  id});
+    db.prepare('commit').run();
     res.send('ok');
   });
 

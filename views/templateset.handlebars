@@ -15,7 +15,6 @@
 <table>
 <tr><th>ID</th><td>{{id}}</td></tr>
 <tr><th>Name</th><td><input type="text" id="name" value="{{name}}"/></td></tr>
-<tr><th>Templates</th><td><input type="text" id="templates" value="{{templatesJSON}}"/></td></tr>
 <tr><th>Fields</th><td><input type="text" id="fields" value="{{fieldsJSON}}"/></td></tr>
 </table>
 <button onclick="save()">Save</button>
@@ -26,7 +25,6 @@
     const data = {
       templateset: {{id}},
       name: document.getElementById('name').value,
-      templates: document.getElementById('templates').value,
       fields: document.getElementById('fields').value
     };
     console.log('save data ', data);
