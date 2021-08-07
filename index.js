@@ -534,6 +534,35 @@ function createCards (fieldsetid, templatesetid) {
   });
 }
 
+/**
+ * createCardsForTemplate creates all cards for the given template.
+ */
+function createCardsForTemplate (templateid) {
+  console.log('createCardsForTemplate ', templateid);
+  const template = getTemplate(templateid);
+  const fieldsets = db.prepare('select id from fieldset where templatesetid = ?').all(template.templatesetid);
+  fieldsets.forEach(fieldset => {
+    try {
+      const id = createCard(fieldset.id, template.id);
+      console.log('created card id ', id);
+    } catch (e) {
+      if (e.message !== 'UNIQUE constraint failed: card.fieldsetid, card.templateid') {
+        throw e;
+      }
+    }
+  });
+}
+
+/**
+ * deleteCardsForTemplate deletes all card records linked to the given
+ * templateid. This will be required if the template is deleted or if its
+ * templateset is changed.
+ */
+function deleteCardsForTemplate (templateid) {
+  console.log('deleteCardsForTemplate ', templateid);
+  db.prepare('delete from card where templateid = ?').run(templateid);
+}
+
 function createCard (fieldsetid, templateid) {
   const info = db.prepare('insert into card (fieldsetid, templateid, modified, interval, due, factor, views, lapses, ord) values (?, ?, ?, ?, ?, ?, ?, ?, ?)')
   .run(
@@ -1093,6 +1122,7 @@ function runServer (opts, args) {
     if (req.params.id === '0') {
       console.log('create a new template');
       console.log('body ', req.body);
+      db.prepare('begin transaction').run();
       const info = db.prepare('insert into template (templatesetid, name, front, back, css) values (?, ?, ?, ?, ?)')
       .run(
         req.body.templatesetid,
@@ -1102,10 +1132,14 @@ function runServer (opts, args) {
         req.body.css
       );
       console.log('insert info: ', info);
+      createCardsForTemplate(info.lastInsertRowid);
+      db.prepare('commit').run();
       res.send('ok');
     } else {
       console.log('update an existing template');
       console.log('body ', req.body);
+      const oldTemplate = getTemplate(req.params.id);
+      db.prepare('begin transaction').run();
       db.prepare('update template set templatesetid = ?, name = ?, front = ?, back = ?, css = ? where id = ?')
       .run(
         req.body.templatesetid,
@@ -1115,6 +1149,11 @@ function runServer (opts, args) {
         req.body.css,
         req.params.id
       );
+      if (oldTemplate.templatesetid !== req.body.templatesetid) {
+        deleteCardsForTemplate(req.params.id); // old fieldsets
+        createCardsForTemplate(req.params.id); // new fieldsets
+      }
+      db.prepare('commit').run();
       res.send('ok');
     }
   });
