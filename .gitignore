@@ -12,3 +12,4 @@ media/
 *.anki2
 *.srf
 config
+coverage/

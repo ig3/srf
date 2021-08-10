@@ -845,6 +845,10 @@ function runServer (opts, args) {
     });
   });
 
+  app.get('/study', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'study.html'));
+  });
+
   app.get('/front', (req, res) => {
     card = getNextCard();
     if (card) {
