@@ -57,6 +57,9 @@ let lastNewCardTime = startTime;
 // Reset when the day rolls over.
 let studyTimeToday;
 
+// overdue is the count of cards that were overdue: due more than 1 day ago
+let overdue;
+
 // The number of cards buried
 let buried = '';
 
@@ -328,24 +331,18 @@ function formatDue (due) {
 }
 
 function getNextCard () {
-  const newCardsAllowed = getEstimatedTotalStudyTime() < studyTimeNewCardLimit;
-  if (newCardsAllowed && lastNewCardTime < now - 300) {
-    const card = getNewCard();
-    if (card) {
-      lastNewCardTime = now;
-      console.log('new card');
-      return (card);
-    }
+  const nextDueCard = getDueCard();
+  const nextNewCard = getNewCard();
+  if (
+    getEstimatedTotalStudyTime() < studyTimeNewCardLimit &&
+    (lastNewCardTime < now - 300 || !nextDueCard) &&
+    nextNewCard
+  ) {
+    lastNewCardTime = now;
+    return (nextNewCard);
   } else {
-    const card = getDueCard();
-    if (card) {
-      return (card);
-    } else if (newCardsAllowed) {
-      const card = getNewCard();
-      console.log('new card');
-      return (card);
-    }
-  }
+    return (nextDueCard);
+  };
 }
 
 function getNewCard () {
@@ -362,8 +359,6 @@ function getEstimatedTotalStudyTime () {
   const dueTodayCount = getCountCardsDueToday();
   const dueStudyTime = getEstimatedStudyTime(dueTodayCount);
   const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
-  // console.log('Estimated total study time: ',
-  //  tc.seconds(estimatedTotalStudyTime).toFullString());
   return (estimatedTotalStudyTime);
 }
 
@@ -449,12 +444,35 @@ function getCountCardsDueToday () {
   return (db.prepare('select count() from card where interval != 0 and due < ?').get(endOfDay)['count()'] || 0);
 }
 
+/**
+ * getCountCardsOverdue returns the number of cards that were due more than
+ * one day ago.
+ */
+function getCountCardsOverdue () {
+  return (
+    db.prepare('select count() from card where interval != 0 and due < ?')
+    .get(startOfDay - secPerDay)['count()'] || 0
+  );
+}
+
 function getCountCardsDueNow () {
   return (db.prepare('select count() from card where interval != 0 and due < ?').get(now)['count()'] || 0);
 }
 
 function getCountCardsViewedToday () {
   return (db.prepare('select count() from revlog where id >= ?').get(startOfDay * 1000)['count()']);
+}
+
+function getCountCardsViewedPast24Hours () {
+  return (db.prepare('select count() from revlog where id >= ?').get((now - secPerDay) * 1000)['count()']);
+}
+
+function getStatsPast24Hours () {
+  const stats = db.prepare(
+    'select count() as count, sum(time) as time from revlog where id >= ?'
+  )
+  .get((now - secPerDay) * 1000);
+  return (stats || {count: 0, time: 0});
 }
 
 function getEstimatedStudyTime (count) {
@@ -654,6 +672,8 @@ function runServer (opts, args) {
       startOfDay = newStartOfDay;
       endOfDay = startOfDay + secPerDay;
       studyTimeToday = getStudyTimeToday();
+      overdue = getCountCardsOverdue();
+      console.log('overdue: ', overdue);
       timezoneOffset = (new Date().getTimezoneOffset()) * 60;
     }
     next();
@@ -666,8 +686,9 @@ function runServer (opts, args) {
     const nextDue = db.prepare('select due from card where interval != 0 order by due limit 1').get();
 
     const dueNow = getCountCardsDueNow();
-    const newCardsAllowed = getEstimatedTotalStudyTime() < studyTimeNewCardLimit;
-    const studyNow = dueNow > 0 || newCardsAllowed;
+    const nextCard = getNextCard();
+    const studyNow = !!nextCard;
+    const statsPast24Hours = getStatsPast24Hours();
     const timeToNextDue = tc.seconds((nextDue ? nextDue.due : now) - now);
     const chart1Data = { x: [], y: [], type: 'bar' };
     db.prepare('select cast((due-?)/(60*60)%24 as integer) as hour, count() from card where due > ? and due < ? and interval != 0 group by hour').all(timezoneOffset, startOfDay, endOfDay)
@@ -685,7 +706,9 @@ function runServer (opts, args) {
       dueNow: dueNow,
       timeToNextDue: timeToNextDue.toFullString().substr(0, 9),
       chart1Data: JSON.stringify(chart1Data),
-      studyNow: studyNow
+      studyNow: studyNow,
+      studyTimePast24Hours: Math.floor(statsPast24Hours.time / 60),
+      viewedPast24Hours: statsPast24Hours.count
     });
   });
 
@@ -852,6 +875,7 @@ function runServer (opts, args) {
   app.get('/front', (req, res) => {
     card = getNextCard();
     if (card) {
+      if (card.interval === 0) console.log('new card');
       cardStartTime = now;
       const fields = getFields(card.fieldsetid);
       const template = getTemplate(card.templateid);
@@ -1254,9 +1278,17 @@ function unzip (file) {
 }
 
 function getStudyTimeToday () {
-  const studyTimeToday = db.prepare('select sum(time) from revlog where id >= ?').get(startOfDay * 1000)['sum(time)'] || 0;
-  console.log('studyTimeToday ', studyTimeToday);
-  return (studyTimeToday);
+  return (
+    db.prepare('select sum(time) from revlog where id >= ?')
+    .get(startOfDay * 1000)['sum(time)'] || 0
+  );
+}
+
+function getStudyTimePast24Hours () {
+  return (
+    db.prepare('select sum(time) from revlog where id >= ?')
+    .get((now - secPerDay) * 1000)['sum(time)'] || 0
+  );
 }
 
 /**
