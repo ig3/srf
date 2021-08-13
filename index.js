@@ -704,7 +704,7 @@ function runServer (opts, args) {
       totalToday: viewedToday + dueToday,
       totalStudyTime: Math.floor((studyTimeToday + dueStudyTime) / 60),
       dueNow: dueNow,
-      timeToNextDue: timeToNextDue.toFullString().substr(0, 9),
+      timeToNextDue: timeToNextDue.toFullString().slice(0,-4),
       chart1Data: JSON.stringify(chart1Data),
       studyNow: studyNow,
       studyTimePast24Hours: Math.floor(statsPast24Hours.time / 60),
