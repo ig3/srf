@@ -23,7 +23,45 @@ $ node index.js
 ```
 The import supports Anki exports and shared decks (.apkg files).
 
-The server listens on port 8000 by default.
+Browse to http://localhost:8000/.
+
+The home page presents some basic study statistics:
+
+ * The number of cards and minutes studied in the past 24 hours
+ * The number of cards due and estimated minutes to study in the next 24
+   hours
+ * The percentage of correct responses (not 'Again') in the past 10,000
+   reviews
+ * The number of cards currently overdue (due more than 24 hours ago)
+ * The number of cards due now
+ * The time until the next card is due
+ * A histogram of cards due in the next 24 hours
+
+If there is a card available for study, the 'Study' button will appear.
+Click it to study a new card.
+
+Cards may come due for review at any time, based on the spaced repetition
+algorithm. If there are no cards due for review and study time is less than
+studyTimeLimit (60 minutes, by default, but configurable to accord with
+your capacity and time commitments) then new cards will be available to
+study. If you keep studying, eventually there will be no card available.
+
+When there are no cards available, you have completed study for the moment,
+but another card may become available at any time, even in just a few
+seconds. 'Next card due in' is the time until the next card is due for
+review. You may continue reviewing at this time.
+
+Because another card may be due for review at any time, it is not possible
+to finish study for the day, or any other arbitrary period. Do not obsess
+about completing study for the day. Rather, attempt to study until 'Cards
+due now' is reduced to 0 at least once each day. If more cards become due
+later in the day, which is usual, you may study them later in the day, but
+there will be no problem if you do not study them until the following day.
+
+To study cards, click the 'Study' button. This will present the front of
+one card. When you are ready, click 'Flip' to see the back of the card.
+Then click 'Again', 'Hard', 'Good' or 'Easy', according to how well you
+remembered the back of the card.
 
 The data is in ~/.local/share/srf by default, including database (srf.db)
 and media files. The database in ~/.local/share/srf/srf.db. Media files
