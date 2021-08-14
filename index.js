@@ -519,6 +519,14 @@ function getStatsPast24Hours () {
   return (stats || {count: 0, time: 0});
 }
 
+function getStatsNext24Hours () {
+  const count = db.prepare('select count() from card where interval != 0 and due < ?').get(now + secPerDay)['count()'] || 0;
+  return ({
+    count: count,
+    time: count * getAverageTimePerCard()
+  });
+}
+
 function getEstimatedStudyTime (count) {
   return Math.floor(count * getAverageTimePerCard());
 }
@@ -746,13 +754,19 @@ function runServer (opts, args) {
     const nextCard = getNextCard();
     const studyNow = !!nextCard;
     const statsPast24Hours = getStatsPast24Hours();
+    statsPast24Hours.time = Math.floor(statsPast24Hours.time/60);
+    const statsNext24Hours = getStatsNext24Hours();
+    statsNext24Hours.time = Math.floor(statsNext24Hours.time/60);
     const timeToNextDue = tc.seconds((nextDue ? nextDue.due : now) - now);
+    const percentCorrect = getPercentCorrect(10000);
     const chart1Data = { x: [], y: [], type: 'bar' };
-    db.prepare('select cast((due-?)/(60*60)%24 as integer) as hour, count() from card where due > ? and due < ? and interval != 0 group by hour').all(timezoneOffset, startOfDay, endOfDay)
+    db.prepare('select cast((due-@start)/(60*60) as integer) as hour, count() from card where due > @start and due < @end and interval != 0 group by hour')
+    .all({start: now, end: now + secPerDay})
     .forEach(el => {
       chart1Data.x.push(el.hour);
       chart1Data.y.push(el['count()']);
     });
+    chart1Data.y[0] += dueNow;
     res.render('home', {
       viewedToday: viewedToday,
       studyTimeToday: Math.floor(studyTimeToday / 60),
@@ -765,7 +779,10 @@ function runServer (opts, args) {
       chart1Data: JSON.stringify(chart1Data),
       studyNow: studyNow,
       studyTimePast24Hours: Math.floor(statsPast24Hours.time / 60),
-      viewedPast24Hours: statsPast24Hours.count
+      viewedPast24Hours: statsPast24Hours.count,
+      statsPast24Hours: statsPast24Hours,
+      statsNext24Hours: statsNext24Hours,
+      percentCorrect: percentCorrect.toFixed(0)
     });
   });
 
