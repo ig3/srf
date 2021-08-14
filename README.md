@@ -273,6 +273,11 @@ The objective is to keep daily study time close to studyTimeLimit by
 regulating the presentation of new cards. There is no limit on review of
 due cards. Only new cards are limited.
 
+Note that studyTimeLimit is a limit per 24 hours, not a limit per day. srf
+considers study time in the past 24 hours and the next 24 hours from the
+current time, without regard to what the actual time is, local time or day
+boundaries.
+
 In the event of a significant backlog of due cards (e.g. after not studying
 for several days), no new cards will be presented until the backlog is
 cleared.
