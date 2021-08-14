@@ -38,30 +38,25 @@ The home page presents some basic study statistics:
  * A histogram of cards due in the next 24 hours
 
 If there is a card available for study, the 'Study' button will appear.
-Click it to study a new card.
+Click it to study a card. After studying a card, the next card will be
+presented, until there are no more cards to be studied and the home page is
+displayed again.
 
-Cards may come due for review at any time, based on the spaced repetition
-algorithm. If there are no cards due for review and study time is less than
-studyTimeLimit (60 minutes, by default, but configurable to accord with
-your capacity and time commitments) then new cards will be available to
-study. If you keep studying, eventually there will be no card available.
+Cards become due for review at random times. If you don't study them
+immediately, they will accumulate, so you will sometimes have many cards
+due for review. It's like an
+[assembly line](https://www.youtube.com/watch?v=59BIB-2FVmM): you will
+sometimes be waiting for the next card to study, and you will sometimes
+have a backlog of cards to catch up. While you don't want to get too far
+behind, it is OK to accumulate cards to review. Studying to clear the
+backlog once per day will work well. While there is nothing wrong with
+studying in multiple sessions each day, don't obsess about reviewing every
+card that comes due each day. It is OK to leave them until the next day, or
+even longer.
 
-When there are no cards available, you have completed study for the moment,
-but another card may become available at any time, even in just a few
-seconds. 'Next card due in' is the time until the next card is due for
-review. You may continue reviewing at this time.
-
-Because another card may be due for review at any time, it is not possible
-to finish study for the day, or any other arbitrary period. Do not obsess
-about completing study for the day. Rather, attempt to study until 'Cards
-due now' is reduced to 0 at least once each day. If more cards become due
-later in the day, which is usual, you may study them later in the day, but
-there will be no problem if you do not study them until the following day.
-
-To study cards, click the 'Study' button. This will present the front of
-one card. When you are ready, click 'Flip' to see the back of the card.
-Then click 'Again', 'Hard', 'Good' or 'Easy', according to how well you
-remembered the back of the card.
+If your backlog of cards to study is too large, new cards will not be
+presented until you clear your backlog. The system will match your study
+capacity.
 
 The data is in ~/.local/share/srf by default, including database (srf.db)
 and media files. The database in ~/.local/share/srf/srf.db. Media files
