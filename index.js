@@ -1392,7 +1392,7 @@ function prepareDatabase () {
   try {
     const result = db.prepare('select value from config where name = ?').get('srf schema version');
     if (result) {
-      console.log('version: ', result.version);
+      console.log('version: ', result.value);
     } else {
       throw new Error('missing srf schema version');
     }
