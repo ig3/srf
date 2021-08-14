@@ -53,10 +53,6 @@ let lastNewCardTime = startTime;
 // Reset when the day rolls over.
 let studyTimeToday;
 
-// overdueToday is the count of cards that were overdue at start of day.
-// Overdue is due more than 1 day ago
-let overdueToday;
-
 // The number of cards buried
 let buried = '';
 
@@ -344,7 +340,7 @@ function getNextCard () {
   const nextDueCard = getDueCard();
   const nextNewCard = getNewCard();
   if (
-    overdueToday === 0 &&
+    getCountCardsOverdue() === 0 &&
     // getAverageStudyTime(config.studyTimeWindowDays) <
     //   config.studyTimeAverageLimit &&
     // getMaxStudyTime(config.studyTimeWindowDays) <
@@ -495,7 +491,7 @@ function getCountCardsDueToday () {
 function getCountCardsOverdue () {
   return (
     db.prepare('select count() from card where interval != 0 and due < ?')
-    .get(startOfDay - secPerDay)['count()'] || 0
+    .get(now - secPerDay)['count()'] || 0
   );
 }
 
@@ -737,8 +733,6 @@ function runServer (opts, args) {
       startOfDay = newStartOfDay;
       endOfDay = startOfDay + secPerDay;
       studyTimeToday = getStudyTimeToday();
-      overdueToday = getCountCardsOverdue();
-      console.log('overdueToday: ', overdueToday);
       timezoneOffset = (new Date().getTimezoneOffset()) * 60;
     }
     next();
@@ -759,6 +753,7 @@ function runServer (opts, args) {
     statsNext24Hours.time = Math.floor(statsNext24Hours.time/60);
     const timeToNextDue = tc.seconds((nextDue ? nextDue.due : now) - now);
     const percentCorrect = getPercentCorrect(10000);
+    const overdue = getCountCardsOverdue();
     const chart1Data = { x: [], y: [], type: 'bar' };
     db.prepare('select cast((due-@start)/(60*60) as integer) as hour, count() from card where due > @start and due < @end and interval != 0 group by hour')
     .all({start: now, end: now + secPerDay})
@@ -782,7 +777,8 @@ function runServer (opts, args) {
       viewedPast24Hours: statsPast24Hours.count,
       statsPast24Hours: statsPast24Hours,
       statsNext24Hours: statsNext24Hours,
-      percentCorrect: percentCorrect.toFixed(0)
+      percentCorrect: percentCorrect.toFixed(0),
+      overdue: overdue
     });
   });
 
