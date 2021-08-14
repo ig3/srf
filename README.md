@@ -209,27 +209,29 @@ determined by cards.interval being 0. After a card has been seen,
 its interval is set to some non-zero value: the time, in seconds, until
 the card is due to be seen again.
 
-New cards are allowed when the estimate of total time to complete all due
-reviews is less than the value of studyTimeNewCardLimit (currently
-hard-coded in server.js as one hour (60\*60)).
+New cards are presented when:
 
-While new cards are allowed, a new card will be presented if it is more
-than 5 minutes since the last new card was presented or there are no cards
-currently due for review.
+ * There were no cards due more than 1 day ago (overdue) at start of day
+ * Study time, past 24 hours, is less than studyTimeLimit
+ * Estimated study time, next 24 hours, is less than studyTimeLimit
+ * Estimated 5 day average study time is less than studyTimeLimit
+ * There are no due cards or it is more than 5 minutes since last new card
+ * There is a new card available
 
-Total time to view all cards due by end of day is estimated. This is based
-on actual study time, the number of cards due and historic time per card
-per day, averaged over the past 10 days. The product of cards due and
-average time per card is added to the actual time already spent to estimate
-the time it would take to complete study of all due cards. This takes into
-account that some cards are viewed more than once in a day.  It's only an
-estimate: not terribly accurate. But it is only a basis for limiting new
-cards, to avoid overload. It doesn't have to be very accurate.
+Estimates of future study time are based on number of cards due and average
+time per card, per day, over the past 10 days.
 
-The objective is to keep study time close to 1 hour per day by adding new
-cards if it would be less and blocking new cards if it would be more. It is
-always possible to review all due cards. There is no limit on cards viewed
-- only on new cards.
+The objective is to keep daily study time close to studyTimeLimit by
+regulating the presentation of new cards. There is no limit on review of
+due cards. Only new cards are limited.
+
+In the event of a significant backlog of due cards (e.g. after not studying
+for several days), no new cards will be presented until the backlog is
+cleared.
+
+In the event of an upcoming surge of due cards, no new cards will be
+presented, even if current study time is low.
+
 
 ## Templates
 

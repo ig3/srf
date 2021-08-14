@@ -27,10 +27,6 @@ let startOfDay;
 // endOfDay is the epoch time of midnight at the end of the current day.
 let endOfDay;
 
-// studyTimeNewCardLimit is the limit on total study time today
-// in seconds, after which no more new cards will be shown.
-const studyTimeNewCardLimit = 60 * 60;
-
 // secPerDay is the number of seconds in a day
 const secPerDay = 60 * 60 * 24;
 
@@ -57,8 +53,9 @@ let lastNewCardTime = startTime;
 // Reset when the day rolls over.
 let studyTimeToday;
 
-// overdue is the count of cards that were overdue: due more than 1 day ago
-let overdue;
+// overdueToday is the count of cards that were overdue at start of day.
+// Overdue is due more than 1 day ago
+let overdueToday;
 
 // The number of cards buried
 let buried = '';
@@ -330,11 +327,32 @@ function formatDue (due) {
   }
 }
 
+/**
+ * getNextCard returns the next due card or a new card or undefined.
+ *
+ * A new card is returned if:
+ *   - There were no overdue cards at start of day
+ *   - Study time past 24 hours is less than studyTimeLimit
+ *   - Estimated study time next 24 hours is less than studyTimeLimit
+ *   - Estimated 5 day average study time is less than studyTimeLimit
+ *   - Either no card is due or it has been 5 minutes since the last new card
+ *   - There is a new card available
+ *
+ * Otherwise a due card is returned, or undefined if there is no due card.
+ */
 function getNextCard () {
   const nextDueCard = getDueCard();
   const nextNewCard = getNewCard();
   if (
-    getEstimatedTotalStudyTime() < studyTimeNewCardLimit &&
+    overdueToday === 0 &&
+    // getAverageStudyTime(config.studyTimeWindowDays) <
+    //   config.studyTimeAverageLimit &&
+    // getMaxStudyTime(config.studyTimeWindowDays) <
+    //   config.studyTimeWindowDaysLimit &&
+    // getEstimatedTotalStudyTime() < config.studyTimeLimit &&
+    getAverageStudyTime(1) < config.studyTimeLimit &&
+    getEstimatedAverageStudyTime(1) < config.studyTimeLimit &&
+    getEstimatedAverageStudyTime(5) < config.studyTimeLimit &&
     (lastNewCardTime < now - 300 || !nextDueCard) &&
     nextNewCard
   ) {
@@ -360,6 +378,30 @@ function getEstimatedTotalStudyTime () {
   const dueStudyTime = getEstimatedStudyTime(dueTodayCount);
   const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
   return (estimatedTotalStudyTime);
+}
+
+function getEstimatedStudyTimeNext24Hours () {
+  const cards =
+    db.prepare('select count() from card where interval != 0 and due < ?')
+    .get(now + secPerDay)['count()'];
+  const estimatedStudyTime = cards * getAverageTimePerCard();
+  console.log('estimatedStudyTimeNext24Hours: ', estimatedStudyTime);
+  return (estimatedStudyTime);
+}
+
+function getEstimatedAverageStudyTime (days) {
+  const cards =
+    db.prepare('select count() from card where interval != 0 and due < ?')
+    .get(now + days * secPerDay)['count()'];
+  const averageTimePerCard = getAverageTimePerCard();
+  const estimatedStudyTime = Math.floor(cards * averageTimePerCard / days);
+  console.log('estimatedAverageStudyTime: ',
+    days,
+    Math.floor(cards/days),
+    averageTimePerCard,
+    estimatedStudyTime
+  );
+  return (estimatedStudyTime);
 }
 
 /**
@@ -435,9 +477,11 @@ function intervalEasy (card) {
  * cards are viewed more than once.
  */
 function getAverageTimePerCard () {
-  const result = db.prepare('select avg(t) from (select sum(time) as t, cast(id/1000/60/60/24 as integer) as d, cardid from revlog where id > ? group by d, cardid)')
-  .get((now - 60 * 60 * 24 * 10) * 1000)['avg(t)'] || 30;
-  return (Math.round(result, 0));
+  const result = db.prepare('select avg(t) from (select sum(time) as t, cast(id/1000/60/60/24 as integer) as d, cardid from revlog where id > ? and id < ? group by d, cardid)')
+  .get((startOfDay - 60 * 60 * 24 * 10) * 1000, startOfDay * 1000)['avg(t)'] || 30;
+  // const average = Math.round(result, 2);
+  const average = result.toFixed(2);
+  return (average);
 }
 
 function getCountCardsDueToday () {
@@ -522,7 +566,20 @@ function getConfig (opts) {
     // The minimum factor when easy is selected.
     easyMinFactor: 4000,
     // The change of factor when easy is selected.
-    easyFactorAdjust: 200
+    easyFactorAdjust: 200,
+
+    // Study time (seconds) per day beyond which no new cards
+    studyTimeLimit:  60 * 60,
+
+    // Study time (seconds) beyond which new cards will not be shown
+    studyTimeAverageLimit: 60 * 60,
+
+    // Study time (seconds) beyond which new cards will not be shown
+    studyTimeWindowDaysLimit: 90 * 60,
+
+    // The window (days) over which daily study time must be below
+    // studyTimeWindowDaysLimit for new cards to be shown.
+    studyTimeWindowDays: 5
   };
   try {
     const data = fs.readFileSync(opts.config, 'utf8');
@@ -672,8 +729,8 @@ function runServer (opts, args) {
       startOfDay = newStartOfDay;
       endOfDay = startOfDay + secPerDay;
       studyTimeToday = getStudyTimeToday();
-      overdue = getCountCardsOverdue();
-      console.log('overdue: ', overdue);
+      overdueToday = getCountCardsOverdue();
+      console.log('overdueToday: ', overdueToday);
       timezoneOffset = (new Date().getTimezoneOffset()) * 60;
     }
     next();
@@ -1284,11 +1341,35 @@ function getStudyTimeToday () {
   );
 }
 
-function getStudyTimePast24Hours () {
-  return (
-    db.prepare('select sum(time) from revlog where id >= ?')
-    .get((now - secPerDay) * 1000)['sum(time)'] || 0
-  );
+/**
+ * getAverageStudyTime returns the average total study time per day
+ * over the given number of days.
+ */
+function getAverageStudyTime (days) {
+  const average = 
+    Math.floor(db.prepare('select sum(time) from revlog where id >= ?')
+    .get((now - days * secPerDay) * 1000)['sum(time)'] / days) || 0;
+  console.log('average study time: ', days, average);
+  return (average);
+}
+
+/**
+ * getMaxStudyTime returns the maximum study time, in seconds, in a 24 hour
+ * sliding window over the given number of days.
+ */
+function getMaxStudyTime (days) {
+  let maxStudyTime = 0;
+  const times = db.prepare('select cast((id - @start)/(1000*60*60*24) as integer) as day,' +
+    ' sum(time) as time ' +
+    ' from revlog where id > @start group by day')
+  .all({start: 1 + (now - secPerDay * days) * 1000});
+  console.log('times: ', times);
+  times
+  .forEach(el => {
+    if (el.time > maxStudyTime) maxStudyTime = el.time;
+  });
+  console.log('maxStudyTime: ', maxStudyTime);
+  return (maxStudyTime);
 }
 
 /**
