@@ -238,12 +238,24 @@ quickly from there.
 
 ## New Cards
 
-Workload is managed by controlling the introduction of new cards.
+srf regulates overall workload by regulating the introduction of new cards.
 
 All cards are initially considered to be 'new'. Technically, this is
 determined by cards.interval being 0. After a card has been seen,
 its interval is set to some non-zero value: the time, in seconds, until
 the card is due to be seen again.
+
+srf regulates the presentation of new cards based on actual study in the
+past 24 hours and projected study in the next 24 hours, based on the number
+of cards that will be due for review and historic average time per card. In
+addition, if there are cards that were due more than 24 hours ago (for
+example, after a study break of several days) new cards will not be
+presented until the backlog is cleared. The target study time per day,
+around which new cards are regulated, is 60 minutes per day, but
+configurable in case you want to study more or less. Only the introduction
+of new cards is regulated. There is no limit on reviews, other than the
+time you choose to spend.
+
 
 New cards are presented when:
 
