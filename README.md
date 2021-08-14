@@ -107,6 +107,9 @@ For example:
 
 ```
 {
+    // Limit on study time (seconds), beyond which new cards are not presented
+    studyTimeLimit: 3600,
+
     // The maximum value factor may take.
     maxFactor: 10000,
     // The interval beyond which due times are rounded to the start of the
