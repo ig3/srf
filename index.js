@@ -1,6 +1,5 @@
 #!/usr/local/bin/node
 'use strict';
-console.log('TEST');
 
 const fs = require('fs');
 const path = require('path');
@@ -19,7 +18,6 @@ let config;
 
 // startTime is the time when this execution of the server started.
 const startTime = Math.floor(Date.now() / 1000);
-console.log(new Date().toString());
 
 // startOfDay is the epoch time of midnight as the start of the current day.
 let startOfDay;
@@ -84,16 +82,16 @@ if (opts.help) {
   console.log(process.argv);
   console.log(path.basename(process.argv[1]));
   console.log('usage:');
-  console.log('  ' + 
+  console.log('  ' +
     path.basename(process.argv[1]) +
     ' --help');
-  console.log('  ' + 
+  console.log('  ' +
     path.basename(process.argv[1]) +
     ' [--directory <root-directory>]' +
     ' [--config <config-file>]' +
     ' [--media <media-directory>]' +
     ' [--database <database-name>]');
-  console.log('  ' + 
+  console.log('  ' +
     path.basename(process.argv[1]) +
     ' [--directory <root-directory>]' +
     ' [--config <config-file>]' +
@@ -110,16 +108,16 @@ if (opts.help) {
   delete opts.c;
 
   // Make paths absolute
-  if (opts.dir.substr(0,1) !== '/') {
+  if (opts.dir.substr(0, 1) !== '/') {
     opts.dir = path.join(process.env.HOME, '.local', 'share', opts.dir);
   }
-  if (opts.config.substr(0,1) !== '/') {
+  if (opts.config.substr(0, 1) !== '/') {
     opts.config = path.join(opts.dir, opts.config);
   }
-  if (opts.database.substr(0,1) !== '/') {
+  if (opts.database.substr(0, 1) !== '/') {
     opts.database = path.join(opts.dir, opts.database);
   }
-  if (opts.media.substr(0,1) !== '/') {
+  if (opts.media.substr(0, 1) !== '/') {
     opts.media = path.join(opts.dir, opts.media);
   }
 
@@ -138,7 +136,6 @@ if (opts.help) {
     runServer(opts, subargv);
   }
 }
-
 
 /**
  * getFieldset returns the field set and ...
@@ -165,16 +162,7 @@ function getTemplateset (id) {
   templateset.templates = getTemplatesInTemplateset(id);
   templateset.fieldsJSON = templateset.fields;
   templateset.fields = JSON.parse(templateset.fields);
-  return(templateset);
-}
-
-function updateTemplateset (templateset) {
-  templateset.fields = getTemplatesetFields(templateset);
-  db.prepare('update templateset set name = ?, fields = ?')
-  .run(
-    templateset.name,
-    JSON.stringify(templateset.fields)
-  );
+  return (templateset);
 }
 
 /**
@@ -186,6 +174,8 @@ function updateTemplateset (templateset) {
  *
  * New fields are appended to the end of the field array.
  */
+// Not using this function but don't want to remove it
+// eslint-disable-next-line
 function getTemplatesetFields (templateset) {
   const fields = {};
   templateset.templates.forEach(template => {
@@ -356,7 +346,7 @@ function getNextCard () {
     return (nextNewCard);
   } else {
     return (nextDueCard);
-  };
+  }
 }
 
 function getNewCard () {
@@ -376,15 +366,6 @@ function getEstimatedTotalStudyTime () {
   return (estimatedTotalStudyTime);
 }
 
-function getEstimatedStudyTimeNext24Hours () {
-  const cards =
-    db.prepare('select count() from card where interval != 0 and due < ?')
-    .get(now + secPerDay)['count()'];
-  const estimatedStudyTime = cards * getAverageTimePerCard();
-  console.log('estimatedStudyTimeNext24Hours: ', estimatedStudyTime);
-  return (estimatedStudyTime);
-}
-
 function getEstimatedAverageStudyTime (days) {
   const cards =
     db.prepare('select count() from card where interval != 0 and due < ?')
@@ -393,7 +374,7 @@ function getEstimatedAverageStudyTime (days) {
   const estimatedStudyTime = Math.floor(cards * averageTimePerCard / days);
   console.log('estimatedAverageStudyTime: ',
     days,
-    Math.floor(cards/days),
+    Math.floor(cards / days),
     averageTimePerCard,
     estimatedStudyTime
   );
@@ -503,16 +484,12 @@ function getCountCardsViewedToday () {
   return (db.prepare('select count() from revlog where id >= ?').get(startOfDay * 1000)['count()']);
 }
 
-function getCountCardsViewedPast24Hours () {
-  return (db.prepare('select count() from revlog where id >= ?').get((now - secPerDay) * 1000)['count()']);
-}
-
 function getStatsPast24Hours () {
   const stats = db.prepare(
     'select count() as count, sum(time) as time from revlog where id >= ?'
   )
   .get((now - secPerDay) * 1000);
-  return (stats || {count: 0, time: 0});
+  return (stats || { count: 0, time: 0 });
 }
 
 function getStatsNext24Hours () {
@@ -573,7 +550,7 @@ function getConfig (opts) {
     easyFactorAdjust: 200,
 
     // Study time (seconds) per day beyond which no new cards
-    studyTimeLimit:  60 * 60,
+    studyTimeLimit: 60 * 60,
 
     // Study time (seconds) beyond which new cards will not be shown
     studyTimeAverageLimit: 60 * 60,
@@ -656,7 +633,7 @@ function createCard (fieldsetid, templateid) {
     0
   );
   console.log('insert info: ', info);
-  return(info.lastInsertRowid);
+  return (info.lastInsertRowid);
 }
 
 function newFactor (card, interval) {
@@ -748,15 +725,15 @@ function runServer (opts, args) {
     const nextCard = getNextCard();
     const studyNow = !!nextCard;
     const statsPast24Hours = getStatsPast24Hours();
-    statsPast24Hours.time = Math.floor(statsPast24Hours.time/60);
+    statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     const statsNext24Hours = getStatsNext24Hours();
-    statsNext24Hours.time = Math.floor(statsNext24Hours.time/60);
+    statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     const timeToNextDue = tc.seconds((nextDue ? nextDue.due : now) - now);
     const percentCorrect = getPercentCorrect(10000);
     const overdue = getCountCardsOverdue();
     const chart1Data = { x: [], y: [], type: 'bar' };
     db.prepare('select cast((due-@start)/(60*60) as integer) as hour, count() from card where due > @start and due < @end and interval != 0 group by hour')
-    .all({start: now, end: now + secPerDay})
+    .all({ start: now, end: now + secPerDay })
     .forEach(el => {
       chart1Data.x.push(el.hour);
       chart1Data.y.push(el['count()']);
@@ -770,7 +747,7 @@ function runServer (opts, args) {
       totalToday: viewedToday + dueToday,
       totalStudyTime: Math.floor((studyTimeToday + dueStudyTime) / 60),
       dueNow: dueNow,
-      timeToNextDue: timeToNextDue.toFullString().slice(0,-4),
+      timeToNextDue: timeToNextDue.toFullString().slice(0, -4),
       chart1Data: JSON.stringify(chart1Data),
       studyNow: studyNow,
       studyTimePast24Hours: Math.floor(statsPast24Hours.time / 60),
@@ -1164,7 +1141,7 @@ function runServer (opts, args) {
         }
       });
     });
-    db.prepare('delete from card where fieldsetid in (select id from fieldset where templatesetid = @id) and templateid not in (select id from template where templatesetid = @id)').run({id:  id});
+    db.prepare('delete from card where fieldsetid in (select id from fieldset where templatesetid = @id) and templateid not in (select id from template where templatesetid = @id)').run({ id: id });
     db.prepare('commit').run();
     res.send('ok');
   });
@@ -1359,7 +1336,7 @@ function getStudyTimeToday () {
  * over the given number of days.
  */
 function getAverageStudyTime (days) {
-  const average = 
+  const average =
     Math.floor(db.prepare('select sum(time) from revlog where id >= ?')
     .get((now - days * secPerDay) * 1000)['sum(time)'] / days) || 0;
   console.log('average study time: ', days, average);
@@ -1370,12 +1347,13 @@ function getAverageStudyTime (days) {
  * getMaxStudyTime returns the maximum study time, in seconds, in a 24 hour
  * sliding window over the given number of days.
  */
+// eslint-disable-next-line no-unused-vars
 function getMaxStudyTime (days) {
   let maxStudyTime = 0;
   const times = db.prepare('select cast((id - @start)/(1000*60*60*24) as integer) as day,' +
     ' sum(time) as time ' +
     ' from revlog where id > @start group by day')
-  .all({start: 1 + (now - secPerDay * days) * 1000});
+  .all({ start: 1 + (now - secPerDay * days) * 1000 });
   console.log('times: ', times);
   times
   .forEach(el => {
@@ -1568,7 +1546,7 @@ function getTemplatesetKeys () {
     .forEach(template => {
       key += template.name + template.front + template.back;
     });
-    result[key] = record.id;
+    result[key] = templateset.id;
   });
   return (result);
 }
@@ -1586,7 +1564,7 @@ function getTemplateSetIdFromAnkiModel (keyMap, model) {
   const srfTemplateSetId = info.lastInsertRowid;
   // create each template
   model.tmpls.forEach(ankiTemplate => {
-    const info = db.prepare('insert into template (templatesetid, name, front, back, css) values (?, ?, ?, ?, ?)')
+    db.prepare('insert into template (templatesetid, name, front, back, css) values (?, ?, ?, ?, ?)')
     .run(
       srfTemplateSetId,
       ankiTemplate.name,
