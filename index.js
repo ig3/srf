@@ -777,7 +777,7 @@ function runServer (opts, args) {
       viewedPast24Hours: statsPast24Hours.count,
       statsPast24Hours: statsPast24Hours,
       statsNext24Hours: statsNext24Hours,
-      percentCorrect: percentCorrect.toFixed(0),
+      percentCorrect: percentCorrect.toFixed(2),
       overdue: overdue
     });
   });
