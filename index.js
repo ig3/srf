@@ -81,23 +81,7 @@ console.log('opts: ', opts);
 if (opts.help) {
   console.log(process.argv);
   console.log(path.basename(process.argv[1]));
-  console.log('usage:');
-  console.log('  ' +
-    path.basename(process.argv[1]) +
-    ' --help');
-  console.log('  ' +
-    path.basename(process.argv[1]) +
-    ' [--directory <root-directory>]' +
-    ' [--config <config-file>]' +
-    ' [--media <media-directory>]' +
-    ' [--database <database-name>]');
-  console.log('  ' +
-    path.basename(process.argv[1]) +
-    ' [--directory <root-directory>]' +
-    ' [--config <config-file>]' +
-    ' [--media <media-directory>]' +
-    ' [--database <database-name>]' +
-    ' import <filename>');
+  showUsage();
 } else {
   const [command, subargv] = opts._;
 
@@ -132,9 +116,33 @@ if (opts.help) {
 
   if (command === 'import') {
     importFile(opts, subargv);
-  } else {
+  } else if (command === undefined || command === 'run') {
     runServer(opts, subargv);
+  } else {
+    console.error('Unsupported command: ' + command);
+    showUsage();
+    process.exit(1);
   }
+}
+
+function showUsage () {
+  console.log('usage:');
+  console.log('  ' +
+    path.basename(process.argv[1]) +
+    ' --help');
+  console.log('  ' +
+    path.basename(process.argv[1]) +
+    ' [--directory <root-directory>]' +
+    ' [--config <config-file>]' +
+    ' [--media <media-directory>]' +
+    ' [--database <database-name>]');
+  console.log('  ' +
+    path.basename(process.argv[1]) +
+    ' [--directory <root-directory>]' +
+    ' [--config <config-file>]' +
+    ' [--media <media-directory>]' +
+    ' [--database <database-name>]' +
+    ' import <filename>');
 }
 
 /**
@@ -1254,6 +1262,10 @@ function importFile (opts) {
   console.log('import file ', opts);
   const file = opts._[1];
   console.log('file: ', file);
+  if (!file) {
+    console.error('Missing file to import');
+    process.exit(1);
+  }
   unzip(file)
   .then(data => {
     db = getDatabaseHandle(opts);
