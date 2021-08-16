@@ -690,16 +690,6 @@ Fields:
  * seen - srf: milliseconds since epoch when card was last seen
  * new_order - srf: integer for sorting new cards
 
-type can be 0=new, 1=lrn, 2=rev, 3=relrn. It has something to do with
-filtered decks, at least.
-
-queue can be 0=new, 1=(re)lrn, 2=rev, 3=day (re)lrn, 4=preview,
--1=suspended, -2=sibling buried, -3=manually buried.
-
-There appears to be some degree of redundancy between type and queue, but
-the details are obscure. It is not clear why both are required or in which
-cases / contexts each is used.
-
 The type seems to relate to how scheduling is done, at least in the version
 2 scheduler. For example, there are distinct 'schedules' for learning and
 re-learning. These schedules are selected based on type, rather than queue.
@@ -737,6 +727,157 @@ day 0 being the collection creation day, which is stored in the col table.
 In srf, day numbers aren't used. Due is always milliseconds since the
 epoch.
 
+##### type
+type is an integer.
+
+type can be:
+ * 0=new,:
+ * 1=lrn,
+ * 2=rev,
+ * 3=relrn.
+
+From consts.py:
+```
+# Card types
+CARD_TYPE_NEW = 0
+CARD_TYPE_LRN = 1
+CARD_TYPE_REV = 2
+CARD_TYPE_RELEARNING = 3
+```
+
+The card type determines aspects of how the cards are scheduled.
+
+The card type is not completely orthogonal to the card queue. The
+relationship is obscure. Several of the decisions about scheduling are
+based on the queue, rather than the type. But others are based on type.
+
+When a card is answered, the first decision: to treat it as a learning card
+or a review card, is based on queue. Many subsequent decisions are based on
+type.
+
+There is different configuration for learning and relearning cares. In deck
+configuration, these are on tabs New Cards and Lapses. Each case has
+different sequence of steps. New cards have two settings for initial
+interval on graduation to review: Graduating interval and Easy interval.
+Relearning cards (lapses) only have New interval, which is a percentage of
+the previous interval.
+
+If queue = `QUEUE_TYPE_LRN` or `QUEUE_TYPE_DAY_LEARN_RELEARN`, card is
+rescheduled as a learning card: new or lapse according to type:
+`CARD_TYPE_REV` and `CARD_TYPE_RELEARNING` are relearning, otherwise learning.
+Relearning cards use settings from Lapse while learning cards use settings
+from New Cards.
+
+If type is `CARD_TYPE_NEW`, the card hasn't been seen before. On first view,
+it is changed to `CARD_TYPE_LRN` and learning steps are initialized to the
+first step from New cards configuration. This includes setting left.
+
+If type is `CARD_TYPE_REV` or `CARD_TYPE_RELEARNING`, the card has lapsed.
+Learning steps are from the Lapses configuration.
+
+If type is `CARD_TYPE_LRN`, it progresses through the learning steps on Good,
+until the last step, after which it is changes to `CARD_TYPE_REV` and ivl is
+set to the Graduating interval. But on Easy, remaining learning steps are
+skipped, type is changes to `CARD_TYPE_REV` and ivl is set to Easy
+Interval.
+
+##### queue
+queue is an integer.
+
+queue can be:
+ * 0=new,
+ * 1=(re)lrn,
+ * 2=rev,
+ * 3=day (re)lrn,
+ * 4=preview,
+ * -1=suspended,
+ * -2=sibling buried,
+ * -3=manually buried.
+
+From consts.py:
+```
+# Queue types
+QUEUE_TYPE_MANUALLY_BURIED = -3
+QUEUE_TYPE_SIBLING_BURIED = -2
+QUEUE_TYPE_SUSPENDED = -1
+QUEUE_TYPE_NEW = 0
+QUEUE_TYPE_LRN = 1
+QUEUE_TYPE_REV = 2
+QUEUE_TYPE_DAY_LEARN_RELEARN = 3
+QUEUE_TYPE_PREVIEW = 4
+```
+If queue is 1, due is epoch seconds and within the current day.
+
+If queue is 3, due is day number, counting from collection creation day.
+This queue is used when the next (re)learning step is past the end of the
+day, in which case there is no provision for scheduling a time within the
+day. If one is studying near the end of the day, the next step may be one
+second beyon the end of the day or one second less than 24 hours beyond the
+end of the day and both cases are treated the same: the queue is set to 3
+and card becomes due the next day. For example, the next steap may be 5
+minutes (in the progression [1, 2, 5, 8, 10, 20] but if 5 minutes from now
+is past the end of the day, due becomes 'next day'.
+
+
+##### due
+due is an integer.
+
+If type is 0 (new) then due is the note ID or some other value used to sort
+the new cards to order their presentation.
+
+If type is 1 (learning) or 3 (relearning) then due is either epoch seconds
+or day number according to queue = 1 (learning) or 3 (day learning)
+respectively.
+
+If type is 2 (review) then due is day number from collection creation day.
+
+##### ivl
+ivl is an integer.
+
+ivl is the number of days between card reviews.
+
+ivl is only relevant to review cards, which are scheduled according to the
+SRS scheduling algorithm. Learning and relearning cards are scheduled
+according to the steps in deck configuration for new and lapses: ivl is
+irrelevant.
+
+For a card that has never been reviewed (i.e. new or learning), ivl will be
+0.
+
+Once a card has progressed to the review queue, ivl will be set to the
+interval in days. If it lapses, ivl is reduced by a configurable amount so
+that after completing the lapse/relearning steps, it graduates with a
+lesser interval. On graduation, the interval is what it was set to on
+lapse, or one more than this if it graduated early by 'Easy'.
+
+Initially, ivl is 0. It is set to the configurable graduating interval or
+Easy interval when a card graduates from learning to review, according to
+whether ease was Good or Easy. By default, Graduating interval is 1 day and
+Easy interval is 4 days.
+
+##### left
+left is an integer value.
+
+If type is 1 (CARD_TYPE_LRN) then left is initially set to the number of
+learning steps (per deck configuration for new cards) + 1000 * the number
+of steps that could be completed before the end of the day. The latter
+depends on the current time, when the end of the day is and the size of
+each step.
+
+left = X + Y * 1000, where X is the number of learning steps still to be
+completed (i.e. it is an index into the array of learning steps, but from
+the end of the array instead of the beginning) and Y is the number of steps
+that can be completed in the same day, at the time the card was scheduled,
+given current time, time of end of day and the size of the remaining steps
+to be completed.
+
+As the card progresses through the learning steps, X is decremented and Y
+is updated according to the time and step sizes.
+
+
+
+
+
 #### revlog
 
 create table revlog
@@ -751,6 +892,51 @@ create table revlog
     time    integer not null,
     type    integer not null
 );
+
+#### id
+integer
+
+epoch milliseconds.
+
+##### cid
+integer
+
+fk to cards.id
+
+##### usn
+integer
+
+Something to do with syncing. -1 by default.
+
+
+##### ease
+integer
+
+The button that was clicked on review 1, 2, 3 or 4 for Again, Hard, Good or
+Easy.
+
+##### ivl
+integer
+
+Negative value is seconds. Positive value is days since collection
+creation day.
+
+##### factor
+integer
+
+The factor for adjusting interval. 0 for non-review cards. This is 1000
+times that multiplier (i.e. the new interval is the old interval * factor /
+1000)
+
+##### time
+integer
+
+Milliseconds spent viewing the card.
+
+##### type
+integer
+
+Always 0???
 
 #### graves
 

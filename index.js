@@ -1717,6 +1717,7 @@ function getFields (fieldsetId) {
  * getMustacheTags returns an array of all the tags in the given template.
  *
  */
+/* c8 ignore start */
 function getMustacheTags (template) {
   return [...new Set(
     require('mustache').parse(template)
@@ -1724,3 +1725,4 @@ function getMustacheTags (template) {
     .map(item => item[1])
   )];
 }
+/* c8 ignore stop */
