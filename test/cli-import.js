@@ -107,4 +107,35 @@ t.test('cli import', t => {
       t.end();
     });
   });
+
+  t.test('import from a shared deck with revlog', t => {
+    t.teardown(() => {
+      tmpDir.removeCallback();
+    });
+    console.log('script directory: ', __dirname);
+    const tmpDir = tmp.dirSync({ unsafeCleanup: true });
+    console.log('tmpDir: ', tmpDir.name);
+    const cmd =
+      path.join(__dirname, '..', 'index.js') +
+      ' --directory ' + tmpDir.name +
+      ' import ' + path.join(__dirname, 'data', 'Coursera_-Chinese_for_Beginners_modified.apkg');
+    exec(cmd, (err, stdout, stderr) => {
+      if (err) {
+        console.log('err: ', err);
+        t.fail('should not fail');
+        return t.end();
+      }
+      t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
+      t.ok(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
+      t.ok(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
+      t.ok(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
+      const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
+      t.ok(db, 'get a database handle');
+      t.equals(db.prepare('select value from config where name = \'srf schema version\'').get().value, '1', 'check schema version');
+      t.equals(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
+      t.equals(db.prepare('select count() from revlog').get()['count()'], 3, 'check count of revlog');
+      db.close();
+      t.end();
+    });
+  });
 });
