@@ -693,6 +693,26 @@ Fields:
 type can be 0=new, 1=lrn, 2=rev, 3=relrn. It has something to do with
 filtered decks, at least.
 
+queue can be 0=new, 1=(re)lrn, 2=rev, 3=day (re)lrn, 4=preview,
+-1=suspended, -2=sibling buried, -3=manually buried.
+
+There appears to be some degree of redundancy between type and queue, but
+the details are obscure. It is not clear why both are required or in which
+cases / contexts each is used.
+
+The type seems to relate to how scheduling is done, at least in the version
+2 scheduler. For example, there are distinct 'schedules' for learning and
+re-learning. These schedules are selected based on type, rather than queue.
+
+In Anki, interval progresses through a series of values configured for new
+and relearning (lapses). These series of steps are configured in deck
+options: New Cards and Lapses tabs. A Lapsed card goes to relearn. 
+
+Getting a card seems to be based on queue, rather than type. But when a
+card is ansered, updating the interval seems to be based on type, not
+queue. The card type is also used when creating and deleting filtered
+decks.
+
 srf records all times with units of milliseconds. This includes due and
 interval. New cards have interval = 0. When the card is seen, interval is
 set to the interval from the current time to when the card will next be
