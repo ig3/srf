@@ -1358,7 +1358,6 @@ function getAverageStudyTime (days) {
   const average =
     Math.floor(db.prepare('select sum(time) from revlog where id >= ?')
     .get((now - days * secPerDay) * 1000)['sum(time)'] / days) || 0;
-  console.log('average study time: ', days, average);
   return (average);
 }
 
