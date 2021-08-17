@@ -248,7 +248,7 @@ function logReview (card, ease, factor, due, lapsed, lapses) {
   const cardsViewedToday = getCountCardsViewedToday();
   const dueTodayCount = getCountCardsDueToday();
   const time = new Date().toTimeString().substring(0, 5);
-  const percentCorrect = getPercentCorrect(10000);
+  const percentCorrect = getPercentCorrect();
   console.log(
     time,
     cardsViewedToday, // cards viewed today
@@ -425,7 +425,7 @@ function intervalHard (card) {
 function intervalGood (card) {
   if (!card.interval || card.interval === 0) { return (config.goodMinInterval); }
   const timeSinceLastSeen = now - card.due + card.interval;
-  const percentCorrect = getPercentCorrect(10000);
+  const percentCorrect = getPercentCorrect();
   const correctFactor = Math.max(0, percentCorrect - 80) / 10;
   const factor = 1.5 +
     card.factor * correctFactor * Math.exp(-timeSinceLastSeen / 60 / 60 / 24 / 7);
@@ -651,13 +651,20 @@ function newFactor (card, interval) {
   ).toFixed(2);
 }
 
-function getPercentCorrect (n) {
+/**
+ * getPercentCorrect returns the percentage of correct answers (Hard, Good
+ * or Easy) among the most recent n answers with interval > minInterval.
+ *
+ * n is the number of revlog entries to average over. It defaults to 1000.
+ *
+ * minInterval is the minimum interval to be considered, in seconds. It
+ * defaults to 2 days because less than this is the early learning phase,
+ * not relevant to the longer term retention that is the objective.
+ */
+function getPercentCorrect (n = 1000, minInterval = 60 * 60 * 24 * 2) {
   let result;
-  if (n) {
-    result = db.prepare('select avg(case ease when 1 then 0 else 1 end) as average from (select ease from revlog order by id desc limit ?)').get(n);
-  } else {
-    result = db.prepare('select avg(case ease when 1 then 0 else 1 end) as average from revlog').get();
-  }
+  result = db.prepare('select avg(case ease when 1 then 0 else 1 end) as average from (select ease from revlog where interval > ? order by id desc limit ?)')
+  .get(minInterval, n);
   return (result ? result.average * 100 : 0);
 }
 
@@ -737,7 +744,7 @@ function runServer (opts, args) {
     const statsNext24Hours = getStatsNext24Hours();
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     const timeToNextDue = tc.seconds((nextDue ? nextDue.due : now) - now);
-    const percentCorrect = getPercentCorrect(10000);
+    const percentCorrect = getPercentCorrect();
     const overdue = getCountCardsOverdue();
     const chart1Data = { x: [], y: [], type: 'bar' };
     db.prepare('select cast((due-@start)/(60*60) as integer) as hour, count() from card where due > @start and due < @end and interval != 0 group by hour')
