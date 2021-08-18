@@ -63,8 +63,12 @@ t.test('cli import', t => {
         t.fail('should not fail');
         return t.end();
       }
+      console.log('import stdout: ', stdout);
+      console.log('import stderr: ', stderr);
       t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
+      const dbpath = path.join(tmpDir.name, 'srf.db');
+      console.log('dbpath: ', dbpath);
+      t.ok(fs.existsSync(dbpath), 'check for database "' + dbpath + '"');
       t.ok(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
       t.ok(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
