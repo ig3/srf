@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "bin": {
-    "srf": "./index.js"
+    "srf": "./bin/cmd.js"
   },
   "scripts": {
     "test": "eslint . && c8 multi-tape test/*.js",

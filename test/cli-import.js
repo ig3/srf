@@ -14,7 +14,7 @@ t.test('cli import', t => {
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
     const cmd =
-      path.join(__dirname, '..', 'index.js') +
+      path.join(__dirname, '..', 'bin', 'cmd.js') +
       ' --directory ' + tmpDir.name +
       ' import';
     exec(cmd, (err, stdout, stderr) => {
@@ -33,7 +33,7 @@ t.test('cli import', t => {
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
     const cmd =
-      path.join(__dirname, '..', 'index.js') +
+      path.join(__dirname, '..', 'bin', 'cmd.js') +
       ' --directory ' + tmpDir.name +
       ' import nosuchfile';
     exec(cmd, (err, stdout, stderr) => {
@@ -54,7 +54,7 @@ t.test('cli import', t => {
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
     console.log('tmpDir: ', tmpDir.name);
     const cmd =
-      path.join(__dirname, '..', 'index.js') +
+      path.join(__dirname, '..', 'bin', 'cmd.js') +
       ' --directory ' + tmpDir.name +
       ' import ' + path.join(__dirname, 'data', 'collection-2021-08-16@08-24-34.colpkg');
     exec(cmd, (err, stdout, stderr) => {
@@ -85,7 +85,7 @@ t.test('cli import', t => {
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
     console.log('tmpDir: ', tmpDir.name);
     const cmd =
-      path.join(__dirname, '..', 'index.js') +
+      path.join(__dirname, '..', 'bin', 'cmd.js') +
       ' --directory ' + tmpDir.name +
       ' import ' + path.join(__dirname, 'data', 'Coursera_-Chinese_for_Beginners.apkg');
     exec(cmd, (err, stdout, stderr) => {
@@ -116,7 +116,7 @@ t.test('cli import', t => {
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
     console.log('tmpDir: ', tmpDir.name);
     const cmd =
-      path.join(__dirname, '..', 'index.js') +
+      path.join(__dirname, '..', 'bin', 'cmd.js') +
       ' --directory ' + tmpDir.name +
       ' import ' + path.join(__dirname, 'data', 'Coursera_-Chinese_for_Beginners_modified.apkg');
     exec(cmd, (err, stdout, stderr) => {
