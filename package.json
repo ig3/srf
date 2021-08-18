@@ -4,7 +4,8 @@
   "description": "",
   "main": "lib/srf.js",
   "bin": {
-    "srf": "./bin/cmd.js"
+    "srf": "./bin/cmd.js",
+    "xxx": "./bin/cmd.js"
   },
   "scripts": {
     "test": "eslint . && c8 multi-tape test/*.js",
