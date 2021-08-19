@@ -539,7 +539,7 @@ function runServer (opts, args) {
     if (req.params.id === '0') {
       console.log('create a new template');
       console.log('body ', req.body);
-      srf.insertTemplate(
+      srf.createTemplate(
         req.body.templatesetid,
         req.body.name,
         req.body.front,
