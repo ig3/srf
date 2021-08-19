@@ -415,7 +415,7 @@ function runServer (opts, args) {
       console.log('templatesetid: ', templatesetid);
       const fields = JSON.stringify(req.body.fields);
       console.log('fields: ', fields);
-      const info = srf.insertFieldset(uuidv4(), templatesetid, fields);
+      const info = srf.createFieldset(uuidv4(), templatesetid, fields);
       console.log('insert info: ', info);
       const fieldsetid = info.lastInsertRowid;
       srf.createCards(fieldsetid, templatesetid);
