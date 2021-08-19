@@ -480,7 +480,7 @@ function runServer (opts, args) {
     const name = req.body.name;
     const fields = JSON.stringify(JSON.parse(req.body.fields));
     if (id === '0') {
-      const info = srf.insertTemplateset(name, fields);
+      const info = srf.createTemplateset(name, fields);
       id = info.lastInsertRowid;
     } else {
       srf.updateTemplateset(name, fields, id);
