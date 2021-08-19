@@ -415,22 +415,7 @@ function runServer (opts, args) {
       console.log('templatesetid: ', templatesetid);
       const fields = JSON.stringify(req.body.fields);
       console.log('fields: ', fields);
-      const info = srf.createFieldset(uuidv4(), templatesetid, fields);
-      console.log('insert info: ', info);
-      const fieldsetid = info.lastInsertRowid;
-      srf.createCards(fieldsetid, templatesetid);
-      const files = req.body.files;
-      if (files && files.length > 0) {
-        files.forEach(file => {
-          console.log('save file: ', file.meta.name);
-          console.log('save file: ', file.meta.type);
-          console.log('save file: ', file.meta);
-          const filepath = path.join(mediaDir, file.meta.name);
-          const buff = Buffer.from(file.data.substring(23), 'base64');
-          fs.writeFileSync(filepath, buff);
-        });
-      }
-      res.send('ok');
+      srf.createFieldset(uuidv4(), templatesetid, fields);
     } else {
       console.log('update an existing fieldset');
       console.log('body ', req.body);
@@ -439,18 +424,20 @@ function runServer (opts, args) {
       console.log('templatesetid: ', templatesetid);
       const fields = JSON.stringify(req.body.fields);
       console.log('fields: ', fields);
-      const oldFieldset = srf.getFieldset(fieldsetid);
       srf.updateFieldset(templatesetid, fields, fieldsetid);
-      // If the templateset has changed, we need a new set of cards
-      if (oldFieldset.templatesetid !== templatesetid) {
-        srf.deleteCardsForFieldset(fieldsetid);
-        // TODO: what about revlog? Should the old entries be deleted?
-        // The cards they link to will no longer exists.
-        // On the other hand, the reviews they record did happen.
-        srf.createCards(fieldsetid, templatesetid);
-      }
-      res.send('ok');
     }
+    const files = req.body.files;
+    if (files && files.length > 0) {
+      files.forEach(file => {
+        console.log('save file: ', file.meta.name);
+        console.log('save file: ', file.meta.type);
+        console.log('save file: ', file.meta);
+        const filepath = path.join(mediaDir, file.meta.name);
+        const buff = Buffer.from(file.data.substring(23), 'base64');
+        fs.writeFileSync(filepath, buff);
+      });
+    }
+    res.send('ok');
   });
 
   app.get('/templatesets', (req, res) => {
