@@ -22,10 +22,6 @@ let now = startTime;
 // It is updated each time a card is shown.
 let cardStartTime;
 
-// studyTimeToday is the total time studying cards since midnight.
-// Reset when the day rolls over.
-let studyTimeToday;
-
 // card is the current card. Updated when a new card is shown.
 let card;
 
@@ -208,12 +204,12 @@ function runServer (opts, args) {
     if (newStartOfDay !== startOfDay) {
       console.log(new Date().toString());
       startOfDay = newStartOfDay;
-      studyTimeToday = srf.getStudyTimeToday();
     }
     next();
   });
 
   app.get('/', (req, res) => {
+    const studyTimeToday = srf.getStudyTimeToday();
     const viewedToday = srf.getCountCardsViewedToday();
     const dueToday = srf.getCountCardsDueToday();
     const dueStudyTime = srf.getEstimatedStudyTime(dueToday);
@@ -255,7 +251,7 @@ function runServer (opts, args) {
   });
 
   app.get('/stats', (req, res) => {
-    // revlog.id is ms timestamp
+    const studyTimeToday = srf.getStudyTimeToday();
     const cardsViewedToday = srf.getCountCardsViewedToday();
     const dueCount = srf.getCountCardsDueToday();
 
@@ -566,6 +562,7 @@ function runServer (opts, args) {
   });
 
   function getEstimatedTotalStudyTime () {
+    const studyTimeToday = srf.getStudyTimeToday();
     const dueTodayCount = srf.getCountCardsDueToday();
     const dueStudyTime = srf.getEstimatedStudyTime(dueTodayCount);
     const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
