@@ -16,7 +16,7 @@ better for my purposes: studying language.
 
 ```
 $ git clone https://github.com/ig3/srf.git
-$ cd srv
+$ cd srf
 $ npm install
 $ node index.js import <export file>
 $ node index.js
