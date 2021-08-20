@@ -260,7 +260,6 @@ function runServer (opts, args) {
     const chart2Data = srf.getChartMinutesStudiedPerDay();
     const chart3Data = srf.getChartCardsDuePerDay();
     const chart4Data = srf.getChartCardsPerInterval();
-    console.log('chart4Data: ', chart4Data);
     const chart5Data = srf.getChartNewCardsPerDay();
     const chart6Data = srf.getChartMaturedAndLapsedPerDay();
 
