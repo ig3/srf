@@ -254,26 +254,24 @@ function runServer (opts, args) {
     const studyTimeToday = srf.getStudyTimeToday();
     const cardsViewedToday = srf.getCountCardsViewedToday();
     const dueCount = srf.getCountCardsDueToday();
-
-    const nextDue = srf.getNextDue();
-
-    const timeToNextDue = tc.seconds(nextDue - now);
+    const nextDue = srf.getNextDue() || now;
 
     const chart1Data = srf.getChartCardsStudiedPerDay();
     const chart2Data = srf.getChartMinutesStudiedPerDay();
     const chart3Data = srf.getChartCardsDuePerDay();
     const chart4Data = srf.getChartCardsPerInterval();
+    console.log('chart4Data: ', chart4Data);
     const chart5Data = srf.getChartNewCardsPerDay();
     const chart6Data = srf.getChartMaturedAndLapsedPerDay();
 
     const cardsSeen = srf.getCountCardsSeen();
     const matureCards = srf.getCountMatureCards();
     const days = srf.getCountDaysStudied();
-    const newCardsPerDay = cardsSeen / days;
+    const newCardsPerDay = (cardsSeen && days) ? cardsSeen / days: 0;
 
     res.render('stats', {
       dueCount: dueCount,
-      timeToNextDue: timeToNextDue.toFullString(),
+      timeToNextDue: tc.seconds(nextDue - now).toFullString(),
       cardsViewedToday: cardsViewedToday,
       studyTimeToday: tc.seconds(studyTimeToday).toFullString(),
       estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
