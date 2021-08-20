@@ -18,8 +18,8 @@ better for my purposes: studying language.
 $ git clone https://github.com/ig3/srf.git
 $ cd srf
 $ npm install
-$ node index.js import <export file>
-$ node index.js
+$ node bin/cmd.js import <export file>
+$ node bin/cmd.js
 ```
 The import supports Anki exports and shared decks (.apkg files).
 
@@ -66,9 +66,9 @@ must bein in ~/.local/share/srf/media.
 
 ```
 usage:
-  index.js --help
-  index.js [--directory <root-directory>] [--config <config-file>] [--database <database-name>] [--media <media-directory>]
-  index.js [--directory <root-directory>] [--config <config-file>] [--database <database-name>] [--media <media-directory>] import <filename>
+  srf --help
+  srf [--directory <root-directory>] [--config <config-file>] [--database <database-name>] [--media <media-directory>]
+  srf [--directory <root-directory>] [--config <config-file>] [--database <database-name>] [--media <media-directory>] import <filename>
 ```
 
 ### options
