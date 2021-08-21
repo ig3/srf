@@ -140,22 +140,27 @@ For example:
 
 ```
 {
-    // Limit on study time (seconds), beyond which new cards are not presented
-    studyTimeLimit: 3600,
+    // The maximum interval until a card is due (seconds).
+    maxInterval: 31536000,  // 1 year
+
+    // The maximum number of new cards in 24 hours.
+    maxNewCards: 20,
+
+    // Study time (seconds) per 24 hours beyond which no new cards are shown
+    studyTimeLimit: 3600, // 1 hour
 
     // The maximum value factor may take.
     maxFactor: 10000,
+
     // The interval beyond which due times are rounded to the start of the
     // day, in seconds.
     dueTimeRoundingThreshold: 432000, // 5 days
-    // The factor for randomizing intervals when good or easy are selected.
-    intervalRandomFactor: 5,
 
     // again
     // The interval when again is selected, in seconds.
     againInterval: 10,
     // The minimum factor when again is selected.
-    againMinFactor: 1200,
+    againMinFactor: 1500,
     // The sensitivity of factor to previous interval when again is selected.
     // The time constant of exponential decay towards maxFactor, in seconds.
     againIntervalSensitivity: 1814400, // 21 days
@@ -166,7 +171,7 @@ For example:
     // The factor for adjusting interval when hard is selected.
     hardIntervalFactor: 0.5,
     // The minimum factor when hard is selected.
-    hardMinFactor: 1200,
+    hardMinFactor: 1500,
     // The change of factor when hard is selected.
     hardFactorAdjust: -50,
 
@@ -174,7 +179,7 @@ For example:
     // The minimum interval when good is selected, in seconds.
     goodMinInterval: 60,
     // The minimum factor when good is selected.
-    goodMinFactor: 2000,
+    goodMinFactor: 1100,
     // The change of factor when good is selected.
     goodFactorAdjust: 50,
 

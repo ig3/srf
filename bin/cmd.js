@@ -266,7 +266,7 @@ function runServer (opts, args) {
     const cardsSeen = srf.getCountCardsSeen();
     const matureCards = srf.getCountMatureCards();
     const days = srf.getCountDaysStudied();
-    const newCardsPerDay = (cardsSeen && days) ? cardsSeen / days: 0;
+    const newCardsPerDay = (cardsSeen && days) ? cardsSeen / days : 0;
 
     res.render('stats', {
       dueCount: dueCount,
