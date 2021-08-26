@@ -143,6 +143,10 @@ For example:
     // The maximum interval until a card is due (seconds).
     maxInterval: 31536000,  // 1 year
 
+    // The factor used to add dispersion to the interval.
+    // Smaller values add more dispersion.
+    intervalDispersionFactor: 50,
+
     // The maximum number of new cards in 24 hours.
     maxNewCards: 20,
 
