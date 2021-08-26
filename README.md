@@ -25,15 +25,19 @@ The import supports Anki exports and shared decks (.apkg files).
 
 Browse to http://localhost:8000/.
 
+### Home Page
 The home page presents some basic study statistics:
 
- * The number of cards and minutes studied in the past 24 hours
+ * The number of card views and minutes studied in the past 24 hours
  * The number of cards due and estimated minutes to study in the next 24
    hours
- * The percentage of correct responses (not 'Again') in the past 10,000
-   reviews
+ * The percentage of correct responses (not 'Again') in the past 1,000
+   reviews of cards with intervals more than 2 days.
  * The number of cards currently overdue (due more than 24 hours ago)
  * The number of cards due now
+ * The number of new cards seen in the past 24 hours and the number
+   remaining to be seen, should workload permit: (config.maxNewCards - the
+   number of new cards seen in the past 24 hours)
  * The time until the next card is due
  * A histogram of cards due in the next 24 hours
 

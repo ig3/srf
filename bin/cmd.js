@@ -226,7 +226,8 @@ function runServer (opts, args) {
     const percentCorrect = srf.getPercentCorrect();
     const overdue = srf.getCountCardsOverdue();
     const chart1Data = srf.getChartDuePerHour();
-    const maxNewCards = srf.getMaxNewCards();
+    const newCardsSeen = srf.getCountNewCardsPast24Hours();
+    const newCardsRemaining = srf.getCountNewCardsRemaining();
     res.render('home', {
       viewedToday: viewedToday,
       studyTimeToday: Math.floor(studyTimeToday / 60),
@@ -244,7 +245,8 @@ function runServer (opts, args) {
       statsNext24Hours: statsNext24Hours,
       percentCorrect: percentCorrect.toFixed(2),
       overdue: overdue,
-      maxNewCards: maxNewCards
+      newCardsSeen: newCardsSeen,
+      newCardsRemaining: newCardsRemaining
     });
   });
 
