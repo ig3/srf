@@ -144,8 +144,8 @@ For example:
     maxInterval: 31536000,  // 1 year
 
     // The factor used to add dispersion to the interval.
-    // Smaller values add more dispersion.
-    intervalDispersionFactor: 50,
+    // Maximum dispersion is -1 / dispersionFactor.
+    dispersionFactor: 50,
 
     // The maximum number of new cards in 24 hours.
     maxNewCards: 20,
