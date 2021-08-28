@@ -147,6 +147,9 @@ For example:
     // The maximum interval until a card is due (seconds).
     maxInterval: 31536000,  // 1 year
 
+    // The interval (seconds) beyond which a card is considered mature
+    matureThreshold: 1814400, // 21 days
+
     // The factor used to add dispersion to the interval.
     // Maximum dispersion is -1 / dispersionFactor.
     dispersionFactor: 50,
