@@ -144,6 +144,10 @@ For example:
 
 ```
 {
+    // The maximum time for viewing a card (seconds).
+    // Beyond this, ease is forced to 'again'.
+    maxViewTime: 120,
+
     // The maximum interval until a card is due (seconds).
     maxInterval: 31536000,  // 1 year
 
