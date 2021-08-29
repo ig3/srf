@@ -308,21 +308,29 @@ presented, even if current study time is low.
 
 ## Templates
 
-My notes/cards are simple: text fields, audio, images and hyperlinks. 
+Card templates are rendered with
+[Mustache.js](https://github.com/janl/mustache.js), with a custom `escape`
+function to:
 
-srf uses two template engines: one for the Anki templates (mustache) and
-the other for pages (handlebars). I used mustache for the Anki templates
-because, unlike handlebars, it handles spaces in the parameter names
-(`{{Some Parameter}}`) which handlebars doesn't. But handlebars seemed a
-little more featureful and I found a tutorial that made it easy to get
-going with some simple pages (express setup and example pages). I probably
-could have used mustache throughout but couldn't have used handlebars
-without changing my templates.
+ * render `[sound:<media filename>]` as an audio tag
+ * pass all other text unaltered (i.e. HTML is NOT escaped)
 
-srf works with my Anki templates and content without modifying them at all:
-no changes to the front or back templates or to the CSS. No changes to the
-media either, other than to make a copy of it for srf. My media includes
-sounds and images.
+The templates are rendered with the note fields as context.
+
+This is compatible with
+[Anki templates](https://docs.ankiweb.net/templates/intro.html)
+for simple templates but only a small subset of Anki template features are
+supported.
+
+Note: because field values are rendered without escaping, malicious decks
+may inject arbitrary content into the browser. Review the content of decks
+carefully before importing them.
+
+Page templates are rendered with [handlebars](https://handlebarsjs.com/). 
+I might have used handlebars throughout but I have some templates with
+spaces in the key names (e.g. `{{Some Key}}`): mustache supports this but
+handlebars does not. It isn't obvious that this is an intentional feature
+of mustache. I don't see an explicit test to ensure it works.
 
 ### Anki features not supported
 
@@ -374,7 +382,7 @@ Cloze templates are not supported in srf.
 
 ### Anki implementation
 
-In Anki, the implementation of template rendering is split between pythong
+In Anki, the implementation of template rendering is split between python
 and rust. While the form of the templates appears to be much like Mustache,
 and there is at least one comment in the code that refers to the `{{` and
 `}}` as mustaches, there does not appear to be an implementation of the
