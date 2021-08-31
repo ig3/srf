@@ -24,7 +24,9 @@ $ npm install
 $ node bin/cmd.js import <export file>
 $ node bin/cmd.js
 ```
-The import supports Anki exports and shared decks (.apkg files).
+The import supports Anki exports and shared decks (.apkg files). When I
+migrated from Anki, I exported all decks as an Anki deck package (\*.apkg),
+including media, then imported this into srf.
 
 Browse to http://localhost:8000/.
 
