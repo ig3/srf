@@ -49,5 +49,8 @@
     "ignorePatterns": [
       "public/js/sorttable.js"
     ]
-  }
+  },
+  "files": [
+    "*.sql"
+  ]
 }
