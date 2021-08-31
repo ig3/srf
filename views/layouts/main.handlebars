@@ -35,7 +35,6 @@
   <script>
     document.addEventListener("keypress", keyCapt, false);
     function keyCapt (e) {
-      console.log('keyCode ', e.keyCode);
       if (e.keyCode === 32) {
         let el = document.getElementsByClassName('default_action')[0];
         if (el) el.click();
@@ -67,16 +66,12 @@
     // do stupid shit like the following to iterate over the elements.
     let elements = document.getElementsByTagName('audio');
     for (let element of elements) {
-      console.log('patch one audio element');
       element.volume = 0.4;
       let current = 0;
       element.src = audioFiles[current];
       element.addEventListener('ended', function (e) {
-        console.log('ended');
         current++;
         if (current == audioFiles.length) current = 0;
-        console.log('current: ', current);
-        console.log('audioFiles.length: ', audioFiles.length);
         element.src = audioFiles[current];
         if (current === 0) {
           element.pause();
