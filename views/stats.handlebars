@@ -71,18 +71,38 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
   );
 
   let chart6 = document.getElementById('chart6');
+  const chart6Data = {{{chart6Data}}};
+  let maxy1 = -Infinity;
+  let miny1 = Infinity;
+  let maxy2 = -Infinity;
+  for (let i = chart6Data[0].y.length; i > 0; i--) {
+    if (chart6Data[0].y[i] > maxy1) maxy1 = chart6Data[0].y[i];
+    if (chart6Data[1].y[i] > maxy1) maxy1 = chart6Data[1].y[i];
+    if (chart6Data[2].y[i] > maxy1) maxy1 = chart6Data[2].y[i];
+    if (chart6Data[0].y[i] < miny1) miny1 = chart6Data[0].y[i];
+    if (chart6Data[1].y[i] < miny1) miny1 = chart6Data[1].y[i];
+    if (chart6Data[2].y[i] < miny1) miny1 = chart6Data[2].y[i];
+    if (chart6Data[3].y[i] > maxy2) maxy2 = chart6Data[3].y[i];
+  }
+  console.log('maxy1: ', maxy1);
+  console.log('miny1: ', miny1);
+  console.log('maxy2: ', maxy2);
+  const miny2 = maxy2 * miny1 / maxy1;
+  console.log('miny2: ', miny2);
   Plotly.newPlot(chart6,
     {{{chart6Data}}}, {
       margin: {t: 0},
       width: 700,
       xaxis: { title: 'day#' },
-      yaxis: { title: 'cards' },
+      yaxis: {
+        title: 'cards',
+        range: [ miny1, maxy1 ]
+      },
       yaxis2: {
         title: 'cumulative',
         overlaying: 'y',
         side: 'right',
-        anchor: 'free',
-        position: 1.0
+        range: [ miny2, maxy2 ]
       },
       legend: {
         x: 1.13,
