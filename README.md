@@ -36,8 +36,8 @@ The home page presents some basic study statistics:
  * The number of card views and minutes studied in the past 24 hours
  * The number of cards due and estimated minutes to study in the next 24
    hours
- * The percentage of correct responses (not 'Again') in the past 1,000
-   reviews of cards with intervals more than 2 days.
+ * The percentage of correct (not 'Again') responses in the past 1000
+   review of mature cards.
  * The number of cards currently overdue (due more than 24 hours ago)
  * The number of cards due now
  * The number of new cards seen in the past 24 hours and the number
