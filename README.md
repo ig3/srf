@@ -8,12 +8,13 @@ wanted a better scheduler. An Anki addon to add a scheduler
 was practically impossible and even simple modifications (e.g. [Anki -
 limit new](https://github.com/ig3/anki-limitnew)) were difficult and
 excessivly time consuming to maintain due to frequent changes in the Anki
-fundamentals. So I wrote this. It is much simpler than Anki
-(i.e. has a small subset of Anki features) but the scheduler is much
-better for my purposes: studying language. In particular, the scheduler
-prioritizes cards with shorter intervals over those with longer intervals
-and it automatically regulates the introduction of new cards to maintain a
-consistent, configurable study time per day.
+internals. So I wrote this.
+
+srf is much simpler than Anki (i.e. has a small subset of Anki features)
+but the scheduler is better for my purposes: studying language. In
+particular, the scheduler prioritizes cards with shorter intervals over
+those with longer intervals and it automatically regulates the introduction
+of new cards to maintain a consistent, configurable study time per day.
 
 ## Getting Started
 
