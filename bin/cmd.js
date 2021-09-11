@@ -7,17 +7,6 @@ const path = require('path');
 const tc = require('timezonecomplete');
 const { v4: uuidv4 } = require('uuid');
 
-// let db; // better-sqlite3 database handle
-
-// startTime is the time when this execution of the server started.
-const startTime = Math.floor(Date.now() / 1000);
-
-// startOfDay is the epoch time of midnight as the start of the current day.
-let startOfDay;
-
-// now is the current time, updated on receipt of each request
-let now = startTime;
-
 // cardStartTime is the time when the current card was shown.
 // It is updated each time a card is shown.
 let cardStartTime;
@@ -195,20 +184,8 @@ function runServer (opts, args) {
     }
   };
 
-  // Add middleware for common code to every request
-  app.use((req, res, next) => {
-    now = Math.floor(Date.now() / 1000);
-    req.startTime = now;
-    const newStartOfDay =
-      Math.floor(new Date().setHours(0, 0, 0, 0).valueOf() / 1000);
-    if (newStartOfDay !== startOfDay) {
-      console.log(new Date().toString());
-      startOfDay = newStartOfDay;
-    }
-    next();
-  });
-
   app.get('/', (req, res) => {
+    const now = Math.floor(Date.now() / 1000);
     const studyTimeToday = srf.getStudyTimeToday();
     const viewedToday = srf.getCountCardsViewedToday();
     const dueToday = srf.getCountCardsDueToday();
@@ -255,6 +232,7 @@ function runServer (opts, args) {
   });
 
   app.get('/stats', (req, res) => {
+    const now = Math.floor(Date.now() / 1000);
     const studyTimeToday = srf.getStudyTimeToday();
     const cardsViewedToday = srf.getCountCardsViewedToday();
     const dueCount = srf.getCountCardsDueToday();
@@ -299,7 +277,7 @@ function runServer (opts, args) {
     card = srf.getNextCard();
     if (card) {
       if (card.interval === 0) console.log('new card');
-      cardStartTime = now;
+      cardStartTime = Math.floor(Date.now() / 1000);
       const fields = srf.getFields(card.fieldsetid);
       const template = srf.getTemplate(card.templateid);
       card.template = template;
@@ -328,6 +306,7 @@ function runServer (opts, args) {
   });
 
   app.get('/again', (req, res) => {
+    const now = Math.floor(Date.now() / 1000);
     if (card) {
       srf.reviewCard(card, now - cardStartTime, 'again');
     }
@@ -335,6 +314,7 @@ function runServer (opts, args) {
   });
 
   app.get('/hard', (req, res) => {
+    const now = Math.floor(Date.now() / 1000);
     if (card) {
       srf.reviewCard(card, now - cardStartTime, 'hard');
     }
@@ -342,6 +322,7 @@ function runServer (opts, args) {
   });
 
   app.get('/good', (req, res) => {
+    const now = Math.floor(Date.now() / 1000);
     if (card) {
       srf.reviewCard(card, now - cardStartTime, 'good');
     }
@@ -349,6 +330,7 @@ function runServer (opts, args) {
   });
 
   app.get('/easy', (req, res) => {
+    const now = Math.floor(Date.now() / 1000);
     if (card) {
       srf.reviewCard(card, now - cardStartTime, 'easy');
     }
