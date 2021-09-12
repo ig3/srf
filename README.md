@@ -168,7 +168,7 @@ For example:
     maxNewCards: 20,
 
     // Study time (seconds) per 24 hours beyond which no new cards are shown
-    studyTimeLimit: 3600, // 1 hour
+    studyTimeTarget: 3600, // 1 hour
 
     // The maximum value factor may take.
     maxFactor: 10000,
@@ -264,49 +264,39 @@ quickly from there.
 
 ## New Cards
 
-srf regulates overall workload by regulating the introduction of new cards.
-
 All cards are initially considered to be 'new'. Technically, this is
 determined by cards.interval being 0. After a card has been seen,
 its interval is set to some non-zero value: the time, in seconds, until
 the card is due to be seen again.
 
-srf regulates the presentation of new cards based on actual study in the
-past 24 hours and projected study in the next 24 hours, based on the number
-of cards that will be due for review and historic average time per card. In
-addition, if there are cards that were due more than 24 hours ago (for
-example, after a study break of several days) new cards will not be
-presented until the backlog is cleared. The target study time per day,
-around which new cards are regulated, is 60 minutes per day, but
-configurable in case you want to study more or less. Only the introduction
-of new cards is regulated. There is no limit on reviews, other than the
-time you choose to spend.
+New cards are presented if:
 
+ * Daily study time is less than config.studyTimeTarget, including:
+   * total study time in the past 24 hours
+   * estimated study time in the next 24 hours
+   * estimated average daily study time in the next 5 days
+ * There are no cards due more than 24 hours ago (i.e. overdue)
+ * Total new cards in the past 24 hours is less than config.maxNewCards
+ * There is no due card or it is more than 5 minutes since last new card
 
-New cards are presented when:
-
- * There were no cards due more than 1 day ago (overdue) at start of day
- * Study time, past 24 hours, is less than studyTimeLimit
- * Estimated study time, next 24 hours, is less than studyTimeLimit
- * Estimated 5 day average study time is less than studyTimeLimit
- * There are no due cards or it is more than 5 minutes since last new card
- * There is a new card available
+This regulates the introduction of new cards to maintain daily study time
+close to config.studyTimeTarget. If study time falls below the target, more
+new cards are introduced, up to the daily maximum. If study time exceeds
+the target, no more new cards are presented, allowing you to focus on
+learning the cards already seen without becoming overloaded.
 
 Estimates of future study time are based on number of cards due and average
 time per card, per day, over the past 10 days.
 
-The objective is to keep daily study time close to studyTimeLimit by
-regulating the presentation of new cards. There is no limit on review of
-due cards. Only new cards are limited.
-
-Note that studyTimeLimit is a limit per 24 hours, not a limit per day. srf
+Note that studyTimeTarget is a limit per 24 hours, not a limit per day. srf
 considers study time in the past 24 hours and the next 24 hours from the
 current time, without regard to what the actual time is, local time or day
 boundaries.
 
 In the event of a significant backlog of due cards (e.g. after not studying
 for several days), no new cards will be presented until the backlog is
-cleared.
+cleared: there are no overdue cards and study time in the past 24 hours is
+less than the target.
 
 In the event of an upcoming surge of due cards, no new cards will be
 presented, even if current study time is low.
