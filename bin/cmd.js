@@ -398,8 +398,8 @@ function runServer (opts, args) {
     } else {
       console.log('update an existing fieldset');
       console.log('body ', req.body);
-      const fieldsetid = req.params.id;
-      const templatesetid = req.body.templatesetid;
+      const fieldsetid = Number(req.params.id);
+      const templatesetid = Number(req.body.templatesetid);
       console.log('templatesetid: ', templatesetid);
       const fields = JSON.stringify(req.body.fields);
       console.log('fields: ', fields);
