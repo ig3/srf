@@ -265,7 +265,7 @@ quickly from there.
 ## New Cards
 
 All cards are initially considered to be 'new'. Technically, this is
-determined by cards.interval being 0. After a card has been seen,
+determined by card.interval being 0. After a card has been seen,
 its interval is set to some non-zero value: the time, in seconds, until
 the card is due to be seen again.
 
