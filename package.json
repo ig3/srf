@@ -20,21 +20,16 @@
   "license": "ISC",
   "dependencies": {
     "better-sqlite3": "^7.4.0",
-    "body-parser": "^1.19.0",
-    "cookie-parser": "^1.4.5",
     "express": "^4.17.1",
     "express-handlebars": "^5.3.2",
     "getopts": "^2.3.0",
-    "handlebars": "^4.7.7",
     "handlebars-form-helper": "^1.0.4",
     "json5": "^2.2.0",
-    "multer": "^1.4.2",
     "mustache": "^4.2.0",
     "serve-favicon": "^2.5.0",
     "timezonecomplete": "^5.12.4",
     "tzdata": "^1.0.25",
     "uuid": "^8.3.2",
-    "yargs": "^17.0.1",
     "yauzl": "^2.10.0"
   },
   "devDependencies": {
