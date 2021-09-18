@@ -1227,15 +1227,18 @@ still needs a lot of work, but it is good enough for my immediate needs.
 I'm not the only one frustrated by Anki and writing an alternative. See
 [Where Anki falls short](https://verbally.flimzy.com/pet-peeves-about-anki/)
 
-With this, I can do whatever I want with scheduling, and I like this
-schedule much more than the Anki scheduler, old or new. In particular, a
-backlog of cards is easy to work through, as opposed to the 'ease hell' of
-Anki. This is because of the prioritization of cards with shorter
-intervals. It is not possible to become so overwhelmed and fail to make
-progress, regardless of the backlog.
+With this, I can do whatever I want with scheduling. I like the srf
+scheduler much more than the Anki scheduler, old or new. In particular, a
+backlog of cards is relatively easy to work through. This is because of the
+prioritization of cards with shorter intervals and not showing any new
+cards while the backlog persists. With the Anki scheduler, I became
+overwhelmed and was no longer learning anything effectively, even with new
+cards totally disabled. With the srf scheduler, this doesn't happen. Even
+with a large backlog, I am able to learn and work through the backlog. It
+is a much nicer experience.
 
 The biggest challenges were reverse engineering the serialization of the
-blobs in the database (because after hours of searching I still couldn't
+blobs in the database: because after hours of searching I still couldn't
 find a definition of the rust/serde serialization. It's open source. I'm
 sure the information is there somewhere, but it's not documented, not
 discussed, and there are too many layers of abstraction and build
@@ -1255,7 +1258,7 @@ work with.
 
 * Pure JavaScript on Node
 * Browser based
-* Simple scheduler without the complexity of Anki queues
+* Simple scheduler without the complexity of Anki queues or decks
 * SQLite3 database
 * No obscure collation function in the database
 * Import from Anki deck exports
@@ -1266,3 +1269,4 @@ work with.
 * No reports - just rudimentary stats to the browser or server console
 * No decks, tags or flags - just one pool of cards
 * Only simple text fields and media
+* No synchronization between devices / databases
