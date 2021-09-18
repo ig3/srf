@@ -1,5 +1,34 @@
 'use strict';
 
+/**
+ * importdb.js reads an Anki database and produces an srf database,
+ * for an early version of srf. It is no longer used and is not compatible
+ * with the current version of srf. It manifests most of what I learned
+ * about the Anki database, up to Anki version 2.1.43.
+ *
+ * I began srf using an unmodified Anki database. I then began transforming
+ * the database. Primary motivation was to eliminate the need to serialize
+ * and deserialize the fields set by rust/serde serialization. I then wrote
+ * importdb.js (this module) to allow fresh imports from Anki: transforming
+ * the database to the requirements of srf.
+ *
+ * Later, I added to srf and import function that imports from Anki
+ * "Packaged Decks" (see: https://docs.ankiweb.net/exporting.html),
+ * including .apkg and .colpkg files. Anki shared decks are in the .apkg
+ * format, so this allowed import of Anki shared decks. While I haven't
+ * found an Anki shared deck that can't be imported, I have only tested a
+ * small number of them and some template features are not supported by
+ * srf. For example: cloze cards, text to speech, etc. See README for a
+ * fuller description of unsupported features.
+ *
+ * Since adding the import function to srf, this (importdb.js) has not been
+ * updated as the srf database further evolved. Thus it is of no use with
+ * the current version of srf. I have not removed it only because it
+ * embodies some significant information about the Anki database that I
+ * don't have recorded elsewhere.
+ *
+ */
+
 const fs = require('fs');
 
 const srcFile = process.argv[2];
