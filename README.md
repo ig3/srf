@@ -413,7 +413,7 @@ archive of the source is 2.1.16, Dec 22, 2019. 2.1 tags before 2.1.21 have
 been removed, it seems. Anyway, the template folder was still present in
 2.1.16 but gone by 2.1.28, my next archive. This was the beginning of the
 pervasive changes, including the move to rust and fragmentation of the
-implementations of various features that put me of developing Anki addons
+implementations of various features that put me off developing Anki addons
 or trying to improve the Anki scheduler. Quite an aside to templating, but
 template rendering is just one more feature that is now fragmented between
 python and rust code. And it seems no longer using anything like an
