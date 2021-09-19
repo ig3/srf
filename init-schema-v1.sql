@@ -1,16 +1,9 @@
 begin transaction;
 
 create table config (
-  name  text not null unique,
-  modified integer not null default (strftime('%s', 'now')),
+  name  text not null,
   value text not null
 );
-
-create trigger configModified
-update on config
-begin
-  update config set modified = strftime('%s', 'now') where name = old.name;
-end;
 
 -- one card for each note/template combination
 -- multiple cards per note
@@ -32,12 +25,6 @@ create table card (
   -- sort order for selecting new cards
   ord         integer not null
 );
-
-create trigger cardModified
-update on card
-begin
-  update card set modified = strftime('%s', 'now') where id = old.id;
-end;
 
 create index idx_card_id on card (id);
 create index idx_card_due_interval on card (due, interval);
