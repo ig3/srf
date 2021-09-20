@@ -102,32 +102,6 @@ function showUsage () {
     ' import <filename>');
 }
 
-/**
- * getTemplatesetFields returns an array of all fields for the template
- * set.
- *
- * Every field in every template in the set must be in the field set, but
- * the field set may contain fields that are not in any of the templates.
- *
- * New fields are appended to the end of the field array.
- */
-// Not using this function but don't want to remove it
-// eslint-disable-next-line
-function getTemplatesetFields (templateset) {
-  const fields = {};
-  templateset.templates.forEach(template => {
-    getMustacheTags(template.front).forEach(field => { fields[field] = 1; });
-    getMustacheTags(template.back).forEach(field => { fields[field] = 1; });
-  });
-  const fieldsArray = [...templateset.fields];
-  Object.keys(fields).forEach(field => {
-    if (fieldsArray.indexOf(field) === -1) {
-      fieldsArray.push(field);
-    }
-  });
-  return fieldsArray;
-}
-
 function runServer (opts, args) {
   console.log('run server ', opts, args);
 
@@ -160,29 +134,6 @@ function runServer (opts, args) {
   app.use(express.static(path.join(__dirname, '..', 'public')));
   app.use(express.static(mediaDir));
   app.use(express.json({ limit: '50MB' }));
-
-  // Mustache works for the Anki templates - it allows spaces in the tag keys
-  // I had first tried Handlebars but it doesn't allow spaces in the tag keys
-  // Links to sound and images don't work - Anki uses a 'special' syntax
-  // But, maybe I can write a 'helper'
-  const Mustache = require('mustache');
-  Mustache.escape = function (text) {
-  //  console.log('text: ', text);
-    if (/\[sound:.*\]/.test(text)) {
-      const src = [];
-      for (const m of text.matchAll(/\[sound:(.*?)\]/g)) {
-        src.push(m[1]);
-      }
-      let result = '<audio id="myaudio" autoplay controls></audio></br>';
-      result += '<script>';
-      result += 'var audioFiles = ["' + src.join('","') + '"];';
-      result += '</script>';
-      //    console.log('result: ', result);
-      return result;
-    } else {
-      return text;
-    }
-  };
 
   app.get('/', (req, res) => {
     const now = Math.floor(Date.now() / 1000);
@@ -283,9 +234,9 @@ function runServer (opts, args) {
       card.template = template;
       // TODO: handle the special fields {{Tags}}, {{Type}}, {{Deck}},
       // {{Subdeck}}, {{Card}} and {{FrontSide}}
-      card.front = Mustache.render(template.front, fields);
+      card.front = srf.render(template.front, fields);
       fields.FrontSide = card.front;
-      card.back = Mustache.render(template.back, fields);
+      card.back = srf.render(template.back, fields);
       res.render('front', {
         front: card.front,
         template: template
@@ -640,17 +591,3 @@ function unzip (file) {
     });
   });
 }
-
-/**
- * getMustacheTags returns an array of all the tags in the given template.
- *
- */
-/* c8 ignore start */
-function getMustacheTags (template) {
-  return [...new Set(
-    require('mustache').parse(template)
-    .filter(item => item[0] === 'name')
-    .map(item => item[1])
-  )];
-}
-/* c8 ignore stop */
