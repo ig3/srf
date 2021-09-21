@@ -19,9 +19,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "better-sqlite3": "^7.4.0",
+    "better-sqlite3": "^7.4.3",
     "express": "^4.17.1",
-    "express-handlebars": "^5.3.2",
+    "express-handlebars": "^5.3.3",
     "getopts": "^2.3.0",
     "handlebars-form-helper": "^1.0.4",
     "json5": "^2.2.0",
@@ -33,7 +33,7 @@
     "yauzl": "^2.10.0"
   },
   "devDependencies": {
-    "c8": "^7.7.3",
+    "c8": "^7.9.0",
     "eslint-config-entrain": "^2.0.3",
     "multi-tape": "^1.6.1",
     "tape": "^5.3.1",
