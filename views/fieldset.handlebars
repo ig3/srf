@@ -115,10 +115,8 @@ templatesets fieldset.templatesetid}}</td></tr>
     const file = selectedFiles[0];
     console.log('file: ', file);
 
-    alert('file changed');
     new Promise((resolve, reject) => {
       const reader = new FileReader();
-      alert('got file reader');
 
       reader.onload = (e) => {
         resolve(e.target.result);
@@ -132,7 +130,6 @@ templatesets fieldset.templatesetid}}</td></tr>
     })
     .then(data => {
       file_rfc2397 = data;
-      alert('got file data for: ', file);
       fileAttachments.push({
         meta: {
           lastModified: file.lastModified,
@@ -144,11 +141,9 @@ templatesets fieldset.templatesetid}}</td></tr>
       });
       console.log('fileAttachments: ', fileAttachments);
       const filename = file.name;
-      alert('saved file data');
 
       let ref = '';
       if (file.type === 'image/jpeg') {
-        alert('attach jpeg');
         // todo: what if the filename includes a ']' character?
         ref = '<img src="' + file.name + '"/>';
       } else if (file.type === 'audio/mpeg') {
