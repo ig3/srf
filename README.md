@@ -173,10 +173,6 @@ For example:
     // The maximum value factor may take.
     maxFactor: 10000,
 
-    // The interval beyond which due times are rounded to the start of the
-    // day, in seconds.
-    dueTimeRoundingThreshold: 432000, // 5 days
-
     // again
     // The interval when again is selected, in seconds.
     againInterval: 10,
@@ -206,7 +202,7 @@ For example:
 
     // easy
     // The minimum interval when easy is selected, in seconds.
-    easyMinInterval: 432000, // 5 days
+    easyMinInterval: 604800, // 7 days
     // The minimum factor when easy is selected.
     easyMinFactor: 4000,
     // The change of factor when easy is selected.
