@@ -168,7 +168,7 @@ For example:
     maxNewCards: 20,
 
     // Study time (seconds) per 24 hours beyond which no new cards are shown
-    studyTimeTarget: 3600, // 1 hour
+    studyTimeLimit: 3600, // 1 hour
 
     // The maximum value factor may take.
     maxFactor: 10000,
