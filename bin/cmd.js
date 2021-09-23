@@ -7,13 +7,6 @@ const path = require('path');
 const tc = require('timezonecomplete');
 const { v4: uuidv4 } = require('uuid');
 
-// cardStartTime is the time when the current card was shown.
-// It is updated each time a card is shown.
-let cardStartTime;
-
-// card is the current card. Updated when a new card is shown.
-let card;
-
 const getopts = require('getopts');
 const opts = getopts(process.argv.slice(2), {
   string: ['directory', 'database', 'media', 'config'],
@@ -132,7 +125,8 @@ function runServer (opts, args) {
   app.set('views', path.join(__dirname, '..', 'views'));
   app.set('view engine', 'handlebars');
   app.use(express.static(path.join(__dirname, '..', 'public')));
-  app.use(express.static(mediaDir));
+  // Anki templates use relative paths to media that are just the file name
+  app.use('/card/:id', express.static(mediaDir));
   app.use(express.json({ limit: '50MB' }));
 
   app.get('/', (req, res) => {
@@ -224,70 +218,65 @@ function runServer (opts, args) {
     res.sendFile(path.join(__dirname, 'public', 'study.html'));
   });
 
-  app.get('/front', (req, res) => {
-    card = srf.getNextCard();
+  app.get('/next', (req, res) => {
+    const card = srf.getNextCard();
+    if (card) {
+      res.redirect('/card/' + card.id + '/front');
+    } else {
+      res.redirect('/');
+    }
+  });
+
+  app.get('/card/:id/front', (req, res) => {
+    const cardid = parseInt(req.params.id);
+    const card = srf.getCard(cardid);
     if (card) {
       if (card.interval === 0) console.log('new card');
-      cardStartTime = Math.floor(Date.now() / 1000);
+      const cardStartTime = Math.floor(Date.now() / 1000);
       const fields = srf.getFields(card.fieldsetid);
       const template = srf.getTemplate(card.templateid);
       card.template = template;
-      // TODO: handle the special fields {{Tags}}, {{Type}}, {{Deck}},
-      // {{Subdeck}}, {{Card}} and {{FrontSide}}
       card.front = srf.render(template.front, fields);
       fields.FrontSide = card.front;
       card.back = srf.render(template.back, fields);
       res.render('front', {
         id: card.id,
         front: card.front,
-        template: template
+        template: template,
+        cardStartTime: cardStartTime
       });
     } else {
       res.redirect('/');
     }
   });
 
-  app.get('/back', (req, res) => {
-    if (!card || card.id !== parseInt(req.query.id)) {
-      return res.redirect('/');
-    }
+  app.get('/card/:id/back', (req, res) => {
+    const cardStartTime = parseInt(req.query.startTime);
+    const cardid = parseInt(req.params.id);
+    const card = srf.getCard(cardid);
+    const fields = srf.getFields(card.fieldsetid);
+    const template = srf.getTemplate(card.templateid);
+    card.template = template;
+    card.front = srf.render(template.front, fields);
+    fields.FrontSide = card.front;
+    card.back = srf.render(template.back, fields);
     res.render('back', {
       id: card.id,
       back: card.back,
-      template: card.template
+      template: card.template,
+      cardStartTime: cardStartTime
     });
   });
 
-  app.get('/again', (req, res) => {
-    const now = Math.floor(Date.now() / 1000);
-    if (card && card.id === parseInt(req.query.id)) {
-      srf.reviewCard(card, now - cardStartTime, 'again');
-    }
-    res.redirect('/front');
-  });
-
-  app.get('/hard', (req, res) => {
-    const now = Math.floor(Date.now() / 1000);
-    if (card && card.id === parseInt(req.query.id)) {
-      srf.reviewCard(card, now - cardStartTime, 'hard');
-    }
-    res.redirect('/front');
-  });
-
-  app.get('/good', (req, res) => {
-    const now = Math.floor(Date.now() / 1000);
-    if (card && card.id === parseInt(req.query.id)) {
-      srf.reviewCard(card, now - cardStartTime, 'good');
-    }
-    res.redirect('/front');
-  });
-
-  app.get('/easy', (req, res) => {
-    const now = Math.floor(Date.now() / 1000);
-    if (card && card.id === parseInt(req.query.id)) {
-      srf.reviewCard(card, now - cardStartTime, 'easy');
-    }
-    res.redirect('/front');
+  // Responses to reviews are posted
+  app.post('/card/:id', (req, res) => {
+    const cardid = parseInt(req.params.id);
+    const card = srf.getCard(cardid);
+    const startTime = parseInt(req.body.startTime);
+    const elapsed = Math.floor(Date.now() / 1000 - startTime);
+    const ease = req.body.ease;
+    srf.reviewCard(card, elapsed, ease);
+    res.send('ok');
   });
 
   app.get('/fieldsets', (req, res) => {
