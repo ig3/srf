@@ -238,6 +238,7 @@ function runServer (opts, args) {
       fields.FrontSide = card.front;
       card.back = srf.render(template.back, fields);
       res.render('front', {
+        id: card.id,
         front: card.front,
         template: template
       });
@@ -247,10 +248,11 @@ function runServer (opts, args) {
   });
 
   app.get('/back', (req, res) => {
-    if (!card) {
+    if (!card || card.id !== parseInt(req.query.id)) {
       return res.redirect('/');
     }
     res.render('back', {
+      id: card.id,
       back: card.back,
       template: card.template
     });
@@ -258,7 +260,7 @@ function runServer (opts, args) {
 
   app.get('/again', (req, res) => {
     const now = Math.floor(Date.now() / 1000);
-    if (card) {
+    if (card && card.id === parseInt(req.query.id)) {
       srf.reviewCard(card, now - cardStartTime, 'again');
     }
     res.redirect('/front');
@@ -266,7 +268,7 @@ function runServer (opts, args) {
 
   app.get('/hard', (req, res) => {
     const now = Math.floor(Date.now() / 1000);
-    if (card) {
+    if (card && card.id === parseInt(req.query.id)) {
       srf.reviewCard(card, now - cardStartTime, 'hard');
     }
     res.redirect('/front');
@@ -274,7 +276,7 @@ function runServer (opts, args) {
 
   app.get('/good', (req, res) => {
     const now = Math.floor(Date.now() / 1000);
-    if (card) {
+    if (card && card.id === parseInt(req.query.id)) {
       srf.reviewCard(card, now - cardStartTime, 'good');
     }
     res.redirect('/front');
@@ -282,7 +284,7 @@ function runServer (opts, args) {
 
   app.get('/easy', (req, res) => {
     const now = Math.floor(Date.now() / 1000);
-    if (card) {
+    if (card && card.id === parseInt(req.query.id)) {
       srf.reviewCard(card, now - cardStartTime, 'easy');
     }
     res.redirect('/front');
