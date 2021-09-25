@@ -7,13 +7,14 @@
 <button onclick="review('good')" class="shortcut_l">Good</button>
 <button onclick="review('easy')" class="shortcut_semicolon">Easy</button>
 <a href="/help" target="_blank"><button>Help</button></a>
+<a onclick="window.open('/fieldset/{{card.fieldsetid}}', 'Edit Fieldset', 'height=800,width=600');" class="shortcut_e" target="_blank"><button>Edit</button></a>
 <a href="/" class="shortcut_b"><button>Break</button></a>
 </div>
 </div>
 <script>
   function review (ease) {
     console.log('review ', ease);
-    fetch('/card/{{id}}/', {
+    fetch('/card/{{card.id}}/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

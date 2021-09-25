@@ -240,7 +240,7 @@ function runServer (opts, args) {
       fields.FrontSide = card.front;
       card.back = srf.render(template.back, fields);
       res.render('front', {
-        id: card.id,
+        card: card,
         front: card.front,
         template: template,
         cardStartTime: cardStartTime
@@ -261,7 +261,7 @@ function runServer (opts, args) {
     fields.FrontSide = card.front;
     card.back = srf.render(template.back, fields);
     res.render('back', {
-      id: card.id,
+      card: card,
       back: card.back,
       template: card.template,
       cardStartTime: cardStartTime
