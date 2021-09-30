@@ -66,6 +66,8 @@ if (opts.help) {
 
   if (command === 'import') {
     importFile(opts, subargv);
+  } else if (command === 'fix') {
+    fixDatabase(opts, subargv);
   } else if (command === undefined || command === 'run') {
     runServer(opts, subargv);
   } else {
@@ -581,4 +583,18 @@ function unzip (file) {
       });
     });
   });
+}
+
+function fixDatabase (opts) {
+  fs.copyFileSync(
+    opts.database,
+    opts.database + '.' + (new Date()).toISOString()
+  );
+  const srf = require('../lib/srf')({
+    dir: opts.dir,
+    database: opts.database,
+    media: opts.media,
+    config: opts.config
+  });
+  srf.fixDatabase();
 }
