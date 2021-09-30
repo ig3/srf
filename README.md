@@ -77,8 +77,9 @@ must bein in ~/.local/share/srf/media.
 ```
 usage:
   srf --help
-  srf [--directory <root-directory>] [--config <config-file>] [--database <database-name>] [--media <media-directory>]
-  srf [--directory <root-directory>] [--config <config-file>] [--database <database-name>] [--media <media-directory>] import <filename>
+  srf [options...]
+  srf [options...] import <filename>
+  srf [options...] fix
 ```
 
 ### options
@@ -209,6 +210,30 @@ For example:
     easyFactorAdjust: 200
 }
 ```
+
+### Commands
+
+#### run
+
+Run the web server. This is the default command (i.e. if srf is run without
+specifying a command on the command line, it runs the webserver).
+
+#### import <filename>
+
+Import an Anki export (i.e. a .apkg file). This is the primary way to get
+cards into srf. To migrate from Anki to srf, export decks from Anki,
+including media, and then import them to srf. Exporting all decks works.
+
+#### fix
+
+Fix a few inconsistencies in revlog:
+
+ * duplicate IDs
+ * inconsistency between interval and lastinterval
+ * inconsistency between interval and card interval
+
+This isn't necessary but it ensures greater consistency between the various
+srf metrics, particularly related to matured cards.
 
 ## Scheduling
 
