@@ -29,13 +29,15 @@
 </tbody>
 </table>
 {{#if studyNow}}
-<a href="/next" class="shortcut_s"><button>Study</button></a>
+<a href="/next" class="default_action shortcut_s"><button>Study</button></a>
+{{else}}
+<a href="/" class="default_action"><button>Reload</button></a>
 {{/if}}
 <h3>Cards due per hour</h3>
 <div id="chart1" style="width:500px;height:200px;"></div>
 <div class="buttons">
 <a href="/help" target="_blank"><button>Help</button></a>
-<a href="/" class="default_action"><button>reload</button></a>
+<a href="/" class="shortcut_r"><button>reload</button></a>
 <a href="/stats"><button>stats</button></a>
 <a href="/fieldsets"><button>fieldsets</button></a>
 <a href="/templatesets"><button>templatesets</button></a>
