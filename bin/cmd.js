@@ -113,6 +113,8 @@ function runServer (opts, args) {
     process.exit();
   });
 
+  let lastReviewTime = 0;
+
   const mediaDir = opts.media;
 
   const express = require('express');
@@ -275,9 +277,13 @@ function runServer (opts, args) {
     const cardid = parseInt(req.params.id);
     const card = srf.getCard(cardid);
     const startTime = parseInt(req.body.startTime);
-    const elapsed = Math.floor(Date.now() / 1000 - startTime);
+    const now = Math.floor(Date.now() / 1000);
+    const viewTime = now - startTime;
+    const studyTime =
+      ((now - lastReviewTime) < 300) ? (now - lastReviewTime) : viewTime;
+    lastReviewTime = now;
     const ease = req.body.ease;
-    srf.reviewCard(card, elapsed, ease);
+    srf.reviewCard(card, viewTime, studyTime, ease);
     res.send('ok');
   });
 

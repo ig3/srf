@@ -481,6 +481,32 @@ essential, related facts to be learned. Cards are generated from these
 items by way of templates. Typically, a set of cards will be produced for
 each item. 
 
+### revlog
+
+```
+CREATE TABLE "revlog" (
+	"id"	integer NOT NULL,
+	"cardid"	integer NOT NULL,
+	"ease"	integer NOT NULL,
+	"interval"	integer NOT NULL,
+	"lastinterval"	integer NOT NULL,
+	"factor"	real NOT NULL,
+	"viewtime"	integer NOT NULL,
+	"studytime"	integer NOT NULL,
+	"lapses"	integer NOT NULL
+);
+```
+
+ * id: record create time, ms since epoch
+ * cardid: fk to card.id
+ * ease: 1, 2, 3 or 4, according to the ease of the review
+ * interval: the new interval in seconds
+ * lastinterval: the previous interval in seconds
+ * factor: a factor for determining interval
+ * viewtime: the time spent viewing the card
+ * studytime: the time spent studying the card, for study time calculations
+ * lapses: the number of times the card has lapsed
+
 ## Anki database
 
 Understanding details of the Anki database was essential to the initial
