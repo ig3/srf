@@ -77,7 +77,7 @@ must bein in ~/.local/share/srf/media.
 ```
 usage:
   srf --help
-  srf [options...]
+  srf [options...] [run]
   srf [options...] import <filename>
   srf [options...] fix
 ```
