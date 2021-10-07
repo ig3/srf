@@ -296,14 +296,12 @@ function runServer (opts, args) {
 
   app.get('/fieldset/:id', (req, res) => {
     const fieldset = srf.getFieldset(req.params.id);
-    console.log('fieldset: ', fieldset);
     // To present a select of template sets the form helper needs an object
     // keyed by select value with value being the displayed text.
     const templatesets = {};
     srf.getTemplatesets().forEach(set => {
       templatesets[set.id] = set.name;
     });
-    console.log('templatesets: ', templatesets);
     res.render('fieldset', {
       fieldset: fieldset,
       templatesets: templatesets
@@ -322,7 +320,6 @@ function runServer (opts, args) {
     fieldset.templateset.fields.forEach(field => {
       fieldset.fields[field] = '';
     });
-    console.log('fieldset: ', fieldset);
     // To present a select of template sets the form helper needs an object
     // keyed by select value with value being the displayed text.
     const templatesets = {};
@@ -336,7 +333,6 @@ function runServer (opts, args) {
   });
 
   app.post('/fieldset/:id', (req, res) => {
-    console.log('save fieldset ' + req.params);
     if (req.params.id === 'new') {
       console.log('create a new fieldset');
       console.log('body ', req.body);
@@ -346,13 +342,9 @@ function runServer (opts, args) {
       console.log('fields: ', fields);
       srf.createFieldset(uuidv4(), templatesetid, fields);
     } else {
-      console.log('update an existing fieldset');
-      console.log('body ', req.body);
       const fieldsetid = Number(req.params.id);
       const templatesetid = Number(req.body.templatesetid);
-      console.log('templatesetid: ', templatesetid);
       const fields = JSON.stringify(req.body.fields);
-      console.log('fields: ', fields);
       srf.updateFieldset(templatesetid, fields, fieldsetid);
     }
     const files = req.body.files;
