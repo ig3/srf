@@ -9,7 +9,7 @@
 
     // again
     // The interval when again is selected, in seconds.
-    againInterval: 10,
+    againMinInterval: 10,
     // The minimum factor when again is selected.
     againMinFactor: 1200,
     // The sensitivity of factor to previous interval when again is selected.

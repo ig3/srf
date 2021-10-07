@@ -178,8 +178,8 @@ For example:
     maxFactor: 10000,
 
     // again
-    // The interval when again is selected, in seconds.
-    againInterval: 10,
+    // The minimum interval when again is selected, in seconds.
+    againMinInterval: 10,
     // The minimum factor when again is selected.
     againMinFactor: 1500,
     // The sensitivity of factor to previous interval when again is selected.
