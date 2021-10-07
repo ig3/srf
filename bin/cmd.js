@@ -205,7 +205,7 @@ function runServer (opts, args) {
       cardsViewedToday: cardsViewedToday,
       studyTimeToday: tc.seconds(studyTimeToday).toFullString(),
       estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
-      averageTimePerCard: srf.getAverageTimePerCard(),
+      averageTimePerCard: srf.getAverageStudyTimePerCard(),
       newCardsPerDay: newCardsPerDay.toFixed(2),
       cardsSeen: cardsSeen,
       matureCards: matureCards,
