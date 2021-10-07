@@ -151,6 +151,9 @@ For example:
 
 ```
 {
+    // Backup retention time (milliseconds)
+    backupRetention: 604800000, // 7 days
+
     // The maximum time for viewing a card (seconds).
     // Beyond this, ease is forced to 'again'.
     maxViewTime: 120,
