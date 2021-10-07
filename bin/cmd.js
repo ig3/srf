@@ -586,7 +586,7 @@ function unzip (file) {
 function fixDatabase (opts) {
   fs.copyFileSync(
     opts.database,
-    opts.database + '.' + (new Date()).toISOString()
+    opts.database + '.' + (new Date()).toISOString() + '.bak'
   );
   const srf = require('../lib/srf')({
     dir: opts.dir,
