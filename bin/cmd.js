@@ -151,7 +151,8 @@ function runServer (opts, args) {
     const timeToNextDue = tc.seconds((nextDue || now) - now);
     const percentCorrect = srf.getPercentCorrect();
     const overdue = srf.getCountCardsOverdue();
-    const chart1Data = srf.getChartDuePerHour();
+
+    const chart1Data = srf.getChartStudyTime();
     const newCardsSeen = srf.getCountNewCardsPast24Hours();
     const newCardsRemaining = srf.getCountNewCardsRemaining();
     res.render('home', {

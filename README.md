@@ -45,7 +45,7 @@ The home page presents some basic study statistics:
    remaining to be seen, should workload permit: (config.maxNewCards - the
    number of new cards seen in the past 24 hours)
  * The time until the next card is due
- * A histogram of cards due in the next 24 hours
+ * A histogram of study time per hour through past and next 24 hours
 
 If there is a card available for study, the 'Study' button will appear.
 Click it to study a card. After studying a card, the next card will be
