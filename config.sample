@@ -1,44 +1,59 @@
+// Some common intervals in seconds:
+//        3600 1 hour
+//       14400 4 hours
+//       86400 24 hours
+//      605800 7 days
+//     1209600 14 days
+//     1814400 21 days
+//    31536000 365 days
 {
-    // The maximum value factor may take.
-    maxFactor: 10000,
-    // The interval beyond which due times are rounded to the start of the
-    // day, in seconds.
-    dueTimeRoundingThreshold: 432000, // 5 days
-    // The factor for randomizing intervals when good or easy are selected.
-    intervalRandomFactor: 5,
+  // Window (seconds) to look ahead for due cards
+  previewWindow: 14400, // 4 hours
 
-    // again
-    // The interval when again is selected, in seconds.
-    againMinInterval: 10,
-    // The minimum factor when again is selected.
-    againMinFactor: 1200,
-    // The sensitivity of factor to previous interval when again is selected.
-    // The time constant of exponential decay towards maxFactor, in seconds.
-    againIntervalSensitivity: 1814400, // 21 days
+  // Backup retention time (milliseconds)
+  backupRetention: 605800000, // 7 days
 
-    // hard
-    // The minimum interval when hard is selected, in seconds.
-    hardMinInterval: 30,
-    // The factor for adjusting interval when hard is selected.
-    hardIntervalFactor: 0.5,
-    // The minimum factor when hard is selected.
-    hardMinFactor: 1200,
-    // The change of factor when hard is selected.
-    hardFactorAdjust: -50,
+  // Minimum number of backups to keep
+  minBackups: 2,
 
-    // good
-    // The minimum interval when good is selected, in seconds.
-    goodMinInterval: 60,
-    // The minimum factor when good is selected.
-    goodMinFactor: 2000,
-    // The change of factor when good is selected.
-    goodFactorAdjust: 50,
+  // Maximum number of backups to keep
+  maxBackups: 10,
 
-    // easy
-    // The minimum interval when easy is selected, in seconds.
-    easyMinInterval: 432000, // 5 days
-    // The minimum factor when easy is selected.
-    easyMinFactor: 4000,
-    // The change of factor when easy is selected.
-    easyFactorAdjust: 200
+  // The maximum time for viewing a card (seconds).
+  // Beyond this, any answer is converted to 'again'
+  maxViewTime: 120,
+
+  // The maximum interval to when a card is due.
+  maxInterval: 31536000,  // 365 days
+
+  // The interval (seconds) beyond which a card is considered 'mature'
+  matureThreshold: 1814400, // 21 days
+
+  // The window (seconds) in which to average percent correct reviews
+  percentCorrectWindow: 1209600, // 14 days
+
+  // The interval (seconds) between correct factor adjustments
+  correctFactorAdjustmentInterval: 86400, // 24 hours
+
+  // The factor used to add dispersion to the due time.
+  // As percentage of the total interval.
+  dispersionFactor: 5,
+
+  // The maximum number of new cards in 24 hours.
+  maxNewCards: 20,
+
+  // Study time (seconds) per day beyond which no new cards
+  studyTimeLimit: 3600, // 1 hour
+
+  // The maximum value factor may take.
+  maxFactor: 10000,
+
+  // minimum intervals according to responses to reviews
+  againMinInterval: 10,
+  hardMinInterval: 30,
+  goodMinInterval: 60,
+  easyMinInterval: 605800, // 7 days
+
+  // The percentage by wich to reduce interval after response 'Hard'
+  hardIntervalFactor: 50
 }

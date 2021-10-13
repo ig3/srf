@@ -137,7 +137,7 @@ of the --directory option.
 
 The directory is created if it doesn't exist.
 
-## Config
+### Config
 
 Scheduling is tuned by configuration parameters in file
 `~/.local/share/srf/config`. The file
@@ -151,68 +151,151 @@ For example:
 
 ```
 {
-    // Backup retention time (milliseconds)
-    backupRetention: 604800000, // 7 days
+  // Window (seconds) to look ahead for due cards
+  previewWindow: 14400, // 4 hours
 
-    // The maximum time for viewing a card (seconds).
-    // Beyond this, ease is forced to 'again'.
-    maxViewTime: 120,
+  // Backup retention time (milliseconds)
+  backupRetention: 605800000, // 7 days
 
-    // The maximum interval until a card is due (seconds).
-    maxInterval: 31536000,  // 1 year
+  // Minimum number of backups to keep
+  minBackups: 2,
 
-    // The interval (seconds) beyond which a card is considered mature
-    matureThreshold: 1814400, // 21 days
+  // Maximum number of backups to keep
+  maxBackups: 10,
 
-    // The factor used to add dispersion to the interval.
-    // Maximum dispersion is -1 / dispersionFactor.
-    dispersionFactor: 50,
+  // The maximum time for viewing a card (seconds).
+  // Beyond this, any answer is converted to 'again'
+  maxViewTime: 120,
 
-    // The maximum number of new cards in 24 hours.
-    maxNewCards: 20,
+  // The maximum interval to when a card is due.
+  maxInterval: 31536000,  // 365 days
 
-    // Study time (seconds) per 24 hours beyond which no new cards are shown
-    studyTimeLimit: 3600, // 1 hour
+  // The interval (seconds) beyond which a card is considered 'mature'
+  matureThreshold: 1814400, // 21 days
 
-    // The maximum value factor may take.
-    maxFactor: 10000,
+  // The window (seconds) in which to average percent correct reviews
+  percentCorrectWindow: 1209600, // 14 days
 
-    // again
-    // The minimum interval when again is selected, in seconds.
-    againMinInterval: 10,
-    // The minimum factor when again is selected.
-    againMinFactor: 1500,
-    // The sensitivity of factor to previous interval when again is selected.
-    // The time constant of exponential decay towards maxFactor, in seconds.
-    againIntervalSensitivity: 1814400, // 21 days
+  // The interval (seconds) between correct factor adjustments
+  correctFactorAdjustmentInterval: 86400, // 24 hours
 
-    // hard
-    // The minimum interval when hard is selected, in seconds.
-    hardMinInterval: 30,
-    // The factor for adjusting interval when hard is selected.
-    hardIntervalFactor: 0.5,
-    // The minimum factor when hard is selected.
-    hardMinFactor: 1500,
-    // The change of factor when hard is selected.
-    hardFactorAdjust: -50,
+  // The factor used to add dispersion to the due time.
+  // As percentage of the total interval.
+  dispersionFactor: 5,
 
-    // good
-    // The minimum interval when good is selected, in seconds.
-    goodMinInterval: 60,
-    // The minimum factor when good is selected.
-    goodMinFactor: 1100,
-    // The change of factor when good is selected.
-    goodFactorAdjust: 50,
+  // The maximum number of new cards in 24 hours.
+  maxNewCards: 20,
 
-    // easy
-    // The minimum interval when easy is selected, in seconds.
-    easyMinInterval: 604800, // 7 days
-    // The minimum factor when easy is selected.
-    easyMinFactor: 4000,
-    // The change of factor when easy is selected.
-    easyFactorAdjust: 200
+  // Study time (seconds) per day beyond which no new cards
+  studyTimeLimit: 3600, // 1 hour
+
+  // The maximum value factor may take.
+  maxFactor: 10000,
+
+  // minimum intervals according to responses to reviews
+  againMinInterval: 10,
+  hardMinInterval: 30,
+  goodMinInterval: 60,
+  easyMinInterval: 605800, // 7 days
+
+  // The percentage by which to reduce interval after response 'Hard'
+  hardIntervalFactor: 50
 }
 ```
+
+#### previewWindow
+
+This is the interval to look ahead of current time for due cards. If this
+is 0 then only cards currently due will be presented for review but if this
+is greater than 0 then cards due up to this many seconds in the future will
+be presented for review. This will cause cards to be reviewed before their
+due time, somewhat defeating the spaced repetition algorithm but only
+within the window.
+
+####  backupRetention (milliseconds)
+
+The time to retain database backups. Backups older than this will be
+deleted.
+
+#### minBackups
+
+The minimum number of backups to retain, regardless of their age.
+
+#### maxBackups
+
+The maximum number of backups to retain, regardless of their age.
+
+#### maxViewTime
+
+The maximum time for viewing a card. If a card is viewed for longer than
+this ease will be forced to 'again'.
+
+#### maxInterval
+
+The maximum interval (time until next review) for a card. Note that the
+actual maximum time until next review can be a bit larger than this due to
+dispersion of due times.
+
+#### matureThreshold
+
+The interval beyond which cards are considered 'mature'. This doesn't
+affect reviews. It only affects some of the statistics.
+
+#### percentCorrectWindow
+
+The percentage of 'correct' responses (not 'Again') is a factor in
+determining the intervals of cards. All responses within this window are
+considered in determining the percentage.
+
+#### correctFactorAdjustmentInterval
+
+The correct factor is one of the factors used to determine the intervals of
+cards. This is the minimum time between adjustments of this factor.
+
+  // The factor used to add dispersion to the due time.
+  // As percentage of the total interval.
+#### dispersionFactor
+
+The dispersion factor is used to add a random amount to the interval when
+calculating the next due time of a card. This randomization helps to avoid
+cards always appearing together, even if they always get the same response.
+It is a percentage of the interval.
+
+#### maxNewCards
+
+The maximum number of new cards to be presented within 24 hours.
+
+#### studyTimeLimit
+
+If the time spent studying during the past 24 hours or the estimated time
+to study cards due in the next 24 hours exceeds this limit then new cards
+will not be presented.
+
+#### maxFactor: 10000,
+
+The 'factor' is one of the factors used to determine the interval between
+reviews. This is the maximum value of the 'factor'. 
+
+#### againMinInterval: 10,
+
+This is the mimum interval for cards after response 'Again'.
+
+#### hardMinInterval
+
+This is the minimum interval after responding 'Hard' to a review.
+
+#### goodMinInterval: 60,
+
+This is the minimum interval after responding 'Good' to a review.
+
+#### easyMinInterval: 605800, // 7 days
+
+This is the minimum interval after responding 'Easy' to a review.
+
+#### hardIntervalFactor
+
+After responding 'Hard' to a review, the interval is reduced by this
+percentage of the current interval.
 
 ### Commands
 

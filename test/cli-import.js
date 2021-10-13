@@ -73,7 +73,7 @@ t.test('cli import', t => {
       t.ok(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
       t.ok(db, 'get a database handle');
-      t.equals(db.prepare('select value from config where name = \'srf schema version\'').get().value, '2', 'check schema version');
+      t.equals(db.prepare('select value from config where name = \'srf schema version\'').get().value, '4', 'check schema version');
       t.equals(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
       t.equals(db.prepare('select count() from revlog').get()['count()'], 5, 'check count of revlog');
       db.close();
@@ -104,7 +104,7 @@ t.test('cli import', t => {
       t.ok(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
       t.ok(db, 'get a database handle');
-      t.equals(db.prepare('select value from config where name = \'srf schema version\'').get().value, '2', 'check schema version');
+      t.equals(db.prepare('select value from config where name = \'srf schema version\'').get().value, '4', 'check schema version');
       t.equals(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
       t.equals(db.prepare('select count() from revlog').get()['count()'], 0, 'check count of revlog');
       db.close();
@@ -135,7 +135,7 @@ t.test('cli import', t => {
       t.ok(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
       t.ok(db, 'get a database handle');
-      t.equals(db.prepare('select value from config where name = \'srf schema version\'').get().value, '2', 'check schema version');
+      t.equals(db.prepare('select value from config where name = \'srf schema version\'').get().value, '4', 'check schema version');
       t.equals(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
       t.equals(db.prepare('select count() from revlog').get()['count()'], 3, 'check count of revlog');
       db.close();
