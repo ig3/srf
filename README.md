@@ -152,7 +152,7 @@ For example:
 ```
 {
   // Window (seconds) to look ahead for due cards
-  previewWindow: 14400, // 4 hours
+  previewWindow: 3600, // 1 hour
 
   // Backup retention time (milliseconds)
   backupRetention: 605800000, // 7 days
