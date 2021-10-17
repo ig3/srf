@@ -573,7 +573,7 @@ each item.
 CREATE TABLE "revlog" (
 	"id"	integer NOT NULL,
 	"cardid"	integer NOT NULL,
-	"ease"	integer NOT NULL,
+	"ease"	text NOT NULL,
 	"interval"	integer NOT NULL,
 	"lastinterval"	integer NOT NULL,
 	"factor"	real NOT NULL,
@@ -585,7 +585,7 @@ CREATE TABLE "revlog" (
 
  * id: record create time, ms since epoch
  * cardid: fk to card.id
- * ease: 1, 2, 3 or 4, according to the ease of the review
+ * ease: the ease of the review: again, hard, good or easy
  * interval: the new interval in seconds
  * lastinterval: the previous interval in seconds
  * factor: a factor for determining interval
