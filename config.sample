@@ -2,11 +2,15 @@
 //        3600 1 hour
 //       14400 4 hours
 //       86400 24 hours
+//      432000 5 days
 //      605800 7 days
 //     1209600 14 days
 //     1814400 21 days
 //    31536000 365 days
 {
+  // Minimum time between related cards (seconds)
+  minTimeBetweenRelatedCards: 432000, // 5 days
+
   // Window (seconds) to look ahead for due cards
   previewWindow: 3600, // 1 hour
 

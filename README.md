@@ -151,8 +151,11 @@ For example:
 
 ```
 {
+  // Minimum time between related cards (seconds)
+  minTimeBetweenRelatedCards: 432000, // 5 days
+
   // Window (seconds) to look ahead for due cards
-  previewWindow: 3600, // 1 hour
+  previewWindow: 0,
 
   // Backup retention time (milliseconds)
   backupRetention: 605800000, // 7 days
