@@ -98,13 +98,14 @@ function showUsage () {
 }
 
 function runServer (opts, args) {
-  console.log('run server ', opts, args);
+  if (opts.debug) console.debug('run server ', opts, args);
 
   const srf = require('../lib/srf')({
     dir: opts.dir,
     database: opts.database,
     media: opts.media,
-    config: opts.config
+    config: opts.config,
+    debug: opts.debug
   });
 
   process.on('SIGINT', () => {

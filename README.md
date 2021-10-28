@@ -139,70 +139,109 @@ The directory is created if it doesn't exist.
 
 ### Config
 
-Scheduling is tuned by configuration parameters in file
-`~/.local/share/srf/config`. The file
-content must be in [JSON5](https://json5.org/) format.
+Configuration files may be put in several places:
 
-This is out of date: I have revised the database schema and various aspects
-of the scheduler, but haven't settled the changes yet so haven't updated
-the documentation.
+ * /etc/srf
+ * /etc/srf.ini
+ * /etc/srf.json
+ * /etc/srf/config
+ * /etc/srf/config.ini
+ * /etc/srf/config.json
+ * ~/.config/srf
+ * ~/.config/srf.ini
+ * ~/.config/srf.json
+ * ~/.config/srf/config
+ * ~/.config/srf/config.ini
+ * ~/.config/srf/config.json
+ * ~/.srf
+ * ~/.srf.ini
+ * ~/.srf.json
+ * ~/.srf/config
+ * ~/.srf/config.ini
+ * ~/.srf/config.json
+ * .srf
+ * .srf.ini
+ * .srf.json
+
+And, finally, `config.json` in the directory containing the data
+(~/.local/share/srf by default but may be set by option --directory).
+
+Files with extension `.json` and files without extension are parsed as JSON
+after stripping comments from them.
+
+Files with extension `.ini` are parsed as `ini` files.
+
+Parameters which are durations may be specified as integer seconds or a
+string with units: `seconds`, `minutes`, `hours`, `days`, `weeks` or
+`years`, or any prefix of one of these. The units may be separated from the
+number by spaces.
 
 For example:
+ * 10 // 10 seconds
+ * "10 seconds"
+ * "5 days"
+ * "1 day"
+ * "1 d"
+ * "1d"
+
+Other parameters are integers.
+
+For example, a json file might be:
 
 ```
 {
   // Minimum time between related cards (seconds)
-  minTimeBetweenRelatedCards: 432000, // 5 days
+  "minTimeBetweenRelatedCards": "5 days"
 
   // Window (seconds) to look ahead for due cards
-  previewWindow: 0,
+  "previewWindow": 0,
 
   // Backup retention time (milliseconds)
-  backupRetention: 605800000, // 7 days
+  "backupRetention": "7 days",
 
   // Minimum number of backups to keep
-  minBackups: 2,
+  "minBackups": 2,
 
   // Maximum number of backups to keep
-  maxBackups: 10,
+  "maxBackups": 10,
 
   // The maximum time for viewing a card (seconds).
   // Beyond this, any answer is converted to 'again'
-  maxViewTime: 120,
+  "maxViewTime": "2 minutes",
 
   // The maximum interval to when a card is due.
-  maxInterval: 31536000,  // 365 days
+  "maxInterval": "1 year",
 
   // The interval (seconds) beyond which a card is considered 'mature'
-  matureThreshold: 1814400, // 21 days
+  "matureThreshold": "21 days",
 
   // The window (seconds) in which to average percent correct reviews
-  percentCorrectWindow: 1209600, // 14 days
+  "percentCorrectWindow": "14 days",
 
   // The interval (seconds) between correct factor adjustments
-  correctFactorAdjustmentInterval: 86400, // 24 hours
+  "correctFactorAdjustmentInterval": "1 day",
 
   // The factor used to add dispersion to the due time.
   // As percentage of the total interval.
-  dispersionFactor: 5,
+  "dispersionFactor": 5,
 
   // The maximum number of new cards in 24 hours.
-  maxNewCards: 20,
+  "maxNewCards": 20,
 
   // Study time (seconds) per day beyond which no new cards
-  studyTimeLimit: 3600, // 1 hour
+  "studyTimeLimit": "1 hour",
 
   // The maximum value factor may take.
-  maxFactor: 10000,
+  "maxFactor": 10000,
 
   // minimum intervals according to responses to reviews
-  againMinInterval: 10,
-  hardMinInterval: 30,
-  goodMinInterval: 60,
-  easyMinInterval: 605800, // 7 days
+  "againMinInterval": 20,
+  "hardMinInterval": 30,
+  "goodMinInterval": 60,
+  "easyMinInterval": "7 days",
 
   // The percentage by which to reduce interval after response 'Hard'
-  hardIntervalFactor: 50
+  "hardIntervalFactor": 50
 }
 ```
 

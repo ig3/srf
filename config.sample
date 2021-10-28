@@ -1,63 +1,55 @@
-// Some common intervals in seconds:
-//        3600 1 hour
-//       14400 4 hours
-//       86400 24 hours
-//      432000 5 days
-//      605800 7 days
-//     1209600 14 days
-//     1814400 21 days
-//    31536000 365 days
 {
   // Minimum time between related cards (seconds)
-  minTimeBetweenRelatedCards: 432000, // 5 days
+  "minTimeBetweenRelatedCards": "5 days",
 
   // Window (seconds) to look ahead for due cards
-  previewWindow: 3600, // 1 hour
+  "previewWindow": "1 hour",
 
   // Backup retention time (milliseconds)
-  backupRetention: 605800000, // 7 days
+  "backupRetention": "7 days",
 
   // Minimum number of backups to keep
-  minBackups: 2,
+  "minBackups": 2,
 
   // Maximum number of backups to keep
-  maxBackups: 10,
+  "maxBackups": 10,
 
   // The maximum time for viewing a card (seconds).
   // Beyond this, any answer is converted to 'again'
-  maxViewTime: 120,
+  "maxViewTime": "2 minutes",
 
   // The maximum interval to when a card is due.
-  maxInterval: 31536000,  // 365 days
+  "maxInterval": "1 year",
 
   // The interval (seconds) beyond which a card is considered 'mature'
-  matureThreshold: 1814400, // 21 days
+  "matureThreshold": "21 days",
 
   // The window (seconds) in which to average percent correct reviews
-  percentCorrectWindow: 1209600, // 14 days
+  "percentCorrectWindow": "14 days",
 
   // The interval (seconds) between correct factor adjustments
-  correctFactorAdjustmentInterval: 86400, // 24 hours
+  "correctFactorAdjustmentInterval": "1 day",
 
   // The factor used to add dispersion to the due time.
   // As percentage of the total interval.
-  dispersionFactor: 5,
+  "dispersionFactor": 5,
 
   // The maximum number of new cards in 24 hours.
-  maxNewCards: 20,
+  "maxNewCards": 20,
 
   // Study time (seconds) per day beyond which no new cards
-  studyTimeLimit: 3600, // 1 hour
+  "studyTimeLimit": "1 hour",
 
   // The maximum value factor may take.
-  maxFactor: 10000,
+  "maxFactor": 10000,
 
   // minimum intervals according to responses to reviews
-  againMinInterval: 10,
-  hardMinInterval: 30,
-  goodMinInterval: 60,
-  easyMinInterval: 605800, // 7 days
+  "againMinInterval": 10,
+  "hardMinInterval": 30,
+  "goodMinInterval": 60,
+  "easyMinInterval": "7 days",
 
   // The percentage by wich to reduce interval after response 'Hard'
-  hardIntervalFactor: 50
+  "againIntervalFactor": 10,
+  "hardIntervalFactor": 50
 }
