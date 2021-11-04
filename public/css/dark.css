@@ -8,6 +8,7 @@ h1 {
 .home {
   color: lightgrey;
   background: #222;
+  min-height: 100%;
 }
 .card {
   min-height: 100%;
