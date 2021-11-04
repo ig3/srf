@@ -156,7 +156,8 @@ function runServer (opts, args) {
     const newCardsRemaining = srf.getCountNewCardsRemaining();
     const config = srf.getConfig();
     const ratio = statsPast24Hours.time / config.studyTimeLimit;
-    const mode = (ratio < 1.5) ? 'go' : (ratio < 2) ? 'slow' : 'stop';
+    // const mode = (dueNow === 0 || ratio > 2) ? 'stop' : (ratio > 1.5) ? 'slow' : 'go';
+    const mode = (ratio > 2) ? 'stop' : (ratio > 1.5) ? 'slow' : 'go';
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     res.render('home', {
@@ -255,7 +256,7 @@ function runServer (opts, args) {
       const statsPast24Hours = srf.getStatsPast24Hours();
       const config = srf.getConfig();
       const ratio = statsPast24Hours.time / config.studyTimeLimit;
-      const mode = (ratio < 1.5) ? 'go' : (ratio < 2) ? 'slow' : 'stop';
+      const mode = (ratio > 2) ? 'stop' : (ratio > 1.5) ? 'slow' : 'go';
       res.render('front', {
         card: card,
         front: card.front,
@@ -283,7 +284,7 @@ function runServer (opts, args) {
       const statsPast24Hours = srf.getStatsPast24Hours();
       const config = srf.getConfig();
       const ratio = statsPast24Hours.time / config.studyTimeLimit;
-      const mode = (ratio < 1.5) ? 'go' : (ratio < 2) ? 'slow' : 'stop';
+      const mode = (ratio > 2) ? 'stop' : (ratio > 1.5) ? 'slow' : 'go';
       res.render('back', {
         card: card,
         back: card.back,
