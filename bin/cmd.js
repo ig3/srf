@@ -146,9 +146,7 @@ function runServer (opts, args) {
     const nextCard = srf.getNextCard();
     const studyNow = !!nextCard;
     const statsPast24Hours = srf.getStatsPast24Hours();
-    statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     const statsNext24Hours = srf.getStatsNext24Hours();
-    statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     const timeToNextDue = tc.seconds((nextDue || now) - now);
     const percentCorrect = srf.getPercentCorrect();
     const overdue = srf.getCountCardsOverdue();
@@ -156,6 +154,11 @@ function runServer (opts, args) {
     const chart1Data = srf.getChartStudyTime();
     const newCardsSeen = srf.getCountNewCardsPast24Hours();
     const newCardsRemaining = srf.getCountNewCardsRemaining();
+    const config = srf.getConfig();
+    const ratio = statsPast24Hours.time / config.studyTimeLimit;
+    const mode = (ratio < 1.5) ? 'go' : (ratio < 2) ? 'slow' : 'stop';
+    statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
+    statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     res.render('home', {
       viewedToday: viewedToday,
       studyTimeToday: Math.floor(studyTimeToday / 60),
@@ -174,7 +177,9 @@ function runServer (opts, args) {
       percentCorrect: percentCorrect.toFixed(2),
       overdue: overdue,
       newCardsSeen: newCardsSeen,
-      newCardsRemaining: newCardsRemaining
+      newCardsRemaining: newCardsRemaining,
+      mode: mode,
+      theme: config.theme
     });
   });
 
@@ -217,7 +222,8 @@ function runServer (opts, args) {
       chart3Data: JSON.stringify(chart3Data),
       chart4Data: JSON.stringify(chart4Data),
       chart5Data: JSON.stringify(chart5Data),
-      chart6Data: JSON.stringify(chart6Data)
+      chart6Data: JSON.stringify(chart6Data),
+      theme: config.theme
     });
   });
 
@@ -246,11 +252,17 @@ function runServer (opts, args) {
       card.front = srf.render(template.front, fields);
       fields.FrontSide = card.front;
       card.back = srf.render(template.back, fields);
+      const statsPast24Hours = srf.getStatsPast24Hours();
+      const config = srf.getConfig();
+      const ratio = statsPast24Hours.time / config.studyTimeLimit;
+      const mode = (ratio < 1.5) ? 'go' : (ratio < 2) ? 'slow' : 'stop';
       res.render('front', {
         card: card,
         front: card.front,
         template: template,
-        cardStartTime: cardStartTime
+        cardStartTime: cardStartTime,
+        mode: mode,
+        theme: config.theme
       });
     } else {
       res.redirect('/');
@@ -261,18 +273,28 @@ function runServer (opts, args) {
     const cardStartTime = parseInt(req.query.startTime);
     const cardid = parseInt(req.params.id);
     const card = srf.getCard(cardid);
-    const fields = srf.getFields(card.fieldsetid);
-    const template = srf.getTemplate(card.templateid);
-    card.template = template;
-    card.front = srf.render(template.front, fields);
-    fields.FrontSide = card.front;
-    card.back = srf.render(template.back, fields);
-    res.render('back', {
-      card: card,
-      back: card.back,
-      template: card.template,
-      cardStartTime: cardStartTime
-    });
+    if (card) {
+      const fields = srf.getFields(card.fieldsetid);
+      const template = srf.getTemplate(card.templateid);
+      card.template = template;
+      card.front = srf.render(template.front, fields);
+      fields.FrontSide = card.front;
+      card.back = srf.render(template.back, fields);
+      const statsPast24Hours = srf.getStatsPast24Hours();
+      const config = srf.getConfig();
+      const ratio = statsPast24Hours.time / config.studyTimeLimit;
+      const mode = (ratio < 1.5) ? 'go' : (ratio < 2) ? 'slow' : 'stop';
+      res.render('back', {
+        card: card,
+        back: card.back,
+        template: card.template,
+        cardStartTime: cardStartTime,
+        mode: mode,
+        theme: config.theme
+      });
+    } else {
+      res.redirect('/');
+    }
   });
 
   // Responses to reviews are posted
