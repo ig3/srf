@@ -63,6 +63,13 @@
         }
       });
     }
+
+    function replay () {
+      let elements = document.getElementsByTagName('audio');
+      for (let element of elements) {
+        element.play();
+      }
+    }
   </script>
 </body>
 </html>

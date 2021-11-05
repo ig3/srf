@@ -7,26 +7,40 @@ h1,h2,h3 {
   padding-top: 5px;
   padding-bottom: 0;
 }
+br {
+  display: block;
+  height: 0;
+}
 .home {
   color: lightgrey;
   background: #222;
   min-height: 100%;
   padding-left: 5px;
 }
-.card {
+#content {
   min-height: 100%;
   box-sizing: border-box;
+  background: #222;
+  color: lightgray;
+  text-align: center;
 }
 .buttons {
   padding-top: 5px;
   padding-bottom: 10px;
   width: 100%;
 }
-img {
+#card-contents img {
   max-width: 50%;
   max-height: 50%;
 }
 audio {
-  width: 100%;
-  margin-top: 10px;
+  display: none;
+}
+#signal {
+  position: fixed;
+  right: 0;
+  text-align: right;
+}
+#signal img {
+  height: 24px;
 }

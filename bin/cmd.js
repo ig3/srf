@@ -258,13 +258,15 @@ function runServer (opts, args) {
       const config = srf.getConfig();
       const ratio = statsPast24Hours.time / config.studyTimeLimit;
       const mode = (ratio > 2) ? 'stop' : (ratio > 1.5) ? 'slow' : 'go';
+      statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
       res.render('front', {
         card: card,
         front: card.front,
         template: template,
         cardStartTime: cardStartTime,
         mode: mode,
-        theme: config.theme
+        theme: config.theme,
+        statsPast24Hours: statsPast24Hours
       });
     } else {
       res.redirect('/');
@@ -286,13 +288,15 @@ function runServer (opts, args) {
       const config = srf.getConfig();
       const ratio = statsPast24Hours.time / config.studyTimeLimit;
       const mode = (ratio > 2) ? 'stop' : (ratio > 1.5) ? 'slow' : 'go';
+      statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
       res.render('back', {
         card: card,
         back: card.back,
         template: card.template,
         cardStartTime: cardStartTime,
         mode: mode,
-        theme: config.theme
+        theme: config.theme,
+        statsPast24Hours: statsPast24Hours
       });
     } else {
       res.redirect('/');

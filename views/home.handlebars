@@ -13,7 +13,10 @@
   }
 </style>
 <div class="home {{mode}}">
-<img height="24px" src="/img/{{theme}}-{{mode}}.png" style="position: fixed; right: 0">
+<div id="signal">
+<img src="/img/{{theme}}-{{mode}}.png"></br>
+{{statsPast24Hours.time}}
+</div>
 <h1>Spaced Repetition Flashcards</h1>
 <table>
 <thead>

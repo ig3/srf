@@ -1,6 +1,11 @@
-<div class="card {{mode}}">
-<img src="/img/{{theme}}-{{mode}}.png" height="24px" style="position: fixed; right: 0">
+<div id="content">
+<div id="signal">
+<img src="/img/{{theme}}-{{mode}}.png"></br>
+{{statsPast24Hours.time}}
+</div>
+<div id="card-contents" class="card">
 {{{back}}}
+</div>
 <div class="buttons">
 <span style="font-size: 15px">{{template.id}}</span>
 <button onclick="review('again')" class="shortcut_j">Again</button>
@@ -9,6 +14,7 @@
 <button onclick="review('easy')" class="shortcut_semicolon">Easy</button>
 <a href="/help" target="_blank"><button>Help</button></a>
 <a onclick="window.open('/fieldset/{{card.fieldsetid}}', 'Edit Fieldset', 'height=800,width=600');" class="shortcut_e" target="_blank"><button>Edit</button></a>
+<button onclick="replay()" class="shortcut_r">Replay</button>
 <a href="/" class="shortcut_b"><button>Break</button></a>
 </div>
 </div>

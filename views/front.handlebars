@@ -1,11 +1,17 @@
-<div class="card {{mode}}">
-<img src="/img/{{theme}}-{{mode}}.png" height="24px" style="position: fixed; right: 0">
+<div id="content">
+<div id="signal">
+<img src="/img/{{theme}}-{{mode}}.png"></br>
+{{statsPast24Hours.time}}
+</div>
+<div id="card-content" class="card">
 {{{front}}}
+</div>
 <div class="buttons">
 <span style="font-size: 15px">{{template.id}}</span>
 <a href="/card/{{card.id}}/back?startTime={{cardStartTime}}" class="default_action"><button>Flip</button></a>
 <a href="/help" target="_blank"><button>Help</button></a>
 <a onclick="window.open('/fieldset/{{card.fieldsetid}}', 'Edit Fieldset', 'height=800,width=600');" class="shortcut_e" target="_blank"><button>edit</button></a>
+<button onclick="replay()" class="shortcut_r">Replay</button>
 <a href="/" class="shortcut_s"><button>Stop</button></a>
 </div>
 </div>
