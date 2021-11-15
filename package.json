@@ -35,13 +35,13 @@
   },
   "devDependencies": {
     "c8": "^7.10.0",
-    "eslint-config-entrain": "^2.0.3",
+    "@ig3/eslint-config-entrain": "^2.0.5",
     "multi-tape": "^1.6.1",
     "tape": "^5.3.1",
     "tmp": "^0.2.1"
   },
   "eslintConfig": {
-    "extends": "entrain",
+    "extends": "@ig3/eslint-config-entrain",
     "ignorePatterns": [
       "public/js/sorttable.js"
     ]
