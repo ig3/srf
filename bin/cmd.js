@@ -266,7 +266,8 @@ function runServer (opts, args) {
         cardStartTime: cardStartTime,
         mode: mode,
         theme: config.theme,
-        statsPast24Hours: statsPast24Hours
+        statsPast24Hours: statsPast24Hours,
+        maxViewTime: config.maxViewTime
       });
     } else {
       res.redirect('/');
@@ -296,7 +297,8 @@ function runServer (opts, args) {
         cardStartTime: cardStartTime,
         mode: mode,
         theme: config.theme,
-        statsPast24Hours: statsPast24Hours
+        statsPast24Hours: statsPast24Hours,
+        maxViewTime: config.maxViewTime
       });
     } else {
       res.redirect('/');
