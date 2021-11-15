@@ -126,7 +126,7 @@ function runServer (opts, args) {
   const hbsFormHelper = require('handlebars-form-helper');
   const hbs = expressHandlebars.create({});
   hbsFormHelper.registerHelpers(hbs.handlebars, { namespace: 'form' });
-  app.engine('handlebars', expressHandlebars());
+  app.engine('handlebars', expressHandlebars.engine());
   app.set('views', path.join(__dirname, '..', 'views'));
   app.set('view engine', 'handlebars');
   app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -135,6 +135,7 @@ function runServer (opts, args) {
   app.use(express.json({ limit: '50MB' }));
 
   app.get('/', (req, res) => {
+    console.log('get home');
     const now = Math.floor(Date.now() / 1000);
     const studyTimeToday = srf.getStudyTimeToday();
     const viewedToday = srf.getCountCardsViewedToday();
@@ -160,6 +161,7 @@ function runServer (opts, args) {
     const mode = (ratio > 2) ? 'stop' : (ratio > 1.5) ? 'slow' : 'go';
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
+    console.log('render');
     res.render('home', {
       viewedToday: viewedToday,
       studyTimeToday: Math.floor(studyTimeToday / 60),
