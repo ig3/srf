@@ -422,6 +422,7 @@ New cards are presented if:
 
  * Daily study time is less than config.studyTimeTarget, including:
    * total study time in the past 24 hours
+   * average study time per day in the pas 14 days
    * estimated study time in the next 24 hours
    * estimated average daily study time in the next 5 days
  * There are no cards due more than 24 hours ago (i.e. overdue)
