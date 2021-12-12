@@ -1,4 +1,5 @@
 # srf
+Web server providing
 Spaced Repetition Flashcards,
 based loosely on [Anki](https://github.com/ankitects/anki).
 
