@@ -163,6 +163,8 @@ function runServer (opts, args) {
     res.render('home', {
       viewedToday: viewedToday,
       studyTimeToday: Math.floor(studyTimeToday / 60),
+      targetStudyTime: (config.studyTimeLimit/60).toFixed(0),
+      averageStudyTime: (srf.getAverageStudyTime(14) / 60).toFixed(0),
       dueToday: dueToday,
       dueStudyTime: Math.floor(dueStudyTime / 60),
       totalToday: viewedToday + dueToday,
