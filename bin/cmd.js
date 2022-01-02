@@ -291,10 +291,12 @@ function runServer (opts, args) {
       fields.FrontSide = card.front;
       card.back = srf.render(template.back, fields);
       const statsPast24Hours = srf.getStatsPast24Hours();
+      const statsNext24Hours = srf.getStatsNext24Hours();
       const config = srf.getConfig();
       const ratio = statsPast24Hours.time / config.studyTimeLimit;
       const mode = (ratio > 2) ? 'stop' : (ratio > 1.5) ? 'slow' : 'go';
       statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
+      statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
       res.render('back', {
         card: card,
         back: card.back,
@@ -303,6 +305,7 @@ function runServer (opts, args) {
         mode: mode,
         theme: config.theme,
         statsPast24Hours: statsPast24Hours,
+        statsNext24Hours: statsNext24Hours,
         maxViewTime: config.maxViewTime
       });
     } else {
