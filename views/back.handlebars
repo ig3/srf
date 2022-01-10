@@ -8,10 +8,10 @@
 </div>
 <div class="buttons">
 <span style="font-size: 15px">{{template.id}}</span>
-<button onclick="review('again')" class="shortcut_j">Again</button>
-<button onclick="review('hard')" class="shortcut_k">Hard</button>
-<button onclick="review('good')" class="shortcut_l">Good</button>
-<button onclick="review('easy')" class="shortcut_semicolon">Easy</button>
+<button onclick="review('again')" class="shortcut_j">Again ({{intervals.again}})</button>
+<button onclick="review('hard')" class="shortcut_k">Hard ({{intervals.hard}})</button>
+<button onclick="review('good')" class="shortcut_l">Good ({{intervals.good}})</button>
+<button onclick="review('easy')" class="shortcut_semicolon">Easy ({{intervals.easy}})</button>
 <a href="/help" target="_blank"><button>Help</button></a>
 <a onclick="window.open('/fieldset/{{card.fieldsetid}}', 'Edit Fieldset', 'height=800,width=600');" class="shortcut_e" target="_blank"><button>Edit</button></a>
 <button onclick="replay()" class="shortcut_p">Play</button>

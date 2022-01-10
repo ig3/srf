@@ -297,6 +297,11 @@ function runServer (opts, args) {
       const mode = (ratio > 2) ? 'stop' : (ratio > 1.5) ? 'slow' : 'go';
       statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
       statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
+      const intervals = srf.getIntervals(card);
+      intervals.again = srf.formatSeconds(intervals.again);
+      intervals.hard = srf.formatSeconds(intervals.hard);
+      intervals.good = srf.formatSeconds(intervals.good);
+      intervals.easy = srf.formatSeconds(intervals.easy);
       res.render('back', {
         card: card,
         back: card.back,
@@ -306,7 +311,8 @@ function runServer (opts, args) {
         theme: config.theme,
         statsPast24Hours: statsPast24Hours,
         statsNext24Hours: statsNext24Hours,
-        maxViewTime: config.maxViewTime
+        maxViewTime: config.maxViewTime,
+        intervals: intervals
       });
     } else {
       res.redirect('/');
