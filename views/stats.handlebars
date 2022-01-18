@@ -13,17 +13,17 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
 </div>
 <div class="charts">
 <h3>Card Views per day</h3>
-<div id="chart1" style="width:600px;height:300px;"></div>
+<div id="chart1" class="chart"></div>
 <h3>Minutes Studied per day</h3>
-<div id="chart2" style="width:600px;height:300px;"></div>
+<div id="chart2" class="chart"></div>
 <h3>Cards Due per day</h3>
-<div id="chart3" style="width:600px;height:300px;"></div>
+<div id="chart3" class="chart"></div>
 <h3>Cards per interval</h3>
-<div id="chart4" style="width:600px;height:300px;"></div>
+<div id="chart4" class="chart"></div>
 <h3>New Cards per day</h3>
-<div id="chart5" style="width:600px;height:300px;"></div>
+<div id="chart5" class="chart"></div>
 <h3>Matured &amp; Lapsed</h3>
-<div id="chart6" style="width:600px;height:300px;"></div>
+<div id="chart6" class="chart"></div>
 </div>
 <script src="https://cdn.plot.ly/plotly-latest.min.js" charset="utf-8"></script>
 <script>
@@ -90,7 +90,6 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
   Plotly.newPlot(chart6,
     {{{chart6Data}}}, {
       margin: {t: 0},
-      width: 700,
       xaxis: { title: 'day#' },
       yaxis: {
         title: 'matured, lapsed, net (cards)',
@@ -103,8 +102,10 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
         range: [ r2min, r2max ]
       },
       legend: {
-        x: 1.13,
-        y: 0.5
+        orientation: 'h',
+        x: 0.2,
+        xanchor: 'left',
+        y: 1.1
       }
     }
   );

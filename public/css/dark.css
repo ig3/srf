@@ -1,6 +1,9 @@
 body,html {
   height: 100%;
   margin: 0;
+  padding: 0;
+  background: #222;
+  box-sizing: border-box;
 }
 h1,h2,h3 {
   margin: 0;
@@ -13,21 +16,21 @@ br {
 }
 .home {
   color: lightgrey;
-  background: #222;
   min-height: 100%;
-  padding-left: 5px;
+  box-sizing: border-box;
 }
 #content {
   min-height: 100%;
   box-sizing: border-box;
+  padding: 5px;
   background: #222;
   color: lightgray;
-  text-align: center;
 }
 .buttons {
   padding-top: 5px;
   padding-bottom: 10px;
   width: 100%;
+  text-align: center;
 }
 #card-contents img {
   max-width: 50%;
@@ -43,4 +46,13 @@ audio {
 }
 #signal img {
   height: 24px;
+}
+.chart {
+  height: 300px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+a:visited {
+  color: lightgray;
 }
