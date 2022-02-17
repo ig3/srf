@@ -244,6 +244,15 @@ function runServer (opts, args) {
     }
   });
 
+  app.get('/new', (req, res) => {
+    const card = srf.getNewCard();
+    if (card) {
+      res.redirect('/card/' + card.id + '/front');
+    } else {
+      res.redirect('/');
+    }
+  });
+
   app.get('/card/:id/front', (req, res) => {
     const cardid = parseInt(req.params.id);
     const card = srf.getCard(cardid);
