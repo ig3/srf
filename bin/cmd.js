@@ -196,6 +196,8 @@ function runServer (opts, args) {
     const cardsViewedToday = srf.getCountCardsViewedToday();
     const dueCount = srf.getCountCardsDueToday();
     const nextDue = srf.getNextDue() || now;
+    const percentCorrect = srf.getPercentCorrect();
+    const correctFactor = srf.getCorrectFactor();
 
     const chart1Data = srf.getChartCardsStudiedPerDay();
     const chart2Data = srf.getChartMinutesStudiedPerDay();
@@ -219,6 +221,8 @@ function runServer (opts, args) {
       averageTimePerCard: srf.getAverageStudyTimePerCard(),
       averageStudyTime: (srf.getAverageStudyTime(14) / 60).toFixed(2),
       newCardsPerDay: newCardsPerDay.toFixed(2),
+      percentCorrect: percentCorrect,
+      correctFactor: correctFactor,
       cardsSeen: cardsSeen,
       matureCards: matureCards,
       chart1Data: JSON.stringify(chart1Data),
