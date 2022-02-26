@@ -1,6 +1,6 @@
 # srf
 Web server providing
-Spaced Repetition Flashcards,
+[Spaced Repetition](https://en.wikipedia.org/wiki/Spaced_repetition) Flashcards,
 based loosely on [Anki](https://github.com/ankitects/anki).
 
 ## Background
