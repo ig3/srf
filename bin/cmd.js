@@ -148,7 +148,6 @@ function runServer (opts, args) {
     const statsPast24Hours = srf.getStatsPast24Hours();
     const statsNext24Hours = srf.getStatsNext24Hours();
     const timeToNextDue = tc.seconds((nextDue || now) - now);
-    const percentCorrect = srf.getPercentCorrect();
     const overdue = srf.getCountCardsOverdue();
 
     const chart1Data = srf.getChartStudyTime();
@@ -177,7 +176,7 @@ function runServer (opts, args) {
       viewedPast24Hours: statsPast24Hours.count,
       statsPast24Hours: statsPast24Hours,
       statsNext24Hours: statsNext24Hours,
-      percentCorrect: percentCorrect.toFixed(2),
+      percentCorrect: srf.getPercentCorrect().toFixed(2),
       overdue: overdue,
       newCardsSeen: newCardsSeen,
       newCardsRemaining: newCardsRemaining,
@@ -196,8 +195,6 @@ function runServer (opts, args) {
     const cardsViewedToday = srf.getCountCardsViewedToday();
     const dueCount = srf.getCountCardsDueToday();
     const nextDue = srf.getNextDue() || now;
-    const percentCorrect = srf.getPercentCorrect();
-    const correctFactor = srf.getCorrectFactor();
 
     const chart1Data = srf.getChartCardsStudiedPerDay();
     const chart2Data = srf.getChartMinutesStudiedPerDay();
@@ -221,8 +218,8 @@ function runServer (opts, args) {
       averageTimePerCard: srf.getAverageStudyTimePerCard(),
       averageStudyTime: (srf.getAverageStudyTime(14) / 60).toFixed(2),
       newCardsPerDay: newCardsPerDay.toFixed(2),
-      percentCorrect: percentCorrect,
-      correctFactor: correctFactor,
+      percentCorrect: srf.getPercentCorrect().toFixed(2),
+      correctFactor: srf.getCorrectFactor(),
       cardsSeen: cardsSeen,
       matureCards: matureCards,
       chart1Data: JSON.stringify(chart1Data),
