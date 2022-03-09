@@ -10,6 +10,11 @@ h1,h2,h3 {
   padding-top: 5px;
   padding-bottom: 0;
 }
+h1 img {
+  padding-left: 20px;
+  padding-right: 20px;
+  width: 60px;
+}
 br {
   display: block;
   height: 0;
@@ -19,12 +24,20 @@ br {
   min-height: 100%;
   box-sizing: border-box;
 }
+.home table {
+  padding-left: 20px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
 #content {
   min-height: 100%;
   box-sizing: border-box;
   padding: 5px;
   background: #222;
   color: lightgray;
+}
+#content .status {
+  padding: 20px;
 }
 .buttons {
   padding-top: 5px;
@@ -54,7 +67,7 @@ audio {
   height: 24px;
 }
 .chart {
-  height: 300px;
+  height: 250px;
   width: 100%;
   box-sizing: border-box;
 }
