@@ -266,6 +266,7 @@ function runServer (opts, args) {
       card.front = srf.render(template.front, fields);
       fields.FrontSide = card.front;
       card.back = srf.render(template.back, fields);
+      const dueNow = srf.getCountCardsDueNow();
       const statsPast24Hours = srf.getStatsPast24Hours();
       const statsNext24Hours = srf.getStatsNext24Hours();
       const config = srf.getConfig();
@@ -283,7 +284,8 @@ function runServer (opts, args) {
         theme: config.theme,
         statsPast24Hours: statsPast24Hours,
         statsNext24Hours: statsNext24Hours,
-        maxViewTime: config.maxViewTime
+        maxViewTime: config.maxViewTime,
+        dueNow: dueNow
       });
     } else {
       res.redirect('/');
@@ -301,6 +303,7 @@ function runServer (opts, args) {
       card.front = srf.render(template.front, fields);
       fields.FrontSide = card.front;
       card.back = srf.render(template.back, fields);
+      const dueNow = srf.getCountCardsDueNow();
       const statsPast24Hours = srf.getStatsPast24Hours();
       const statsNext24Hours = srf.getStatsNext24Hours();
       const config = srf.getConfig();
@@ -324,7 +327,8 @@ function runServer (opts, args) {
         statsPast24Hours: statsPast24Hours,
         statsNext24Hours: statsNext24Hours,
         maxViewTime: config.maxViewTime,
-        intervals: intervals
+        intervals: intervals,
+        dueNow: dueNow
       });
     } else {
       res.redirect('/');
