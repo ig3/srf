@@ -79,9 +79,9 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
   let miny1 = Infinity;
   let maxy2 = -Infinity;
   for (let i = chart6Data[0].y.length; i > 0; i--) {
-    if (chart6Data[0].y[i] > maxy1) maxy1 = chart6Data[0].y[i];
+    if (chart6Data[0].y[i] < miny1) miny1 = chart6Data[0].y[i];
     if (chart6Data[1].y[i] > maxy1) maxy1 = chart6Data[1].y[i];
-    if (chart6Data[2].y[i] < miny1) miny1 = chart6Data[2].y[i];
+    if (chart6Data[2].y[i] > maxy1) maxy1 = chart6Data[2].y[i];
     if (chart6Data[3].y[i] > maxy2) maxy2 = chart6Data[3].y[i];
   }
   const miny2 = maxy2 * miny1 / maxy1;
@@ -89,8 +89,21 @@ Next card is due in: {{timeToNextDue}} (hh:mm:ss.sss)
   const r1min = miny1 - (maxy1 - miny1) * 0.05;
   const r2max = maxy2 + (maxy2 - miny2) * 0.05;
   const r2min = miny2 - (maxy2 - miny2) * 0.05;
+  chart6Data[0].line = {
+    color: 'rgb(250, 200, 0)'
+  };
+  chart6Data[1].line = {
+    color: 'rgb(256, 50, 50)'
+  };
+  chart6Data[2].line = {
+    color: 'rgb(50, 128, 50)'
+  };
+  chart6Data[3].line = {
+    color: 'rgb(100, 100, 200)'
+  };
+  console.log('chart6Data: ', chart6Data);
   Plotly.newPlot(chart6,
-    {{{chart6Data}}}, {
+    chart6Data, {
       margin: {t: 0},
       xaxis: { title: 'day#' },
       yaxis: {
