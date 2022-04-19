@@ -20,9 +20,40 @@ The srf scheduler:
  * regulates the introduction of new cards to maintain constant study time
  * is written entirely in JavaScript and is easy to modify
 
-srf is able to import Anki decks that use only basic features of Anki. It
-provides only a small subset of Anki features but adequate for my purposes:
-studying language.
+srf is able to import Anki decks that use only basic features of Anki. Not
+all field and media types are supported, but enough for many decks / cards
+to work.
+
+## Comparison to Anki
+
+srf provides only a small subset of the features of Anki: enough for my
+purposes: studying language on a single device, but without support for
+synchronizing multiple devices or distinguishing decks / multiple topics of
+study. 
+
+The srf scheduler does not suffer from
+[Ease Hell](https://readbroca.com/anki/ease-hell/).
+
+The srf scheduler has an equivalent to Anki ease factor for each card
+but it is simpler: it is the
+[exponentially weighted moving average](https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average)
+of the weighted answers. The default answer weights are 0, 1, 2 and 4 for
+Again, Hard, Good and Easy and the default decay factor is 0.9, but these
+are all configurable. By default, the range of the ease factor is 0.0
+through 4.0: somewhat equivalent to Anki ease factors 0% to 400%. With srf
+the ease factor never gets 'stuck' at an unreasonably low setting. It
+always adapts to the recent ease of the card.
+
+The srf scheduler does not suffer from
+[Backlog Hell](https://iansworld-nz.blogspot.com/2022/04/anki-backlog-hell.html).
+
+The srf scheduler sorts cards for review first by interval (shorter first)
+then by due date. Thus you can review cards you are learning on time, even
+when you have a backlog. This keeps learning optimal, which is the best way
+to clear the backlog. Also, when you have a backlog, srf automatically
+stops presenting new cards. No need to fuss with it. You can choose to
+review new cards manually if you want, any time: backlog or not. But by
+default you only see new cards if you are caught up with study.
 
 ## Getting Started
 
@@ -45,6 +76,7 @@ The home page presents some basic study statistics:
  * The number of card views and minutes studied in the past 24 hours
  * The number of cards due and estimated minutes to study in the next 24
    hours
+ * Daily study time averaged over the past 14 days
  * The percentage of correct (not 'Again') responses to mature cards in the
    past 14 days
  * The number of cards currently overdue (due more than 24 hours ago)
@@ -60,21 +92,20 @@ Click it to study a card. After studying a card, the next card will be
 presented, until there are no more cards to be studied and the home page is
 displayed again.
 
-Cards become due for review at random times. If you don't study them
-immediately, they will accumulate, so you will sometimes have many cards
-due for review. It's like an
-[assembly line](https://www.youtube.com/watch?v=59BIB-2FVmM): you will
-sometimes be waiting for the next card to study, and you will sometimes
-have a backlog of cards to catch up. While you don't want to get too far
-behind, it is OK to accumulate cards to review. Studying to clear the
-backlog once per day will work well. While there is nothing wrong with
+The scheduler determines when a card is due to be studied. Each time a card
+is reviewed, the scheduler sets a new time when it is due to be studied
+again. The cards to be studied are all those which are past their due date
+and time. If it is more than 24 hours past their due date and time, they
+are considered overdue. 
+
+It's like an [assembly line](https://www.youtube.com/watch?v=59BIB-2FVmM):
+you will sometimes be waiting for the next card to study, and you will
+sometimes have a backlog of cards to catch up. While you don't want to get
+too far behind, it is OK to accumulate cards to review. Studying to clear
+the backlog once per day will work well. While there is nothing wrong with
 studying in multiple sessions each day, don't obsess about reviewing every
 card that comes due each day. It is OK to leave them until the next day, or
 even longer.
-
-If your backlog of cards to study is too large, new cards will not be
-presented until you clear your backlog. The system will match your study
-capacity.
 
 The data is in ~/.local/share/srf by default, including database (srf.db)
 and media files. The database in ~/.local/share/srf/srf.db. Media files
@@ -253,7 +284,28 @@ For example, a json file might be:
 }
 ```
 
-#### previewWindow
+#### theme
+
+default: dark
+
+There is only one theme: dark. But this is only a CSS file. This setting is
+just the name of the CSS file, less the `.css` extension.
+
+#### minTimeBetweenRelatedCards (seconds)
+
+default: 5 days
+
+A template set typically contains several templates. For each field set, a
+card will be produced for each template in the template set. Thus there
+will be several cards for each field set.
+
+The set of cards from a single field set are considered related. If one
+card from the set is reviewed, this is the minimum time before any other
+card from the set will be presented for review.
+
+#### previewWindow (seconds)
+
+default: 0
 
 This is the interval to look ahead of current time for due cards. If this
 is 0 then only cards currently due will be presented for review but if this
@@ -262,36 +314,55 @@ be presented for review. This will cause cards to be reviewed before their
 due time, somewhat defeating the spaced repetition algorithm but only
 within the window.
 
+The idea was to allow study until there were no cards due 'soon' (i.e. in
+the preview window) then take a break from study. It doesn't work well and
+I will probably remove this. I set this to 0 - disabling the feature by
+default.
+
 ####  backupRetention (milliseconds)
+
+default: 30 days
 
 The time to retain database backups. Backups older than this will be
 deleted.
 
 #### minBackups
 
+default: 2
+
 The minimum number of backups to retain, regardless of their age.
 
 #### maxBackups
 
+default: 10
+
 The maximum number of backups to retain, regardless of their age.
 
-#### maxViewTime
+#### maxViewTime (seconds)
+
+default: 2 minutes
 
 The maximum time for viewing a card. If a card is viewed for longer than
 this ease will be forced to 'again'.
 
-#### maxInterval
+#### maxInterval (seconds)
+
+default: 1 year
 
 The maximum interval (time until next review) for a card. Note that the
 actual maximum time until next review can be a bit larger than this due to
 dispersion of due times.
 
-#### matureThreshold
+#### matureThreshold (seconds)
+
+default: 21 days
 
 The interval beyond which cards are considered 'mature'. This doesn't
 affect reviews. It only affects some of the statistics.
 
-#### percentCorrectWindow
+#### percentCorrectWindow (seconds)
+
+default: 1 month
 
 The percentage of 'correct' responses (not 'Again') is a factor in
 determining the intervals of cards. All responses within this window are
@@ -299,12 +370,17 @@ considered in determining the percentage.
 
 #### correctFactorAdjustmentInterval
 
+default: 1 day
+
 The correct factor is one of the factors used to determine the intervals of
 cards. This is the minimum time between adjustments of this factor.
 
   // The factor used to add dispersion to the due time.
   // As percentage of the total interval.
+
 #### dispersionFactor
+
+default: 5
 
 The dispersion factor is used to add a random amount to the interval when
 calculating the next due time of a card. This randomization helps to avoid
@@ -313,39 +389,91 @@ It is a percentage of the interval.
 
 #### maxNewCards
 
+default: 20
+
 The maximum number of new cards to be presented within 24 hours.
 
 #### studyTimeLimit
+
+default: 1 hour
 
 If the time spent studying during the past 24 hours or the estimated time
 to study cards due in the next 24 hours exceeds this limit then new cards
 will not be presented.
 
-#### maxFactor: 10000,
+#### againMinInterval (seconds)
 
-The 'factor' is one of the factors used to determine the interval between
-reviews. This is the maximum value of the 'factor'. 
-
-#### againMinInterval: 10,
+default: 10
 
 This is the mimum interval for cards after response 'Again'.
 
-#### hardMinInterval
+#### hardMinInterval (seconds)
+
+default: 30
 
 This is the minimum interval after responding 'Hard' to a review.
 
-#### goodMinInterval: 60,
+#### goodMinInterval: (seconds)
+
+default: 60
 
 This is the minimum interval after responding 'Good' to a review.
 
-#### easyMinInterval: 605800, // 7 days
+#### easyMinInterval (seconds)
+
+default: 1 day
 
 This is the minimum interval after responding 'Easy' to a review.
 
-#### hardIntervalFactor
+#### againIntervalFactor (percent)
+
+default: 10%
+
+After responding 'Again' to a review, the interval is decreased to this
+percentage of the previous interval.
+
+
+#### hardIntervalFactor (percent)
+
+default: 50%
 
 After responding 'Hard' to a review, the interval is reduced by this
-percentage of the current interval.
+percentage of the previous interval.
+
+#### weightAgain
+
+default: 0
+
+The weight of an answer of Again when calculating the exponentially
+weighted moving average of review replies.
+
+#### weightHard
+
+default: 1
+
+The weight of an answer of Hard when calculating the exponentially
+weighted moving average of review replies.
+
+#### weightGood
+
+default: 2
+
+The weight of an answer of Good when calculating the exponentially
+weighted moving average of review replies.
+
+#### weightEasy
+
+default: 4
+
+The weight of an answer of Easy when calculating the exponentially
+weighted moving average of review replies.
+
+#### decayFactor
+
+default: 0.9
+
+The decay factor when calculating the exponentially weighted moving average
+of review replies.
 
 ### Commands
 
@@ -375,49 +503,70 @@ srf metrics, particularly related to matured cards.
 
 Cards have a due time (seconds since the epoch).
 
-The cards to be studied are the cards with a due time before the current
-time. Cards with later due times are to be studied later / in the future.
+Cards are 'due' if their due time is before the current time.
 
-Of the cards to be studied, the next card to be studied is the card with
-shortest interval and earliest due time.
+Cards are 'overdue' if their due time is more than 24 hours before the
+current time.
 
-After a break (a few hours, a day, a week or whatever) there will be many
-cards due with various intervals. As you study, some of these will be
-scheduled to be seen again in the next few seconds, minutes or hours.
-Sorting by interval ensures that these cards are seen again as scheduled,
-rather than being blocked until the backlog of due cards (some of which
-might have much longer intervals) has been cleared. 
+The cards to be studied are the cards that are due: those with a due time
+before the current time.
+
+Cards have an interval: this is the time from when they were last studied
+until they are next due.
+
+When studying, the due cards are presented according to their intervals:
+from shortest to longest. When there is a backlog, this minimizes the delay
+to reviewing the cards with the shortest intervals. Delay to review is most
+significant for cards with shorter intervals and less significant for cards
+with longer intervals. If there are multiple cards with the same interval,
+they are presented in order of due time.
 
 When a card is seen, it can be updated with one of four buttons:
 
 ### Again
 For cards you don't remember.
 
-The interval is reduced to 2% of its previous interval or
-config.againInterval, whichever is greater.
+The interval is reduced to 10% (config.againIntervalFactor) of its previous
+interval or 20 seconds (config.againMinInterval), whichever is greater.
 
 ### Hard
 For cards you remember with difficulty.
 
-Interval is reduced to 50% of its previous interval or
-config.hardMinInterval, whichever is greater. The 50% factor is
-configurable with config.hardIntervalFactor, wich is 0.5 by default.
+Interval is reduced to 50% (config.hardIntervalFactor) of its previous
+interval or 30 seconds (config.hardMinInterval), whichever is greater.
 
 ### Good
 For cards that you remember well.
 
-Interval is changed by a factor which depends on recent history of the
-interval. The algorithm is a bit complex. I will document it at some point,
-but it is still in flux. See the code for details: intervalGood() and
-newFactor() in particular.
+Interval is changed by a factor that is a product of the card's ease factor
+and a global 'correct' factor.
+
+The card's ease factor is an exponentially weighted moving average of the
+weighted response values for the card. The parameters are configurable but
+by default the factor ranges from 0 to 4 with a fairly aggressive decay:
+there is much more weight on recent answers than older answers. This
+reflects how hard or easy the card has been recently. Ancient history
+doesn't matter. Most cards start out being hard and become easy with
+practice.
+
+The global 'correct' factor is adjusted towards an overall average of 90%
+of cards being Good or Easy. This is a linear average of answers over the
+past 1 month (config.percentCorrectWindow). If percent correct is more than
+90%, the factor is increased. If percent correct is less than 90% it is
+decreased. It is only adjusted once per day
+(config.correctFactorAdjustmentInterval). It is adjusted very slowly as
+there is a lot of delay to the consequences: rapid adjustment would lead to
+oscillations: wildly fluctuating factor.
+
+The new interval is simply the old interval multiplied by these two
+factors, then subject to minimums according to the answers (from 20 seconds
+for Again to 1 day for Easy) and a global maximum (default: 1 year).
 
 ### Easy
 For cards that you remember very well, that you are viewing too frequently.
 
-Similarly to Good, but with a more aggressive factor and a minimum interval
-of one week. The point of Easy is to avoid reviewing an easy card over and
-over. If it is still good or easy in a week, interval will grow quite
-quickly from there.
+Interval is changed by a factor that is 1.5 times the factor that would
+have been used if the answer had been Good.
 
 ## New Cards
 
