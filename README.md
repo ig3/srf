@@ -15,11 +15,14 @@ to the Anki internals. It was easier to write this and get the scheduler I
 wanted than to maintain the Anki addon that provided only part of what I
 wanted.
 
-srf is much simpler than Anki (i.e. has a small subset of Anki features)
-but the scheduler is better for my purposes: studying language. In
-particular, the scheduler prioritizes cards with shorter intervals over
-those with longer intervals and it automatically regulates the introduction
-of new cards to maintain a consistent, configurable study time per day.
+The srf scheduler:
+ * prioritizes cards with shorter intervals over those with longer intervals
+ * regulates the introduction of new cards to maintain constant study time
+ * is written entirely in JavaScript and is easy to modify
+
+srf is able to import Anki decks that use only basic features of Anki. It
+provides only a small subset of Anki features but adequate for my purposes:
+studying language.
 
 ## Getting Started
 
