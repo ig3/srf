@@ -550,10 +550,11 @@ doesn't matter. Most cards start out being hard and become easy with
 practice.
 
 The global 'correct' factor is adjusted towards an overall average of 90%
-of cards being Good or Easy. This is a linear average of answers over the
-past 1 month (config.percentCorrectWindow). If percent correct is more than
-90%, the factor is increased. If percent correct is less than 90% it is
-decreased. It is only adjusted once per day
+of cards with an interval more than 21 days (config.matureThreshold) being
+Hard, Good or Easy (i.e. not Again). This is a linear average of answers
+over the past 1 month (config.percentCorrectWindow). If percent correct is
+more than 90%, the factor is increased. If percent correct is less than 90%
+it is decreased. It is only adjusted once per day
 (config.correctFactorAdjustmentInterval). It is adjusted very slowly as
 there is a lot of delay to the consequences: rapid adjustment would lead to
 oscillations: wildly fluctuating factor.
