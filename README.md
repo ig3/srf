@@ -5,11 +5,15 @@ based loosely on [Anki](https://github.com/ankitects/anki).
 
 ## Background
 I used [Anki](https://github.com/ankitects/anki) for a couple of years but
-wanted a better scheduler. An Anki addon to add a scheduler
-was practically impossible and even simple modifications (e.g. [Anki -
-limit new](https://github.com/ig3/anki-limitnew)) were difficult and
-excessivly time consuming to maintain due to frequent changes in the Anki
-internals. So I wrote this.
+wanted to change the scheduler. An Anki addon to add a new scheduler
+was impossible because Anki addons are Python code but the scheduler
+implementation is partially in Python and partially in Rust back-end code.
+Even limited modifications to the existing schedulers
+(e.g. [Anki - limit new](https://github.com/ig3/anki-limitnew))
+were difficult and time consuming to maintain due to frequent changes
+to the Anki internals. It was easier to write this and get the scheduler I
+wanted than to maintain the Anki addon that provided only part of what I
+wanted.
 
 srf is much simpler than Anki (i.e. has a small subset of Anki features)
 but the scheduler is better for my purposes: studying language. In
