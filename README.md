@@ -90,7 +90,7 @@ The home page presents some basic study statistics:
 If there is a card available for study, the 'Study' button will appear.
 Click it to study a card. After studying a card, the next card will be
 presented, until there are no more cards to be studied and the home page is
-displayed again.
+displayed again. Alternatively, click the space bar: shortcut for Study.
 
 The scheduler determines when a card is due to be studied. Each time a card
 is reviewed, the scheduler sets a new time when it is due to be studied
@@ -108,8 +108,8 @@ card that comes due each day. It is OK to leave them until the next day, or
 even longer.
 
 The data is in ~/.local/share/srf by default, including database (srf.db)
-and media files. The database in ~/.local/share/srf/srf.db. Media files
-must bein in ~/.local/share/srf/media.
+and media files. The database is ~/.local/share/srf/srf.db. Media files
+are in ~/.local/share/srf/media.
 
 ## Command Synopsis
 
@@ -499,75 +499,131 @@ Fix a few inconsistencies in revlog:
 This isn't necessary but it ensures greater consistency between the various
 srf metrics, particularly related to matured cards.
 
+## Study
+
+When you study a card, its front side will be presented. 
+
+Review the front side and try to recall the corresponding back side.
+
+When you are ready, click the Flip button or click the space bar (shortcut
+for Flip).
+
+The back side of the card will be displayed, with buttons to indicate how
+well you remembered the card:
+
+ * Again: you didn't remember the card - you need to see it again soon
+ * Hard: you remembered the card but it was a bit hard to recall
+ * Good: you remembered the card 
+ * Easy: you remembered the card but it was too easy
+
+The card is then scheduled for review according to which button you
+clicked.
+
+If there is another card due for study, the front of it is displayed and
+you continue your study.
+
+If there are no more cards to be studied at this time the home page is
+displayed. You can review your progress and return to study when additional
+cards come due for study.
+
+Every card that is not 'new' has a time when it is due. If this is before
+the current time, you may study the card. If it is in the future, you may
+not study the card. You must wait until the card is due for review to study
+it.
+
+The only exception is new cards. They don't have a due time. Instead, they
+are presented when study time does not exceed configured limits, up to a
+maximum number of new cards per day.
+
 ## Scheduling
 
-Cards have a due time (seconds since the epoch).
+After a card has been studied you click Again, Hard, Good or Easy and the
+card is scheduled for review accordingly.
 
-Cards are 'due' if their due time is before the current time.
+The time from one review to the next is called the 'interval'. It is
+adjusted according to your study history and the button you click. The
+adjusted interval is then used to schedule the card for its next review.
 
-Cards are 'overdue' if their due time is more than 24 hours before the
-current time.
-
-The cards to be studied are the cards that are due: those with a due time
-before the current time.
-
-Cards have an interval: this is the time from when they were last studied
-until they are next due.
-
-When studying, the due cards are presented according to their intervals:
-from shortest to longest. When there is a backlog, this minimizes the delay
-to reviewing the cards with the shortest intervals. Delay to review is most
-significant for cards with shorter intervals and less significant for cards
-with longer intervals. If there are multiple cards with the same interval,
-they are presented in order of due time.
-
-When a card is seen, it can be updated with one of four buttons:
+All the scheduling parameters are configurable. The following sections
+describe the default configuration.
 
 ### Again
-For cards you don't remember.
 
-The interval is reduced to 10% (config.againIntervalFactor) of its previous
-interval or 20 seconds (config.againMinInterval), whichever is greater.
+This is for cards that you could not remember: that you want to see again
+soon. The card is scheduled to be reviewed in 10% of the time since it was
+last reviewed, with a minimum of 20 seconds.
 
 ### Hard
-For cards you remember with difficulty.
 
-Interval is reduced to 50% (config.hardIntervalFactor) of its previous
-interval or 30 seconds (config.hardMinInterval), whichever is greater.
+This is for cards that you could remember but they were too hard: it was
+too long since the last review and you want to see the card again sooner.
+The card is scheduled to be reviewed in 50% of the time since it was last
+reviewed, with a minimum of 30 seconds.
 
 ### Good
-For cards that you remember well.
 
-Interval is changed by a factor that is a product of the card's ease factor
-and a global 'correct' factor.
+This is for cards that you could remember well: the timing since the last
+review was good - it was not too hard and not too easy. The card will be
+scheduled for review after a longer interval than the time since it was
+last studied.
+
+The Interval is changed by a factor that is a product of the card's ease
+factor and a global 'correct' factor.
 
 The card's ease factor is an exponentially weighted moving average of the
-weighted response values for the card. The parameters are configurable but
-by default the factor ranges from 0 to 4 with a fairly aggressive decay:
-there is much more weight on recent answers than older answers. This
-reflects how hard or easy the card has been recently. Ancient history
-doesn't matter. Most cards start out being hard and become easy with
-practice.
+weighted response values for the card. The weights are 0, 1, 2 and 4 for
+Again, Hard, Good and Easy respectivley. The decay factor is 0.9.
 
-The global 'correct' factor is adjusted towards an overall average of 90%
-of cards with an interval more than 21 days (config.matureThreshold) being
-Hard, Good or Easy (i.e. not Again). This is a linear average of answers
-over the past 1 month (config.percentCorrectWindow). If percent correct is
-more than 90%, the factor is increased. If percent correct is less than 90%
-it is decreased. It is only adjusted once per day
-(config.correctFactorAdjustmentInterval). It is adjusted very slowly as
-there is a lot of delay to the consequences: rapid adjustment would lead to
-oscillations: wildly fluctuating factor.
+The ease factor is dominated by performance on recent reviews. Older
+reviews quickly become insignificant. But there is some 'history': the
+factor is larger for cards that have consistently been Good or Easy and
+smaller for cards that have consistently been Again or Hard.
 
-The new interval is simply the old interval multiplied by these two
-factors, then subject to minimums according to the answers (from 20 seconds
-for Again to 1 day for Easy) and a global maximum (default: 1 year).
+The range of the ease factor is 0 to 4. It is a simple multiplier for the
+interval. If you keep choosing Again, the factor will drop to 0. If you
+consistently click Good, the factor will rise to 2: the interval will
+double after each review. A mix of Good and Hard will result in a factor
+between 1 and 2, resulting in a slower increase in the interval.
+
+The card ease factor begins at 0 for a new card but will quickly climb with
+a few Good answers. It is expected that it will typically be between 1 and
+2 for a card past the initial learning phase.
+
+The card ease factor is specific to the card. Each card has its own history
+of answers and its own ease factor.
+
+One of the objectives of the scheduler is an overall recollection of 90% of
+mature cards. Mature cards are those with an interval of more than 21 days.
+For this calculation, Again is considered failure while Hard, Good and Easy
+are all success. So, the target is that you are able to achieve Hard, Good
+or Easy for 90% of reviews of mature cards.
+
+The percentage correct is calculated by a linear sliding window of answers
+in the past month.
+
+The 'correct' factor is adjusted up or down according to whether the
+average percent correct is greater than or less than 90%. It is adjusted
+slowly, only once per day.
+
+The 'correct' factor is not specific to any card. It is adjusted according
+to overall performance.
+
+The new interval is the product of the old interval multiplied by these two
+factors, then subject to minimum 60 seconds and maximum 1 year.
 
 ### Easy
-For cards that you remember very well, that you are viewing too frequently.
 
-Interval is changed by a factor that is 1.5 times the factor that would
-have been used if the answer had been Good.
+For cards that you remember very well: the time since the last review was
+too short and you don't want to see the card again so soon.
+
+The interval is changed by a factor that is 1.5 times the factor that would
+have been used if the answer had been Good, with a minimum interval of 1
+day.
+
+For example, if the interval since the last review was 1 day and for Good
+the factor would have been 2, resulting in a new interval of 2 days, the
+factor for Easy would be 3 (2 * 1.5), resulting in a new interval of 3
+days.
 
 ## New Cards
 
@@ -609,6 +665,15 @@ less than the target.
 In the event of an upcoming surge of due cards, no new cards will be
 presented, even if current study time is low.
 
+New cards start with a minimal interval. If they remain hard, the interval
+will continue minimal, until you have reviewed the card enough times to
+begin to recall it. Once you start clicking Good or Easy, the card's ease
+factor will increase and the rate of increase of the interval will increase
+accordingly. If the interval doubles at each review, with a series of Good
+responses, it will soon be many days between reviews. If the card is easy
+and the reviews become tedious, an answer of Easy will increase the
+interval more quickly, with a minimum of at least 1 day, and faster
+increases going forward.
 
 ## Templates
 
