@@ -445,35 +445,35 @@ percentage of the previous interval.
 default: 0
 
 The weight of an answer of Again when calculating the exponentially
-weighted moving average of review replies.
+weighted moving average of review replies: the card ease factor.
 
 #### weightHard
 
 default: 1
 
 The weight of an answer of Hard when calculating the exponentially
-weighted moving average of review replies.
+weighted moving average of review replies: the card ease factor.
 
 #### weightGood
 
 default: 2
 
 The weight of an answer of Good when calculating the exponentially
-weighted moving average of review replies.
+weighted moving average of review replies: the card ease factor.
 
 #### weightEasy
 
 default: 4
 
 The weight of an answer of Easy when calculating the exponentially
-weighted moving average of review replies.
+weighted moving average of review replies: the card ease factor.
 
 #### decayFactor
 
 default: 0.9
 
 The decay factor when calculating the exponentially weighted moving average
-of review replies.
+of review replies: the card ease factor.
 
 ### Commands
 
@@ -516,6 +516,10 @@ well you remembered the card:
  * Good: you remembered the card 
  * Easy: you remembered the card but it was too easy
 
+Keyboard shortcuts for these are 'j', 'k', 'l' and ';' respectively. These
+are hard coded, but it is easy to edit the templates in the views directory
+if you want different shortcuts.
+
 The card is then scheduled for review according to which button you
 clicked.
 
@@ -553,12 +557,23 @@ This is for cards that you could not remember: that you want to see again
 soon. The card is scheduled to be reviewed in 10% of the time since it was
 last reviewed, with a minimum of 20 seconds.
 
+For example, if you last reviewed a card 1 hour ago but couldn't remember
+it, it will be scheduled for review in 6 minutes. If you can't remember it
+again after 6 minutes then it will be scheduled for review in 20 seconds:
+the minimum interval. On the other hand, if you last reviewed a card 2
+months ago, it will be scheduled for review in about 1 week. If you then
+remember it OK and answer Good, it's interval will return to 2 months after
+just a few Good reviews at shorter intervals.
+
 ### Hard
 
 This is for cards that you could remember but they were too hard: it was
 too long since the last review and you want to see the card again sooner.
 The card is scheduled to be reviewed in 50% of the time since it was last
 reviewed, with a minimum of 30 seconds.
+
+For example, if you last reviewed a card 10 days ago but found it hard,
+then it will be scheduled for review in 5 days.
 
 ### Good
 
@@ -577,7 +592,8 @@ Again, Hard, Good and Easy respectivley. The decay factor is 0.9.
 The ease factor is dominated by performance on recent reviews. Older
 reviews quickly become insignificant. But there is some 'history': the
 factor is larger for cards that have consistently been Good or Easy and
-smaller for cards that have consistently been Again or Hard.
+smaller for cards that have consistently been Again or Hard. A mix of
+replies will result in an intermediate ease factor.
 
 The range of the ease factor is 0 to 4. It is a simple multiplier for the
 interval. If you keep choosing Again, the factor will drop to 0. If you
@@ -590,13 +606,26 @@ a few Good answers. It is expected that it will typically be between 1 and
 2 for a card past the initial learning phase.
 
 The card ease factor is specific to the card. Each card has its own history
-of answers and its own ease factor.
+of answers and its own ease factor. This addresses the issue that some
+cards are simply harder or easier than others. This will be reflected in
+their individual histories of answer and resulting ease factors. On the
+other hand, cards that were hard will generally become easy with practice
+and familiarity: they don't stay hard forever. On the other hand, a card
+that was easy may become hard if other, similar new cards are introduced:
+it may take time to learn the subtle differences and avoid confusing them.
+Thus the card ease factor is specific to each card and changes as your
+success recalling the card changes. And the ease factor changes how quickly
+the interval grows: from quite slowly (card ease factor around 1) to quite
+quickly (ease factors closer to 2 or more).
 
 One of the objectives of the scheduler is an overall recollection of 90% of
 mature cards. Mature cards are those with an interval of more than 21 days.
 For this calculation, Again is considered failure while Hard, Good and Easy
 are all success. So, the target is that you are able to achieve Hard, Good
 or Easy for 90% of reviews of mature cards.
+
+The card ease factor deals with differences between cards. The 'correct'
+factor deals with overall performance.
 
 The percentage correct is calculated by a linear sliding window of answers
 in the past month.
@@ -618,7 +647,7 @@ too short and you don't want to see the card again so soon.
 
 The interval is changed by a factor that is 1.5 times the factor that would
 have been used if the answer had been Good, with a minimum interval of 1
-day.
+day and maximum of 1 year.
 
 For example, if the interval since the last review was 1 day and for Good
 the factor would have been 2, resulting in a new interval of 2 days, the
