@@ -675,6 +675,47 @@ and the reviews become tedious, an answer of Easy will increase the
 interval more quickly, with a minimum of at least 1 day, and faster
 increases going forward.
 
+## Backlog
+
+It is normal to have a small backlog: a set of cards due to be studied. The
+only way to avoid it is to be studying all day: studying each card as soon
+as it is due. But this is impractical.
+
+If you have one study period each day (a perfectly reasonably schedule)
+then you will start each day with a small backlog: cards that came due
+since you finished studying the previous day.
+
+If you take a vaction (lucky you!), are busy with exams, work or other
+priorities, you might not study for a few days or a few weeks. When you
+return to study, you might have a large backlog: many cards due to study.
+
+The scheduling algorithm makes it easy to work through the backlog, whether
+it is small or large.
+
+When there is a set of cards due for review, the scheduler prioritises the
+cards with the shorter intervals. You will see short interval cards as soon
+after they are due as possible. Cards with longer intervals will be
+deferred until you have learned the cards with shorter intervals. In this
+way, the backlog will not interfere with review of the cards you are just
+learning: you will continue to learn effectively.
+
+If your backlog is too large, you may not be able to review all due cards
+in a day. It may take you several days to catch up. The scheduler will cope
+with this, continuing to prioritise the cards you are just learning. You
+may have to increase your daily study time a bit to catch up, but there is
+no need to catch up in a single day. You can work your way through the
+backlog over a few days.
+
+While you have a backlog (cards that were due more than 24 hours ago) no
+new cards will be shown. There is no value in making the backlog larger.
+You can return to learning new cards after you clear your backlog.
+
+But, of course, this is up to you. There is a New Card button on the home
+page. You can click this any time you like to view a new card, regardless
+of how larger, or small you backlog is. The New Card button will present a
+new card regardless of all the automatic limits on new cards.
+
+
 ## Templates
 
 Card templates are rendered with
