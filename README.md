@@ -560,23 +560,51 @@ The only exception is new cards. They don't have a due time. Instead, they
 are presented when study time does not exceed configured limits, up to a
 maximum number of new cards per day.
 
-## Scheduling
+## Scheduler
 
-After a card has been studied you click Again, Hard, Good or Easy and the
-card is scheduled for review accordingly.
+There are two aspects to the scheduler:
 
-The time from one review to the next is called the 'interval'. It is
-adjusted according to your study history and the button you click. The
-adjusted interval is then used to schedule the card for its next review.
+ 1. Determining when a card is due for review
+ 2. Determining which card is to be studied next
 
-All the scheduling parameters are configurable. The following sections
+### Determining when a card is due to be studied
+
+Cards that have been viewed at least once have a time that they are due for
+review. Technically, this is stored in the database as a date and time in
+UTC timezone.
+
+Cards that have never been viewed are called 'new' cards. They do not have
+a time that they are due for review. They have not been viewed and
+therefore cannot be reviewed, until after they have been viewed for the
+first time. For details of when new cards are first presented, see the next
+section. 
+
+The timing, from one review to the next, is the spacing of spaced
+repetition. The theory is that there is an optimum interval that minimizes
+the total number of reviews required until a card can be remembered
+indefinitely: until it has been learned. If the interval is too long, the
+card is forgotten before it is reviewed: it is not learned. If the interval
+is too short, the card is easily remembered but reviewing the card too
+often wastes time that could be used to learn other cards.
+
+Each time a card is studied, whether it is its initial viewing or a later
+review, the ease with which it was remembered is rated by clicking one of
+four buttons: Again, Hard, Good or Easy. The card is then scheduled for
+review, sooner or later, according to the ease with which it was
+remembered.
+
+The interval to the next review is determined based on the ease of the
+current and past reviews, and a factor that is adjusted to achieve an
+overall 90% successful review of mature cards. 
+
+(Almost) All the scheduling parameters are configurable. The following sections
 describe the default configuration.
 
-### Again
+#### Again
 
 This is for cards that you could not remember: that you want to see again
-soon. The card is scheduled to be reviewed in 10% of the time since it was
-last reviewed, with a minimum of 20 seconds.
+sooner rather than later. The card is scheduled to be reviewed in 10% of
+the time since it was last reviewed, with a minimum of 20 seconds.
 
 For example, if you last reviewed a card 1 hour ago but couldn't remember
 it, it will be scheduled for review in 6 minutes. If you can't remember it
@@ -584,9 +612,17 @@ again after 6 minutes then it will be scheduled for review in 20 seconds:
 the minimum interval. On the other hand, if you last reviewed a card 2
 months ago, it will be scheduled for review in about 1 week. If you then
 remember it OK and answer Good, it's interval will return to 2 months after
-just a few Good reviews at shorter intervals.
+just a few Good reviews at shorter intervals but if you continue to click
+Again, it will soon have minimum interval, until you can remember it again.
 
-### Hard
+It is normal that cards that were well remembered and progressed to longer
+intervals later become difficult to remember. The interval might simply be
+too long, leading to forgetting. But another reason is that other cards
+have been introduced, leading to confusion. This might cause failure to
+correctly remember a set of similar cards, until they have been reviewed
+enough that they are easily / reliably distinguished.
+
+#### Hard
 
 This is for cards that you could remember but they were too hard: it was
 too long since the last review and you want to see the card again sooner.
@@ -596,7 +632,7 @@ reviewed, with a minimum of 30 seconds.
 For example, if you last reviewed a card 10 days ago but found it hard,
 then it will be scheduled for review in 5 days.
 
-### Good
+#### Good
 
 This is for cards that you could remember well: the timing since the last
 review was good - it was not too hard and not too easy. The card will be
@@ -661,7 +697,7 @@ to overall performance.
 The new interval is the product of the old interval multiplied by these two
 factors, then subject to minimum 60 seconds and maximum 1 year.
 
-### Easy
+#### Easy
 
 For cards that you remember very well: the time since the last review was
 too short and you don't want to see the card again so soon.
@@ -675,23 +711,32 @@ the factor would have been 2, resulting in a new interval of 2 days, the
 factor for Easy would be 3 (2 * 1.5), resulting in a new interval of 3
 days.
 
-## New Cards
+### Determining which card is to be studied next
 
-All cards are initially considered to be 'new'. Technically, this is
-determined by card.interval being 0. After a card has been seen,
-its interval is set to some non-zero value: the time, in seconds, until
-the card is due to be seen again.
+When you study cards, the scheduler determines which card is to be studied
+next. There are two possiblities:
 
-New cards are presented if:
+ 1. a new card: a card that has not been studied previously
+ 2. a card that has been studied previously and is now due for review
 
- * Daily study time is less than config.studyTimeTarget, including:
+The objective of the scheduler is to introduce as many new cards as
+possible, without causing overload: failure to review all cards that are
+due for review.
+
+### New Cards
+
+Cards that have never been studied are 'new' cards.
+
+A new cards is presented for study if:
+
+ * Study time is less than config.studyTimeTarget, including:
    * total study time in the past 24 hours
-   * average study time per day in the pas 14 days
-   * estimated study time in the next 24 hours
-   * estimated average daily study time in the next 5 days
+   * average study time per 24 hours in the past 14 days
+   * estimated total study time in the next 24 hours
+   * estimated average study time per 24 hours in the next 5 days
  * There are no cards due more than 24 hours ago (i.e. overdue)
  * Total new cards in the past 24 hours is less than config.maxNewCards
- * There is no due card or it is more than 5 minutes since last new card
+ * There is no card due for review or it is more than 5 minutes since the last new card was presented
 
 This regulates the introduction of new cards to maintain daily study time
 close to config.studyTimeTarget. If study time falls below the target, more
@@ -725,7 +770,7 @@ and the reviews become tedious, an answer of Easy will increase the
 interval more quickly, with a minimum of at least 1 day, and faster
 increases going forward.
 
-## Backlog
+### Review Backlog
 
 It is normal to have a small backlog: a set of cards due to be studied. The
 only way to avoid it is to be studying all day: studying each card as soon
