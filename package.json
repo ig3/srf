@@ -19,25 +19,25 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ig3/config": "^0.0.1",
-    "better-sqlite3": "^7.4.4",
-    "express": "^4.17.1",
-    "express-handlebars": "^6.0.1",
+    "@ig3/config": "^0.2.2",
+    "better-sqlite3": "^7.5.1",
+    "express": "^4.17.3",
+    "express-handlebars": "^6.0.5",
     "getopts": "^2.3.0",
     "handlebars-form-helper": "^1.0.4",
-    "json5": "^2.2.0",
+    "json5": "^2.2.1",
     "mustache": "^4.2.0",
     "serve-favicon": "^2.5.0",
     "timezonecomplete": "^5.12.4",
-    "tzdata": "^1.0.29",
+    "tzdata": "^1.0.30",
     "uuid": "^8.3.2",
     "yauzl": "^2.10.0"
   },
   "devDependencies": {
-    "c8": "^7.10.0",
+    "c8": "^7.11.2",
     "@ig3/eslint-config-entrain": "^2.0.5",
     "multi-tape": "^1.6.1",
-    "tape": "^5.3.1",
+    "tape": "^5.5.3",
     "tmp": "^0.2.1"
   },
   "eslintConfig": {
