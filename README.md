@@ -279,8 +279,18 @@ For example, a json file might be:
   "goodMinInterval": 60,
   "easyMinInterval": "7 days",
 
-  // The percentage by which to reduce interval after response 'Hard'
-  "hardIntervalFactor": 50
+  // Static interval factors
+  "againFactor": 0.1,
+  "hardFactor": 0.5,
+  "goodFactor": 1.0,
+  "easyFactor": 1.5,
+
+  // Answer weights
+  "weightAgain": 0,
+  "weightHard": 1,
+  "weightGood": 2,
+  "weightEasy": 4
+
 }
 ```
 
@@ -425,20 +435,31 @@ default: 1 day
 
 This is the minimum interval after responding 'Easy' to a review.
 
-#### againIntervalFactor (percent)
+#### againFactor
 
-default: 10%
+default: 0.1
 
-After responding 'Again' to a review, the interval is decreased to this
-percentage of the previous interval.
+After responding 'Again' to a review, the new interval is the previous
+interval multiplied by this factor.
 
 
-#### hardIntervalFactor (percent)
+#### hardFactor
 
-default: 50%
+default: 0.5
 
-After responding 'Hard' to a review, the interval is reduced by this
-percentage of the previous interval.
+After responding 'Hard' to a review, the new interval is the previous
+interval multiplied by this factor.
+
+### goodFactor
+
+After responding 'Good' to a review, the new interval is the previous
+interval multiplied by this factor, the card factor and the 'correct'
+factor. See 'scheduler' below for details.
+
+### easyFactor
+
+After responding 'Easy' to a review, the new interval is the interval for a
+'Good' response multiplied by this factor.
 
 #### weightAgain
 
