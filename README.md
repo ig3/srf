@@ -250,6 +250,8 @@ For example, a json file might be:
 
   // The maximum interval to when a card is due.
   "maxInterval": "1 year",
+  "maxGoodInterval": "3 months',
+  "maxEasyInterval": "1 year",
 
   // The interval (seconds) beyond which a card is considered 'mature'
   "matureThreshold": "21 days",
@@ -362,6 +364,18 @@ default: 1 year
 The maximum interval (time until next review) for a card. Note that the
 actual maximum time until next review can be a bit larger than this due to
 dispersion of due times.
+
+#### maxGoodInterval (seconds)
+
+default: 3 months
+
+The maximum interval (time until next review) for a card that is Good.
+
+#### maxEasyInterval (seconds)
+
+default: 1 year
+
+The maximum interval (time until next review) for a card that is Easy.
 
 #### matureThreshold (seconds)
 
