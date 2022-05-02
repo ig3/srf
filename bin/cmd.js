@@ -155,14 +155,15 @@ function runServer (opts, args) {
     const newCardsRemaining = srf.getCountNewCardsRemaining();
     const config = srf.getConfig();
     const ratio = statsPast24Hours.time / config.studyTimeLimit;
-    const mode = (ratio > 2 && statsPast24Hours.time >= statsNext24Hours.time) ?
-      'stop' : (ratio > 1.5) ? 'slow' : 'go';
+    const mode = (ratio > 2 && statsPast24Hours.time >= statsNext24Hours.time)
+      ? 'stop'
+      : (ratio > 1.5) ? 'slow' : 'go';
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     res.render('home', {
       viewedToday: viewedToday,
       studyTimeToday: Math.floor(studyTimeToday / 60),
-      targetStudyTime: (config.studyTimeLimit/60).toFixed(0),
+      targetStudyTime: (config.studyTimeLimit / 60).toFixed(0),
       averageStudyTime: (srf.getAverageStudyTime(14) / 60).toFixed(0),
       dueToday: dueToday,
       dueStudyTime: Math.floor(dueStudyTime / 60),
@@ -271,8 +272,9 @@ function runServer (opts, args) {
       const statsNext24Hours = srf.getStatsNext24Hours();
       const config = srf.getConfig();
       const ratio = statsPast24Hours.time / config.studyTimeLimit;
-      const mode = (ratio > 2 && statsPast24Hours.time >= statsNext24Hours.time) ?
-        'stop' : (ratio > 1.5) ? 'slow' : 'go';
+      const mode = (ratio > 2 && statsPast24Hours.time >= statsNext24Hours.time)
+        ? 'stop'
+        : (ratio > 1.5) ? 'slow' : 'go';
       statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
       statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
       res.render('front', {
@@ -308,8 +310,9 @@ function runServer (opts, args) {
       const statsNext24Hours = srf.getStatsNext24Hours();
       const config = srf.getConfig();
       const ratio = statsPast24Hours.time / config.studyTimeLimit;
-      const mode = (ratio > 2 && statsPast24Hours.time >= statsNext24Hours.time) ?
-        'stop' : (ratio > 1.5) ? 'slow' : 'go';
+      const mode = (ratio > 2 && statsPast24Hours.time >= statsNext24Hours.time)
+        ? 'stop'
+        : (ratio > 1.5) ? 'slow' : 'go';
       statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
       statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
       const intervals = srf.getIntervals(card);

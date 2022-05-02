@@ -21,7 +21,7 @@
   "dependencies": {
     "@ig3/config": "^0.2.2",
     "better-sqlite3": "^7.5.1",
-    "express": "^4.17.3",
+    "express": "^4.18.1",
     "express-handlebars": "^6.0.5",
     "getopts": "^2.3.0",
     "handlebars-form-helper": "^1.0.4",
@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "c8": "^7.11.2",
-    "@ig3/eslint-config-entrain": "^2.0.5",
+    "@ig3/eslint-config-entrain": "^3.0.1",
     "multi-tape": "^1.6.1",
     "tape": "^5.5.3",
     "tmp": "^0.2.1"
@@ -43,7 +43,7 @@
   "eslintConfig": {
     "extends": "@ig3/eslint-config-entrain",
     "ignorePatterns": [
-      "public/js/sorttable.js"
+      "public/js/**"
     ]
   },
   "files": [
