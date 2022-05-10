@@ -505,10 +505,12 @@ weighted moving average of review replies: the card ease factor.
 
 #### decayFactor
 
-default: 0.9
+default: 0.95
 
 The decay factor when calculating the exponentially weighted moving average
 of review replies: the card ease factor.
+
+ewma(n) = w(n-1) * decayFactor + w(n) * (1 - decayFactor)
 
 ### Commands
 
