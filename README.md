@@ -392,6 +392,16 @@ The percentage of 'correct' responses (not 'Again') is a factor in
 determining the intervals of cards. All responses within this window are
 considered in determining the percentage.
 
+#### percentCorrectTarget (percent)
+
+default: 90
+
+The percentage of 'correct' responses (not 'Again') is a factor in
+determining the intervals of cards. The percentCorrectTarget is the target
+percentage of 'correct' responses. The 'correct factor' is adjusted to
+achieve this target. The adjustment is very slow due to the long delay
+between setting an interval and reviewing the card. 
+
 #### correctFactorAdjustmentInterval
 
 default: 1 day
