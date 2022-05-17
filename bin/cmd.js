@@ -212,10 +212,10 @@ function runServer (opts, args) {
 
     res.render('stats', {
       dueCount: dueCount,
-      timeToNextDue: tc.seconds(nextDue - now).toFullString(),
+      timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
       cardsViewedToday: cardsViewedToday,
-      studyTimeToday: tc.seconds(studyTimeToday).toFullString(),
-      estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString(),
+      studyTimeToday: tc.seconds(studyTimeToday).toFullString().slice(0, -4),
+      estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString().slice(0, -4),
       averageTimePerCard: srf.getAverageStudyTimePerCard(),
       averageStudyTime: (srf.getAverageStudyTime(14) / 60).toFixed(2),
       newCardsPerDay: newCardsPerDay.toFixed(2),
