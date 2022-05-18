@@ -111,6 +111,95 @@ The data is in ~/.local/share/srf by default, including database (srf.db)
 and media files. The database is ~/.local/share/srf/srf.db. Media files
 are in ~/.local/share/srf/media.
 
+### Stats Page
+
+The Stats Page is available from the Home Page by clicking the Stats
+button. It shows some basic statistics about study performance.
+
+#### New cards per day
+
+This is the average number of new cards per day since the start of study.
+
+#### Cards seen
+
+This is the total number of distinct cards that have been seen at least
+once since the start of study.
+
+#### Mature cards
+
+This is the total number of cards with interval greater than
+config.matureThreshold.
+
+#### Percent correct
+
+This is the percentage of reviews of mature cards that are 'correct' (i.e.
+not Again) over the window config.percentCorrectWindow.
+
+#### Correct factor
+
+This is the factor for calculation of new card intervals for ease Good or
+Easy, based on percent correct Vs config.percentCorrectTarget.
+
+#### Card views today
+
+This is the total number of views today, including multiple reviews of a
+card.
+
+#### Study time today
+
+This is the total time spent studying today.
+
+#### Cards due later today
+
+This is the number of cards due to be reviewed in the remainder of the day.
+
+#### Average time per card
+
+This is the average time per day spent studying a card, including multiple
+reviews on the day.
+
+#### Estimated total study time
+
+This is an estimate of the total study time if all due cards are studied by
+the end of the day.
+
+#### Average time per day
+
+This is the average total study time per day, averaged over the past 14
+days.
+
+#### Next card due in
+
+The time until the next card is due for review.
+
+#### Charts
+
+##### Card Views per day
+
+This is the total number of card views each day since the start of study.
+
+##### Minutes Studied per day
+
+This is the total study time per day since the start of study.
+
+##### Cards Due per day
+
+This is the number of cards due for review each day, looking forward from
+today.
+
+##### Cards per interval
+
+This is the number of cards with the given interval in days.
+
+##### New Cards per day
+
+This is the number of new cards presented each day since the start of study
+
+##### Matured & Lapsed
+
+This is the number of cards matured, lapsed, net change and cumulative per
+day since the start of study.
+
 ## Command Synopsis
 
 ```
