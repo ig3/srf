@@ -139,7 +139,7 @@ function runServer (opts, args) {
     const studyTimeToday = srf.getStudyTimeToday();
     const viewedToday = srf.getCountCardsViewedToday();
     const dueToday = srf.getCountCardsDueToday();
-    const dueStudyTime = srf.getEstimatedStudyTime(dueToday);
+    const dueStudyTime = srf.getEstimatedAverageStudyTime(1);
     const nextDue = srf.getNextDue();
 
     const dueNow = srf.getCountCardsDueNow();
@@ -215,10 +215,8 @@ function runServer (opts, args) {
       timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
       cardsViewedToday: cardsViewedToday,
       studyTimeToday: tc.seconds(studyTimeToday).toFullString().slice(0, -4),
-      estimatedTotalStudyTime: tc.seconds(getEstimatedTotalStudyTime()).toFullString().slice(0, -4),
-      averageTimePerCard: srf.getAverageStudyTimePerCard(),
-      averageStudyTime: tc.seconds(srf.getAverageStudyTime(14)).toFullString().slice(0, -4),
-      // averageStudyTime: (srf.getAverageStudyTime(14) / 60).toFixed(2),
+      averageStudyTimePerReview: srf.getAverageStudyTimePerReview().toFixed(1),
+      averageStudyTimePerDay: tc.seconds(srf.getAverageStudyTime(14)).toFullString().slice(0, -4),
       newCardsPerDay: newCardsPerDay.toFixed(2),
       percentCorrect: srf.getPercentCorrect().toFixed(1),
       correctFactor: (srf.getCorrectFactor() / 1000).toFixed(3),
@@ -552,14 +550,6 @@ function runServer (opts, args) {
     const port = server.address().port;
     console.log('Listening on http://%s:%s', host, port);
   });
-
-  function getEstimatedTotalStudyTime () {
-    const studyTimeToday = srf.getStudyTimeToday();
-    const dueTodayCount = srf.getCountCardsDueToday();
-    const dueStudyTime = srf.getEstimatedStudyTime(dueTodayCount);
-    const estimatedTotalStudyTime = studyTimeToday + dueStudyTime;
-    return (estimatedTotalStudyTime);
-  }
 }
 
 function importFile (opts) {

@@ -73,7 +73,7 @@ Browse to http://localhost:8000/.
 ### Home Page
 The home page presents some basic study statistics:
 
- * The number of card views and minutes studied in the past 24 hours
+ * The number of cards reviewed and minutes studied in the past 24 hours
  * The number of cards due and estimated minutes to study in the next 24
    hours
  * Daily study time averaged over the past 14 days
@@ -145,23 +145,19 @@ Easy, based on percent correct Vs config.percentCorrectTarget.
 This is the total number of views today, including multiple reviews of a
 card.
 
-#### Study time today
-
-This is the total time spent studying today.
-
 #### Cards due later today
 
 This is the number of cards due to be reviewed in the remainder of the day.
 
-#### Average time per card
+#### Average time per review
 
-This is the average time per day spent studying a card, including multiple
-reviews on the day.
+This is the average time for each review of a card. It includes small gaps
+between reviews. It is the total study time for the day divided by the
+number of reviews.
 
-#### Estimated total study time
+#### Study time today
 
-This is an estimate of the total study time if all due cards are studied by
-the end of the day.
+This is the total time spent studying today.
 
 #### Average time per day
 
