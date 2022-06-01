@@ -205,7 +205,6 @@ function runServer (opts, args) {
     const chart6Data = srf.getChartMaturedAndLapsedPerDay();
 
     const cardsSeen = srf.getCountCardsSeen();
-    const matureCards = srf.getCountMatureCards();
     const days = srf.getCountDaysStudied();
     const newCardsPerDay = (cardsSeen && days) ? cardsSeen / days : 0;
     const config = srf.getConfig();
@@ -221,7 +220,9 @@ function runServer (opts, args) {
       percentCorrect: srf.getPercentCorrect().toFixed(1),
       correctFactor: (srf.getCorrectFactor() / 1000).toFixed(3),
       cardsSeen: cardsSeen,
-      matureCards: matureCards,
+      newCards: srf.getCountCardsStage1(),
+      learningCards: srf.getCountCardsStage2(),
+      matureCards: srf.getCountCardsStage3(),
       chart1Data: JSON.stringify(chart1Data),
       chart2Data: JSON.stringify(chart2Data),
       chart3Data: JSON.stringify(chart3Data),
