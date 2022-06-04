@@ -137,7 +137,6 @@ function runServer (opts, args) {
   app.get('/', (req, res) => {
     const now = Math.floor(Date.now() / 1000);
     const studyTimeToday = srf.getStudyTimeToday();
-    const dueToday = srf.getCountCardsDueToday();
     const dueStudyTime = srf.getEstimatedAverageStudyTime(1);
     const nextDue = srf.getNextDue();
 
@@ -163,9 +162,7 @@ function runServer (opts, args) {
       studyTimeToday: Math.floor(studyTimeToday / 60),
       targetStudyTime: (config.studyTimeLimit / 60).toFixed(0),
       averageStudyTime: (srf.getAverageStudyTime(14) / 60).toFixed(0),
-      dueToday: dueToday,
       dueStudyTime: Math.floor(dueStudyTime / 60),
-      totalToday: viewedToday + dueToday,
       totalStudyTime: Math.floor((studyTimeToday + dueStudyTime) / 60),
       dueNow: dueNow,
       timeToNextDue: timeToNextDue.toFullString().slice(0, -4),
