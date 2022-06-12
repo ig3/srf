@@ -364,6 +364,7 @@ For example, a json file might be:
   "againMinInterval": 20,
   "hardMinInterval": 30,
   "goodMinInterval": 60,
+  "goodMinFactor": 1.1,
   "easyMinInterval": "7 days",
 
   // Static interval factors
@@ -532,11 +533,17 @@ default: 30
 
 This is the minimum interval after responding 'Hard' to a review.
 
-#### goodMinInterval: (seconds)
+#### goodMinInterval (seconds)
 
 default: 60
 
 This is the minimum interval after responding 'Good' to a review.
+
+#### goodMinFactor 
+
+default: 1.1
+
+This is the minimum interval multiplier after responding 'Good' to a review.
 
 #### easyMinInterval (seconds)
 
@@ -750,20 +757,40 @@ review was good - it was not too hard and not too easy. The card will be
 scheduled for review after a longer interval than the time since it was
 last studied.
 
-The Interval is changed by a factor that is a product of the card's ease
-factor and a global 'correct' factor.
+The new interval is the greater of:
 
-The card's ease factor is an exponentially weighted moving average of the
+ * config.goodMinInterval
+ * the time since the last review multiplied by config.goodMinFactor
+ * the time since the last review multiplied by the product of
+config.goodFactor, the card ease factor and the overall correct factor.
+
+The time since the last review will typically be longer than the last
+interval because cards are typically not reviewed immediately when they
+become due. For example, after taking a one week break from study, the time
+since the last review will be at least a week, even for a new card with an
+interval of only 60 seconds.
+
+The card ease factor depends on how easy the card is. It accommodates the
+fact that some cards are easier than others and that the ease of a card
+varies with time. It is an exponentially weighted moving average of
+response values.
+
+The overall correct factor depends on how easy "mature" cards are to
+answer. It is adjusted to achieve a target percentage of correct answers.
+
+##### Card Ease
+
+The card ease factor is an exponentially weighted moving average of the
 weighted response values for the card. The weights are 0, 1, 2 and 4 for
 Again, Hard, Good and Easy respectivley. The decay factor is 0.9.
 
-The ease factor is dominated by performance on recent reviews. Older
+The card ease factor is dominated by performance on recent reviews. Older
 reviews quickly become insignificant. But there is some 'history': the
 factor is larger for cards that have consistently been Good or Easy and
 smaller for cards that have consistently been Again or Hard. A mix of
 replies will result in an intermediate ease factor.
 
-The range of the ease factor is 0 to 4. It is a simple multiplier for the
+The range of the card ease factor is 0 to 4. It is a simple multiplier for the
 interval. If you keep choosing Again, the factor will drop to 0. If you
 consistently click Good, the factor will rise to 2: the interval will
 double after each review. A mix of Good and Hard will result in a factor
@@ -775,7 +802,7 @@ a few Good answers. It is expected that it will typically be between 1 and
 
 The card ease factor is specific to the card. Each card has its own history
 of answers and its own ease factor. This addresses the issue that some
-cards are simply harder or easier than others. This will be reflected in
+cards are harder or easier than others. This will be reflected in
 their individual histories of answer and resulting ease factors. On the
 other hand, cards that were hard will generally become easy with practice
 and familiarity: they don't stay hard forever. On the other hand, a card
@@ -786,27 +813,24 @@ success recalling the card changes. And the ease factor changes how quickly
 the interval grows: from quite slowly (card ease factor around 1) to quite
 quickly (ease factors closer to 2 or more).
 
-One of the objectives of the scheduler is an overall recollection of 90% of
-mature cards. Mature cards are those with an interval of more than 21 days.
-For this calculation, Again is considered failure while Hard, Good and Easy
-are all success. So, the target is that you are able to achieve Hard, Good
-or Easy for 90% of reviews of mature cards.
+##### Correct Factor
 
-The card ease factor deals with differences between cards. The 'correct'
-factor deals with overall performance.
+The correct factor is based on the ease of 'mature' cards recently reviewed.
 
-The percentage correct is calculated by a linear sliding window of answers
-in the past month.
+It is adjusted to achieve an average of config.percentCorrectTarget
+(default 90%) 'correct' answers (i.e. not Again).
+
+The window for calculation of the correct factor is
+config.percentCorrectWindow (default 1 month).
+
+Mature cards are those with an interval greater than config.matureThreshold
+(default 21 days).
 
 The 'correct' factor is adjusted up or down according to whether the
-average percent correct is greater than or less than 90%. It is adjusted
-slowly, only once per day.
+average percent correct is greater than or less than
+config.percentCorrectTarget (default 90%).
 
-The 'correct' factor is not specific to any card. It is adjusted according
-to overall performance.
-
-The new interval is the product of the old interval multiplied by these two
-factors, then subject to minimum 60 seconds and maximum 1 year.
+It is adjusted slowly, only once per day.
 
 #### Easy
 
