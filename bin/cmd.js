@@ -213,7 +213,7 @@ function runServer (opts, args) {
       averageStudyTimePerDay: tc.seconds(srf.getAverageStudyTime(14)).toFullString().slice(0, -4),
       newCardsPerDay: newCardsPerDay.toFixed(2),
       percentCorrect: srf.getPercentCorrect().toFixed(1),
-      correctFactor: (srf.getCorrectFactor() / 1000).toFixed(3),
+      correctFactor: srf.getCorrectFactor().toFixed(3),
       cardsSeen: cardsSeen,
       newCards: srf.getCountCardsStage1(),
       learningCards: srf.getCountCardsStage2(),
