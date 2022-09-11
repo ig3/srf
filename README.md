@@ -111,6 +111,63 @@ The data is in ~/.local/share/srf by default, including database (srf.db)
 and media files. The database is ~/.local/share/srf/srf.db. Media files
 are in ~/.local/share/srf/media.
 
+#### Buttons
+
+##### New Card
+
+Study a new card, regardless of study time and number of new cards studied.
+
+##### Templates
+
+View a list of all templates in the system. Click on a template to edit it.
+
+Each template is linked to a template set and should have a unique name
+among the templates linked to that template set. There are three
+attributes:
+
+Front: handlebars template code for the front of the card.
+
+Back: handlebars template code for the back of the card.
+
+CSS: CSS that will be loaded to the front and back.
+
+All the fields of the template/fieldset are available. For example, if the
+fieldset includes a field `English` then include this in the template with
+`{{English}}`.
+
+The set of fields are defined in the template set definition.
+
+##### Template Sets
+
+View a list of all template sets in the system. Click on a template set to
+edit it.
+
+A template set defines the set of fields that each associated fieldset may
+have and that the template handlebards code may refer to.
+
+Each template set has two attributes:
+
+Name: the name of the template set.
+
+Fields: JSON data: an array of field names.
+For example `["Field 1", "Field 2"]`.
+
+##### Field Sets
+
+View a list of all field sets in the system. Click on a field set to edit
+it. Click the New button to add a field set.
+
+A field set is a collection of field values that populate cards. The set of
+fields is defined in the linked template set.
+
+Each fieldset must be linked to a Template set. The set of fields is
+defined in the template set. If you change the template set after setting
+field data, the field data will be lost.
+
+To attach media files, put the cursor into the field value input where the
+media file is to be attached, then click the Attach button and select the
+file containing the media data.
+
 ### Stats Page
 
 The Stats Page is available from the Home Page by clicking the Stats
