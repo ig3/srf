@@ -1,7 +1,17 @@
 {
   "name": "@ig3/srf",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Spaced Repetition Flashcards",
+  "keywords": [
+    "srf",
+    "spaced-repetition",
+    "spaced repetition software",
+    "learning",
+    "flashcards",
+    "anki",
+    "learning",
+    "server"
+  ],
   "main": "lib/srf.js",
   "bin": {
     "srf": "./bin/cmd.js"
