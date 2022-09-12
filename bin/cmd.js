@@ -1,7 +1,6 @@
 #!/usr/local/bin/node
 'use strict';
 
-console.log('starting cmd.js');
 const fs = require('fs');
 const path = require('path');
 const tc = require('timezonecomplete');
@@ -15,7 +14,8 @@ const opts = getopts(process.argv.slice(2), {
     directory: ['dir'],
     database: ['db'],
     media: ['m'],
-    config: ['c']
+    config: ['c'],
+    verbose: ['v']
   },
   default: {
     directory: path.join(process.env.HOME, '.local', 'share', 'srf'),
@@ -26,7 +26,7 @@ const opts = getopts(process.argv.slice(2), {
   stopEarly: true
 });
 
-console.log('opts: ', opts);
+if (opts.verbose) console.log('opts: ', opts);
 
 if (opts.help) {
   console.log(process.argv);
@@ -98,14 +98,12 @@ function showUsage () {
 }
 
 function runServer (opts, args) {
-  if (opts.debug) console.debug('run server ', opts, args);
-
   const srf = require('../lib/srf')({
     dir: opts.dir,
     database: opts.database,
     media: opts.media,
     config: opts.config,
-    debug: opts.debug
+    debug: opts.verbose
   });
 
   process.on('SIGINT', () => {
@@ -544,7 +542,13 @@ function runServer (opts, args) {
   const server = app.listen(8000, () => {
     const host = server.address().address;
     const port = server.address().port;
-    console.log('Listening on http://%s:%s', host, port);
+    if (process.stdout.isTTY) {
+      console.log('Listening on http://%s:%s', host, port);
+    }
+  });
+
+  server.on('error', err => {
+    console.error(opts.verbose ? err : err.message);
   });
 }
 

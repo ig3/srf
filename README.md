@@ -3,6 +3,49 @@ Web server providing
 [Spaced Repetition](https://en.wikipedia.org/wiki/Spaced_repetition) Flashcards,
 based loosely on [Anki](https://github.com/ankitects/anki).
 
+## Installation
+
+```
+$ npm install -g @ig3/srf
+```
+
+## Operation
+
+### From the command line
+
+```
+$ srf
+Listening on http://:::8000
+```
+
+### As a service
+
+Create a systemd service file (~/.config/systemd/user/srf.service) similar to:
+
+```
+[Unit]
+Description=Spaced Repetition Flashcards
+
+[Service]
+Type=simple
+Restart=on-failure
+WorkingDirectory=/tmp
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=srf
+ExecStart=bash -l -c srf
+
+[Install]
+WantedBy=default.target
+```
+
+Then enable and run the service:
+
+```
+$ systemctl --user enable srf
+$ ssytemctl --user start srf
+```
+
 ## Background
 I used [Anki](https://github.com/ankitects/anki) for a couple of years but
 wanted to change the scheduler. An Anki addon to add a new scheduler
@@ -167,6 +210,9 @@ field data, the field data will be lost.
 To attach media files, put the cursor into the field value input where the
 media file is to be attached, then click the Attach button and select the
 file containing the media data.
+
+At the moment, the only supported media types are image/jpeg and
+audio/mpeg. These are inserted as img tags and `audio` respectively.
 
 ### Stats Page
 
