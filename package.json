@@ -1,6 +1,6 @@
 {
   "name": "@ig3/srf",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Spaced Repetition Flashcards",
   "keywords": [
     "srf",
@@ -9,7 +9,6 @@
     "learning",
     "flashcards",
     "anki",
-    "learning",
     "server"
   ],
   "main": "lib/srf.js",
