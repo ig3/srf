@@ -1,6 +1,6 @@
 {
   "name": "@ig3/srf",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Spaced Repetition Flashcards",
   "keywords": [
     "srf",
@@ -23,7 +23,6 @@
     "type": "git",
     "url": "git@github.com:ig3/srf.git"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
