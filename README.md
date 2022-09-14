@@ -11,16 +11,41 @@ $ npm install -g @ig3/srf
 
 ## Operation
 
-### From the command line
+### Import cards
+
+Download a shared Anki deck or export one or more decks from Anki and
+import them to srf. Note that srf doesn't distinguish decks so all the
+cards will be merged into a single pool, if you import multiple decks.
+
+Anki shared decks are available from several sources. Of course, from
+[AnkiWeb](https://ankiweb.net/shared/decks/), but there are other sites
+that share decks. Search for 'Anki shared decks' and find one with cards on
+a topic you are interested in.
+
+Note that srf only supports simple cards. In particular, closures are not
+supported. See below for what is/isn't supported. Start with something
+basic.
+
+There are also tools available that will translate cards from other tools
+to Anki format, generate Anki decks from spreadsheet, etc.
+
+```
+$ srf import <shared_deck.apkg>
+```
+
+While you can create templates, template sets and field sets manually, from
+which cards will be generated, the interface for doing so is a bit crude.
+It will be easier to get started with an import.
+
+### Run the server
 
 ```
 $ srf
 Listening on http://:::8000
 ```
 
-### As a service
-
-Create a systemd service file (~/.config/systemd/user/srf.service) similar to:
+Alternatively, create a systemd service file
+(e.g. ~/.config/systemd/user/srf.service) similar to:
 
 ```
 [Unit]
@@ -45,6 +70,17 @@ Then enable and run the service:
 $ systemctl --user enable srf
 $ ssytemctl --user start srf
 ```
+
+With this done, your srf server will run whenever you login.
+
+
+### Study!
+
+Browse to [http://localhost:8000/](http://localhost:8000/)
+
+The initial stats may not be correct. I don't spend much time looking at
+them. Just click Study and you should get a new card. Once there is some
+data, the stats should come right.
 
 ## Background
 I used [Anki](https://github.com/ankitects/anki) for a couple of years but
