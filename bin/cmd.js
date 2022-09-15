@@ -8,7 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const getopts = require('getopts');
 const opts = getopts(process.argv.slice(2), {
-  string: ['directory', 'database', 'htdocs', 'media', 'config'],
+  string: ['directory', 'database', 'htdocs', 'views', 'media', 'config'],
   alias: {
     help: ['h'],
     directory: ['dir'],
@@ -21,6 +21,7 @@ const opts = getopts(process.argv.slice(2), {
     database: 'srf.db',
     media: 'media',
     htdocs: 'htdocs',
+    views: 'views',
     config: 'config.json'
   },
   stopEarly: true
@@ -48,6 +49,7 @@ if (opts.help) {
   opts.database = resolveFullPath(opts.dir, opts.database);
   opts.media = resolveFullPath(opts.dir, opts.media);
   opts.htdocs = resolveFullPath(opts.dir, opts.htdocs);
+  opts.views = resolveFullPath(opts.dir, opts.views);
 
   // Make sure directories for media and database exist
   const databaseDir = pa.dirname(opts.database);
@@ -81,6 +83,7 @@ function showUsage () {
     ' [--directory <root-directory>]' +
     ' [--config <config-file>]' +
     ' [--htdocs <htdocs-directory>]' +
+    ' [--views <views-directory>]' +
     ' [--media <media-directory>]' +
     ' [--database <database-name>]');
   console.log('  ' +
@@ -146,7 +149,14 @@ function runServer (opts, args) {
   const hbs = expressHandlebars.create({});
   hbsFormHelper.registerHelpers(hbs.handlebars, { namespace: 'form' });
   app.engine('handlebars', expressHandlebars.engine());
-  app.set('views', pa.join(__dirname, '..', 'views'));
+  if (opts.views && fs.existsSync(opts.views)) {
+    app.set('views', [
+      opts.views,
+      pa.join(__dirname, '..', 'views')
+    ]);
+  } else {
+    app.set('views', pa.join(__dirname, '..', 'views'));
+  }
   app.set('view engine', 'handlebars');
   if (opts.htdocs && fs.existsSync(opts.htdocs)) {
     app.use(express.static(opts.htdocs));

@@ -420,6 +420,29 @@ This directory contains overrides for the static content of the srf server.
  * js/plotly-latest.min.js
  * js/sorttable.js
 
+#### --views
+Set the path of the views directory.
+
+Default is `views`
+
+If the given path is absolute (i.e. it begins with '/') it is used as
+given. If it is relative (i.e. does not begin with '/') it is relative to
+the path of the --directory option.
+
+This directory contains overrides for the handlebars templates of the srf
+server. Templates in this folder will override the default templates.
+
+ * back.handlebars
+ * fieldset.handlebars
+ * front.handlebars
+ * help.handlebars
+ * home.handlebars
+ * stats.handlebars
+ * template.handlebars
+ * templates.handlebars
+ * templateset.handlebars
+ * templatesets.handlebars
+
 ### Config
 
 Configuration files may be put in several places:
@@ -2101,6 +2124,11 @@ work with.
 * No synchronization between devices / databases
 
 ## Changes
+
+### 1.2.0 - 20220916
+
+Add commandline option views and support for a views directory to override
+the handlebars templates built into the web server.
 
 ### 1.1.0 - 20220916
 
