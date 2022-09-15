@@ -2,25 +2,25 @@
 'use strict';
 
 const fs = require('fs');
-const path = require('path');
+const pa = require('path');
 const tc = require('timezonecomplete');
 const { v4: uuidv4 } = require('uuid');
 
 const getopts = require('getopts');
 const opts = getopts(process.argv.slice(2), {
-  string: ['directory', 'database', 'media', 'config'],
+  string: ['directory', 'database', 'htdocs', 'media', 'config'],
   alias: {
     help: ['h'],
     directory: ['dir'],
     database: ['db'],
-    media: ['m'],
     config: ['c'],
     verbose: ['v']
   },
   default: {
-    directory: path.join(process.env.HOME, '.local', 'share', 'srf'),
+    directory: pa.join(process.env.HOME, '.local', 'share', 'srf'),
     database: 'srf.db',
     media: 'media',
+    htdocs: 'htdocs',
     config: 'config.json'
   },
   stopEarly: true
@@ -30,7 +30,7 @@ if (opts.verbose) console.log('opts: ', opts);
 
 if (opts.help) {
   console.log(process.argv);
-  console.log(path.basename(process.argv[1]));
+  console.log(pa.basename(process.argv[1]));
   showUsage();
 } else {
   const [command, subargv] = opts._;
@@ -42,21 +42,15 @@ if (opts.help) {
   delete opts.c;
 
   // Make paths absolute
-  if (opts.dir.substr(0, 1) !== '/') {
-    opts.dir = path.join(process.env.HOME, '.local', 'share', opts.dir);
-  }
-  if (opts.config.substr(0, 1) !== '/') {
-    opts.config = path.join(opts.dir, opts.config);
-  }
-  if (opts.database.substr(0, 1) !== '/') {
-    opts.database = path.join(opts.dir, opts.database);
-  }
-  if (opts.media.substr(0, 1) !== '/') {
-    opts.media = path.join(opts.dir, opts.media);
-  }
+  const root = pa.join(process.env.HOME, '.local', 'share', 'srf');
+  opts.dir = resolveFullPath(root, opts.dir);
+  opts.config = resolveFullPath(opts.dir, opts.config);
+  opts.database = resolveFullPath(opts.dir, opts.database);
+  opts.media = resolveFullPath(opts.dir, opts.media);
+  opts.htdocs = resolveFullPath(opts.dir, opts.htdocs);
 
   // Make sure directories for media and database exist
-  const databaseDir = path.dirname(opts.database);
+  const databaseDir = pa.dirname(opts.database);
   fs.mkdirSync(databaseDir, { recursive: true }, (err) => {
     if (err) throw err;
   });
@@ -80,16 +74,17 @@ if (opts.help) {
 function showUsage () {
   console.log('usage:');
   console.log('  ' +
-    path.basename(process.argv[1]) +
+    pa.basename(process.argv[1]) +
     ' --help');
   console.log('  ' +
-    path.basename(process.argv[1]) +
+    pa.basename(process.argv[1]) +
     ' [--directory <root-directory>]' +
     ' [--config <config-file>]' +
+    ' [--htdocs <htdocs-directory>]' +
     ' [--media <media-directory>]' +
     ' [--database <database-name>]');
   console.log('  ' +
-    path.basename(process.argv[1]) +
+    pa.basename(process.argv[1]) +
     ' [--directory <root-directory>]' +
     ' [--config <config-file>]' +
     ' [--media <media-directory>]' +
@@ -97,6 +92,32 @@ function showUsage () {
     ' import <filename>');
 }
 
+/**
+ * runServer starts the express web server.
+ *
+ * opts:
+ *
+ *   dir (~/.local/share/srf)
+ *     The root directory in which files (database, media, config) will be
+ *     found, if their paths are not absolute.
+ *
+ *   database (srf.db)
+ *    The srf database file name. This is a sqlite3 database file. The
+ *    value may be a full path or relative path. If it is relative, it is
+ *    relative to opts.dir.
+ *
+ *   media (media)
+ *     The path of the directory in which media files are stored. The value
+ *     may be a full path or a relative path. If it is relative, it is
+ *     relative to opts.dir.
+ *
+ *   config (config.json)
+ *     The path of the configuration file. The value may be a full path or
+ *     a relative path. If it is relative, it is relative to opts.dir.
+ *
+ *   verbose (false)
+ *     A boolean (true/false) that controls how verbose the server is.
+ */
 function runServer (opts, args) {
   const srf = require('../lib/srf')({
     dir: opts.dir,
@@ -119,15 +140,18 @@ function runServer (opts, args) {
   const express = require('express');
   const app = express();
   const favicon = require('serve-favicon');
-  app.use(favicon(path.join(__dirname, '..', 'public', 'favicon.ico')));
+  app.use(favicon(pa.join(__dirname, '..', 'public', 'favicon.ico')));
   const expressHandlebars = require('express-handlebars');
   const hbsFormHelper = require('handlebars-form-helper');
   const hbs = expressHandlebars.create({});
   hbsFormHelper.registerHelpers(hbs.handlebars, { namespace: 'form' });
   app.engine('handlebars', expressHandlebars.engine());
-  app.set('views', path.join(__dirname, '..', 'views'));
+  app.set('views', pa.join(__dirname, '..', 'views'));
   app.set('view engine', 'handlebars');
-  app.use(express.static(path.join(__dirname, '..', 'public')));
+  if (opts.htdocs && fs.existsSync(opts.htdocs)) {
+    app.use(express.static(opts.htdocs));
+  }
+  app.use(express.static(pa.join(__dirname, '..', 'public')));
   // Anki templates use relative paths to media that are just the file name
   app.use('/card/:id', express.static(mediaDir));
   app.use(express.json({ limit: '50MB' }));
@@ -227,7 +251,7 @@ function runServer (opts, args) {
   });
 
   app.get('/study', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'study.html'));
+    res.sendFile(pa.join(__dirname, 'public', 'study.html'));
   });
 
   app.get('/next', (req, res) => {
@@ -412,7 +436,7 @@ function runServer (opts, args) {
         console.log('save file: ', file.meta.name);
         console.log('save file: ', file.meta.type);
         console.log('save file: ', file.meta);
-        const filepath = path.join(mediaDir, file.meta.name);
+        const filepath = pa.join(mediaDir, file.meta.name);
         const buff = Buffer.from(file.data.substring(23), 'base64');
         fs.writeFileSync(filepath, buff);
       });
@@ -652,4 +676,17 @@ function fixDatabase (opts) {
     config: opts.config
   });
   srf.fixDatabase();
+}
+
+function resolveFullPath (root, path) {
+  if (path.substr(0, 1) === '/') {
+    return path;
+  }
+  if (path === '~') {
+    return process.env.HOME;
+  }
+  if (path.substr(0, 2) === '~/') {
+    return pa.join(process.env.HOME, path.substr(2));
+  }
+  return pa.join(root, path);
 }

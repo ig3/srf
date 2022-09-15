@@ -389,7 +389,7 @@ then it is relative to the path of the --directory option.
 
 The directory to contain the database is created if it doesn't exist.
 
-#### --media|-m
+#### --media
 Set the path of the media directory.
 
 Default is `media`
@@ -399,6 +399,26 @@ If it is relative (i.e. does not begin with '/') it is relative to the path
 of the --directory option.
 
 The directory is created if it doesn't exist.
+
+#### --htdocs
+Set the path of the htdocs directory.
+
+Default is `htdocs`
+
+If the given path is absolute (i.e. it begins with '/') it is used as
+given. If it is relative (i.e. does not begin with '/') it is relative to
+the path of the --directory option.
+
+This directory contains overrides for the static content of the srf server.
+
+ * css/dark.css
+ * img/dark-go.png
+ * img/dark-slow.png
+ * img/dark-stop.png
+ * img/favicon.png
+ * img/logo.png
+ * js/plotly-latest.min.js
+ * js/sorttable.js
 
 ### Config
 
@@ -2079,3 +2099,10 @@ work with.
 * No decks, tags or flags - just one pool of cards
 * Only simple text fields and media
 * No synchronization between devices / databases
+
+## Changes
+
+### 1.1.0 - 20220916
+
+Add commandline option htdocs and support for an htdocs directory to
+override the static content built into the srf server.
