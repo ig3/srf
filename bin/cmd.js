@@ -30,8 +30,6 @@ const opts = getopts(process.argv.slice(2), {
 if (opts.verbose) console.log('opts: ', opts);
 
 if (opts.help) {
-  console.log(process.argv);
-  console.log(pa.basename(process.argv[1]));
   showUsage();
 } else {
   const [command, subargv] = opts._;

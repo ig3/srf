@@ -17,7 +17,8 @@ t.test('cli --help', t => {
         return t.end();
       }
       // eslint-disable-next-line
-      t.match(stdout, /usage:\n  cmd\.js --help\n  cmd\.js \[--directory <root-directory>\] \[--config <config-file>\] \[--media <media-directory>\] \[--database <database-name>\]\n  cmd\.js \[--directory <root-directory>\] \[--config <config-file>\] \[--media <media-directory>\] \[--database <database-name>\] import <filename>\n/, 'usage message appears');
+      console.log('stdout: ', stdout);
+      t.ok(stdout.startsWith('usage:'), 'produces usage message');
       t.end();
     });
   });
