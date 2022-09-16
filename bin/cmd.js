@@ -477,9 +477,8 @@ function runServer (opts, args) {
   app.post('/templateset/:id', (req, res) => {
     let id = req.params.id;
     const name = req.body.name;
-    const fields = JSON.stringify(JSON.parse(req.body.fields));
     if (id === '0') {
-      const info = srf.createTemplateset(name, fields);
+      const info = srf.createTemplateset(name);
       id = info.lastInsertRowid;
     } else {
       srf.updateTemplateset(name, id);

@@ -12,17 +12,27 @@
 <table border="1" class="sortable">
 <thead>
   <tr>
-    {{#each templatesets.[0]}}
-      <th>{{@key}}</th>
-    {{/each}}
+    <th>id</th>
+    <th>name</th>
+    <th>fields</th>
+    <th>templates</th>
   </tr>
 </thead>
 <tbody>
   {{#each templatesets}}
     <tr>
-      {{#each this}}
-        <td>{{this}}</td>
-      {{/each}}
+      <td>{{this.id}}</td>
+      <td>{{this.name}}</td>
+      <td>
+        {{#each this.fields}}
+          {{this}}</br>
+        {{/each}}
+      </td>
+      <td>
+        {{#each this.templates}}
+          {{this.name}}</br>
+        {{/each}}
+      </td>
     </tr>
   {{/each}}
 </tbody>
