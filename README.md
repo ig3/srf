@@ -2173,6 +2173,11 @@ work with.
 
 ## Changes
 
+### 1.2.1 - 20220917
+
+Remove templateset.fields - it is redundant with the actual fields in the
+templates of the templateset.
+
 ### 1.2.0 - 20220916
 
 Add commandline option views and support for a views directory to override
