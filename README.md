@@ -1250,43 +1250,77 @@ local to Anki, since about Anki version 2.1.28.
 
 ## srf database
 
-Initially I used a slight modification of the Anki database but
-subsequently started over with a new, simplified database schema. Notes
-here are incomplete and probably out of date. The database structure is
-still evolving.
+### card
+A card is the unit of study.
 
-A fact set records a set of related facts as field/value pairs. These are
-the essential items to be studied.
+A card associates a fieldset (a set of field name/value pairs) with a
+template (mustache templates for the front and back of the card, and
+associated CSS) and a set of attributes used for scheduling the card.
 
-Templates produce cards from the fact sets. Each card has a front and a
-back side. One views the front side then attempts to remember what will be
-on the back side. The front and back sides are filled with static content
-and the values of select fields.
+The tuple (fieldsetid, templateid) should be unique. A unique index ensures
+this.
 
-Each fact set is related to one set of templates.
+Fields:
+ * id
+ * fieldsetid
+ * templateid
+ * modified
+ * interval
+ * due
+ * factor
+ * views
+ * lapses
+ * ord
 
-Each template is related to one set of templates.
+#### modified
+The time (seconds since the epoch) when the card was last modified. Not
+used in scheduling. This is present for historical reasons - because it was
+kept in Anki.
 
-Each set of templates has a set of fields that are used in rendering the
-templates. These are the fields for which values may be stored in the fact
-set.
+#### interval
+This is the current scheduling interval: the time (seconds) from one review
+to the next. When a card is reviewed, a new interval is determined, based
+on how the card was rated (again, hard, good or easy) and the new interval
+is used to determine when the card is next due for review.
 
+#### due
+This is the time (seconds since the epoch) when the card is due to be
+reviewed. This is the conclusion of the scheduling algorithm.
 
+#### factor
+This should probably be called Ease Factor. It is a factor of the
+scheduling algorithm that reflects how easy the card is to remember. It is
+an exponentially weighted moving average of the card ratings (again, hard,
+good or easy) of past reviews.
 
-These fact sets are presented in the form of cards, generated from the fact
-sets by templates. Each template produces a front and back, each presenting
-a different subset of the fields.
+#### views
+This is a count of the number of times the card has been viewed. Not used
+in scheduling.
 
-Each template consists of html for the front and back and common CSS.
+#### lapses
+This is a count of how many times the card interval has changed from a
+value greater than the (arbitrary) 'mature threshold' to a value below it.
+Not used in scheduling.
 
-A set of templates produces a set of cards. 
+#### ord
+This is used to sort new cards. When a new card is to be presented, the
+card with the lowest ord value is presented. If there are multiple, the
+selection is whichever the database driver returns first.
 
-Each study item consists of a set of field/value pairs which record the
-essential, related facts to be learned. Cards are generated from these
-items by way of templates. Typically, a set of cards will be produced for
-each item. 
+### config
+This table is a set of name/value pairs with their modification times
+(seconds since the epoch).
+
+There are only two parameters: the database schema version and the 'correct
+factor' used in scheduling.
+
+### fieldset
+A fieldset associates a set of field values with a templateset.
+
+One card is produced for each template in the templateset.
 
 ### revlog
+A revlog record is produced each time a card is reviewed.
 
 ```
 CREATE TABLE "revlog" (
@@ -1311,6 +1345,20 @@ CREATE TABLE "revlog" (
  * viewtime: the time spent viewing the card
  * studytime: the time spent studying the card, for study time calculations
  * lapses: the number of times the card has lapsed
+
+### template
+A template record associates a template name with a pair of mustache
+templates for front and back of a card and some CSS for styling the card.
+
+### templateset
+A templateset associates a templateset name and a set of field names.
+
+Each template is associated with a templateset and the set of fields in the
+templateset is the union of the sets of fields of each template in the
+templateset.
+
+Each fieldset is associated with a templateset and for each fieldset, one
+card is produced for each template in the templateset.
 
 ## Anki database
 
