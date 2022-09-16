@@ -482,7 +482,7 @@ function runServer (opts, args) {
       const info = srf.createTemplateset(name, fields);
       id = info.lastInsertRowid;
     } else {
-      srf.updateTemplateset(name, fields, id);
+      srf.updateTemplateset(name, id);
     }
     res.send('ok');
   });
