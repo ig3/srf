@@ -440,8 +440,6 @@ server. Templates in this folder will override the default templates.
  * stats.handlebars
  * template.handlebars
  * templates.handlebars
- * templateset.handlebars
- * templatesets.handlebars
 
 ### Config
 
@@ -1347,18 +1345,19 @@ CREATE TABLE "revlog" (
  * lapses: the number of times the card has lapsed
 
 ### template
-A template record associates a template name with a pair of mustache
+A template record associates a templateset name with a pair of mustache
 templates for front and back of a card and some CSS for styling the card.
 
-### templateset
-A templateset associates a templateset name and a set of field names.
-
-Each template is associated with a templateset and the set of fields in the
-templateset is the union of the sets of fields of each template in the
+The set of templates with the same templateset value constitutes a
 templateset.
 
-Each fieldset is associated with a templateset and for each fieldset, one
-card is produced for each template in the templateset.
+A card is linked to a template for rendering.
+
+A fieldset and template both have attribute templateset. When a fieldset is
+saved, a card is produced for each template with matching templateset. If
+the templateset of a fieldset is changed, all the cards related to the old
+fieldset value are deleted and new card records are produced for each
+template in the new templateset.
 
 ## Anki database
 
@@ -2172,6 +2171,10 @@ work with.
 * No synchronization between devices / databases
 
 ## Changes
+
+### 2.0.0 - 20220917
+
+Remove fieldsets table entirely.
 
 ### 1.2.1 - 20220917
 

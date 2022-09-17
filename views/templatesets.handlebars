@@ -8,11 +8,9 @@
 </style>
 <h1><a href="/">Spaced Repetition Flashcards</a></h1>
 <h2>Template Sets</h2>
-<a href="/templateset" onclick="return add()"><button>Add</button></a>
 <table border="1" class="sortable">
 <thead>
   <tr>
-    <th>id</th>
     <th>name</th>
     <th>fields</th>
     <th>templates</th>
@@ -21,7 +19,6 @@
 <tbody>
   {{#each templatesets}}
     <tr>
-      <td>{{this.id}}</td>
       <td>{{this.name}}</td>
       <td>
         {{#each this.fields}}
@@ -39,10 +36,6 @@
 </table>
 <script src="js/sorttable.js"></script>
 <script>
-  function add () {
-    window.open('/templateset', 'Edit Templateset', 'height=800,width=600');
-    return false;
-  }
   document.querySelectorAll('table tr')
   .forEach(e => e.addEventListener('click', (event) => {
     const cells = event.currentTarget.getElementsByTagName('td');
