@@ -11,9 +11,9 @@
 <table>
 <tr><th>ID</th><td>{{fieldset.id}}</td></tr>
 <tr><th>GUID</th><td>{{fieldset.guid}}</td></tr>
-<tr><th>templatesetid/name</th><td>{{fieldset.templatesetid}}/{{fieldset.templateset.name}}</td></tr>
-<tr><th>Template set</th><td>{{form-select 'templatesetid'
-templatesets fieldset.templatesetid}}</td></tr>
+<tr><th>Template set</th><td>{{form-select 'templateset'
+templatesets fieldset.templateset}}</td></tr>
+<tr><th>Ord</th><td><input type="text" id="ord" value="{{fieldset.ord}}"/></td></tr>
 </table>
 
 <h2>Fields</h2>
@@ -41,7 +41,7 @@ templatesets fieldset.templatesetid}}</td></tr>
   });
 
   // When the template set is changed, update the set of field inputs
-  document.getElementById('field-templatesetid')
+  document.getElementById('field-templateset')
   .addEventListener('change', e => {
     document
     .getElementById('table-fields')
@@ -68,11 +68,12 @@ templatesets fieldset.templatesetid}}</td></tr>
   // When the Save button is clicked
   function save() {
     const data = {
-      templatesetid: document.getElementById('field-templatesetid').value,
+      templateset: document.getElementById('field-templateset').value,
+      ord: document.getElementById('ord').value,
       fields: {},
       files: fileAttachments
     };
-    document.querySelectorAll('input')
+    document.querySelectorAll('#table-fields input')
     .forEach((input) => {
       data.fields[input.id] = input.value;
     });

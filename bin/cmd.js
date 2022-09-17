@@ -390,9 +390,11 @@ function runServer (opts, args) {
     // To present a select of template sets the form helper needs an object
     // keyed by select value with value being the displayed text.
     const templatesets = {};
+    console.log('templatesets: ' + JSON.stringify(srf.getTemplatesets(), null, 2));
     srf.getTemplatesets().forEach(set => {
-      templatesets[set.id] = set.name;
+      templatesets[set.name] = set.name;
     });
+    console.log('templatesets: ' + JSON.stringify(templatesets, null, 2));
     res.render('fieldset', {
       fieldset: fieldset,
       templatesets: templatesets
@@ -402,12 +404,13 @@ function runServer (opts, args) {
   app.get('/fieldset', (req, res) => {
     const fieldset = {
       id: 'new',
-      guid: '',
-      templatesetid: '',
+      guid: uuidv4(),
+      ord: '0',
+      templateset: '',
       fields: {}
     };
-    fieldset.templatesetid = srf.getTemplatesets()[0].id;
-    fieldset.templateset = srf.getTemplateset(fieldset.templatesetid);
+    fieldset.templateset = srf.getTemplatesets()[0].name;
+    fieldset.templateset = srf.getTemplateset(fieldset.templateset);
     fieldset.templateset.fields.forEach(field => {
       fieldset.fields[field] = '';
     });
@@ -415,7 +418,7 @@ function runServer (opts, args) {
     // keyed by select value with value being the displayed text.
     const templatesets = {};
     srf.getTemplatesets().forEach(set => {
-      templatesets[set.id] = set.name;
+      templatesets[set.name] = set.name;
     });
     res.render('fieldset', {
       fieldset: fieldset,
@@ -425,25 +428,20 @@ function runServer (opts, args) {
 
   app.post('/fieldset/:id', (req, res) => {
     if (req.params.id === 'new') {
-      console.log('create a new fieldset');
-      console.log('body ', req.body);
-      const templatesetid = req.body.templatesetid;
-      console.log('templatesetid: ', templatesetid);
+      const templateset = req.body.templateset;
+      const ord = req.body.ord;
       const fields = JSON.stringify(req.body.fields);
-      console.log('fields: ', fields);
-      srf.createFieldset(uuidv4(), templatesetid, fields);
+      srf.createFieldset(uuidv4(), templateset, ord, fields);
     } else {
       const fieldsetid = Number(req.params.id);
-      const templatesetid = Number(req.body.templatesetid);
+      const templateset = req.body.templateset;
+      const ord = req.body.ord;
       const fields = JSON.stringify(req.body.fields);
-      srf.updateFieldset(templatesetid, fields, fieldsetid);
+      srf.updateFieldset(fieldsetid, templateset, ord, fields);
     }
     const files = req.body.files;
     if (files && files.length > 0) {
       files.forEach(file => {
-        console.log('save file: ', file.meta.name);
-        console.log('save file: ', file.meta.type);
-        console.log('save file: ', file.meta);
         const filepath = pa.join(mediaDir, file.meta.name);
         const buff = Buffer.from(file.data.substring(23), 'base64');
         fs.writeFileSync(filepath, buff);
@@ -586,7 +584,6 @@ function runServer (opts, args) {
 function importFile (opts) {
   console.log('import file ', opts);
   const file = opts._[1];
-  console.log('file: ', file);
   const srf = require('../lib/srf')({
     dir: opts.dir,
     database: opts.database,

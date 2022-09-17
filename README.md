@@ -1317,6 +1317,38 @@ A fieldset associates a set of field values with a templateset.
 
 One card is produced for each template in the templateset.
 
+Fields:
+ * id
+ * guid
+ * templateset
+ * fields
+ * ord
+
+#### guid
+A guid from Anki import, used to identify matching records if the same card
+is imported again, in which case the field values or templateset might be
+different, so need to update the matching fieldset.
+
+#### templateset
+The name of the templateset this fieldset relates to. One card will be
+produced for each template in the templateset (i.e. for each template with
+the same templateset value).
+
+#### fields
+The field values as a JSON serialization.
+
+#### ord
+For ordering the presentation of the cards. When a card is produced from
+the fieldset, the card's ord is set to the same as the fieldset's ord.
+
+This only affects the order of presentation of new cards. Cards with lower
+ord are presented first.
+
+On import from Anki, this is set to 10 * index where index is the index
+into the cards array. This should provide the same order of presentation as
+in Anki, except that each import begins with index 0 so cards will
+intermix.
+
 ### revlog
 A revlog record is produced each time a card is reviewed.
 
@@ -2175,6 +2207,7 @@ work with.
 ### 2.0.0 - 20220917
 
 Remove fieldsets table entirely.
+Add fieldset.ord
 
 ### 1.2.1 - 20220917
 
