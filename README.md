@@ -13,7 +13,7 @@ $ npm install -g @ig3/srf
 
 ### Create some cards
 
-The basick elements of srf are cards, produced from fieldsets and
+The basic elements of srf are cards, produced from fieldsets and
 templates.
 
 A fieldset is a set of name/value pairs.
