@@ -2033,6 +2033,1198 @@ From templates.rs:
 
 
 
+## Anki apkg files
+
+These files contain the transferrable state of an Anki collection: a set of
+decks containing templates, notes, cards and revision logs.
+
+One could examine the [Anki source
+code](https://github.com/ankitects/anki/) to determine what is in an export
+from this source but the code is complex with multiple languages and tools
+to interface them that obscure the interactions unless is familiar with
+them.
+
+I haven't reviewed the Anki source code for a long time. Here are merely my
+notes and observations, not rooted in an understanding of the Anki source
+code.
+
+The zip file contains:
+ * one or more sqlite database files, named `collection` with different
+   extensions depening on version (see below).
+ * media files
+
+### media files
+
+Media files (audio, images, etc.) are named numerically, from 0.
+
+There is a file named `media` which contains JSON serialization of a map of
+these numeric filenames to filenames.
+
+For example:
+```
+{
+  "0": "audio1-2exercise3.mp3",
+  "1": "audio1-1exercise2.mp3",
+  "2": "audio1-2exercise4.mp3"
+}
+```
+
+There is no record of mime type. The file type can be deduced from the
+filename extension or by inspection of the file data.
+
+### collection database
+
+The zip file will contain one or more sqlite database files, all named
+`collection` but with different extensions for different versions of Anki.
+
+There is often only one sqlite databases but occasionally there are
+multiple, allowing the collection to be imported to multiple versions of
+Anki.
+
+#### collection.sqlite
+
+This is for versions of Anki before 2.0. I have not seen an example of
+this.
+
+I haven't searched exhaustively but all the shared decks on
+[ankiweb](https://ankiweb.net/shared/decks/) have `collection.anki2` or
+`collection.anki21` - even those with modification dates back to 2012,
+which seems to be about the oldest.
+
+The old format isn't important. Anki 2.0 has been around since at least
+2013. The oldest tag on the
+[Anki repository](https://github.com/ankitects/anki/tags?after=2.0.9) is
+2.0.4 from 8 Jan 2013.
+
+#### collection.anki2 and collection.anki21
+
+The database schema is the same for these, so the difference must be in the
+contained values or their interpretation.
+
+This is for versions of Anki from 2.0 but less than 2.1.
+
+Tables:
+ * cards
+ * col
+ * graves
+ * notes
+ * revlog
+ * sqlite_stat1
+ * sqlite_stat4
+
+##### cards
+
+```
+sqlite> .schema cards
+CREATE TABLE cards (
+  id integer PRIMARY KEY,
+  nid integer NOT NULL,
+  did integer NOT NULL,
+  ord integer NOT NULL,
+  mod integer NOT NULL,
+  usn integer NOT NULL,
+  type integer NOT NULL,
+  queue integer NOT NULL,
+  due integer NOT NULL,
+  ivl integer NOT NULL,
+  factor integer NOT NULL,
+  reps integer NOT NULL,
+  lapses integer NOT NULL,
+  left integer NOT NULL,
+  odue integer NOT NULL,
+  odid integer NOT NULL,
+  flags integer NOT NULL,
+  data text NOT NULL
+);
+CREATE INDEX ix_cards_usn ON cards (usn);
+CREATE INDEX ix_cards_nid ON cards (nid);
+CREATE INDEX ix_cards_sched ON cards (did, queue, due);
+```
+
+##### col
+
+```
+sqlite> .schema col
+CREATE TABLE col (
+  id integer PRIMARY KEY,
+  crt integer NOT NULL,
+  mod integer NOT NULL,
+  scm integer NOT NULL,
+  ver integer NOT NULL,
+  dty integer NOT NULL,
+  usn integer NOT NULL,
+  ls integer NOT NULL,
+  conf text NOT NULL,
+  models text NOT NULL,
+  decks text NOT NULL,
+  dconf text NOT NULL,
+  tags text NOT NULL
+);
+```
+
+ * id: there is only one record, with ID = 1
+ * crt: record creation time
+ * mod: record modification time
+ * scm: schema modification time - maybe the database schema
+ * ver: version - maybe the database schema version
+ * dty: dirty
+   [ankisyn2](https://github.com/patarapolw/ankisync2/blob/master/ankisync2/anki21/db.py)
+   says this is unused.
+ * usn: update sequence number - relates to syncing.
+ * ls: last sync time
+ * conf: JSON serialization of configuration options that are synced
+ * models: JSON serialization of the models
+ * decks: JSON serialization of the deck(s)
+ * dconf: JSON serialization of deck options
+ * tags: tags used in the collection
+
+###### conf
+Basic Anki configuration option settins.
+
+An example from a collection.anki21 database
+```
+{
+  "timeLim":0,
+  "nextPos":9401,
+  "dueCounts":true,
+  "sortType":"noteFld",
+  "localOffset":-720,
+  "schedVer":2,
+  "estTimes":true,
+  "sortBackwards":false,
+  "newSpread":0,
+  "dayLearnFirst":false,
+  "rollover":4,
+  "collapseTime":1200,
+  "creationOffset":-720,
+  "addToCur":true,
+  "activeDecks":[1629058964075],
+  "curDeck":1629058964075,
+  "curModel":1409030500500
+}
+```
+
+An example from a collection.anki2 database (sorted for consistency with above)
+```
+{
+  "timeLim":0,
+  "nextPos":2,
+  "dueCounts":true,
+  "sortType":"noteFld",
+  "localOffset":-720,
+  "schedVer":1,
+  "estTimes":true,
+  "sortBackwards":false,
+  "newSpread":0,
+  "dayLearnFirst":false,
+  "collapseTime":1200,
+  "addToCur":true,
+  "activeDecks":[1],
+  "curDeck":1,
+  "curModel":1629059140118,
+}
+```
+
+So, anki21 has these additional values:
+ * rollover
+ * creationOffset
+
+From my recollection of early work with Anki 2.0 then Anki 2.1, where I had problems with the buggy timezone handling and rollover from day to day, I think these
+are:
+
+rollover: The time of day, local time zone, when the Anki 'day' rolls over. Anki keeps track of longer times in terms of days, not seconds or milliseconds. The day
+number is the number of days since the initialization of the collection. The creation time is in col.crt. This setting will affect various statistics and the
+interpretation of times specified as a number of days Vs the local time.
+
+creationOffset: I'm not so sure about this but I expect that this is the timezone offset when the collection was created. Different users can be in different time
+zones so this might affect how times are recorded. My recollection is that times are recorded in local time not UTC. This was problematic because at transition
+between daylight saving and standard time, some calculations were incorrect. I submitted patches for some of these errors, some of which were accepted, others
+modified or rejected. Damien was concerned about impact of change on existing users, and chose not to fix all bugs therefore.
+
+So, Anki 2.1 deals with dates and times a bit differently and includes these parameters not present in Anki 2.0. Time related fields (e.g. in card and revlog) are
+likely to be interpreted differently even if, superficially they look the same. But this will only affect study history and due dates. The cards themselves (notes,
+templates, etc.) do not depend on time of day.
+
+###### models
+
+An example from a collection.anki2 database:
+```
+{
+  "1629059140120": {
+    "id": 1629059140120,
+    "name": "Basic (optional reversed card)",
+    "type": 0,
+    "mod": 0,
+    "usn": 0,
+    "sortf": 0,
+    "did": 1,
+    "tmpls": [
+      {
+        "name": "Card 1",
+        "ord": 0,
+        "qfmt": "{{Front}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      },
+      {
+        "name": "Card 2",
+        "ord": 1,
+        "qfmt": "{{#Add Reverse}}{{Back}}{{/Add Reverse}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Front}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      }
+    ],
+    "flds": [
+      {
+        "name": "Front",
+        "ord": 0,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Back",
+        "ord": 1,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Add Reverse",
+        "ord": 2,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      }
+    ],
+    "css": ".card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n",
+    "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    "latexPost": "\\end{document}",
+    "latexsvg": false,
+    "req": [
+      [
+        0,
+        "any",
+        [
+          0
+        ]
+      ],
+      [
+        1,
+        "all",
+        [
+          1,
+          2
+        ]
+      ]
+    ]
+  },
+  "1629059140118": {
+    "id": 1629059140118,
+    "name": "Basic",
+    "type": 0,
+    "mod": 0,
+    "usn": 0,
+    "sortf": 0,
+    "did": 1,
+    "tmpls": [
+      {
+        "name": "Card 1",
+        "ord": 0,
+        "qfmt": "{{Front}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      }
+    ],
+    "flds": [
+      {
+        "name": "Front",
+        "ord": 0,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Back",
+        "ord": 1,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      }
+    ],
+    "css": ".card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n",
+    "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    "latexPost": "\\end{document}",
+    "latexsvg": false,
+    "req": [
+      [
+        0,
+        "any",
+        [
+          0
+        ]
+      ]
+    ]
+  },
+  "1629059140119": {
+    "id": 1629059140119,
+    "name": "Basic (and reversed card)",
+    "type": 0,
+    "mod": 0,
+    "usn": 0,
+    "sortf": 0,
+    "did": 1,
+    "tmpls": [
+      {
+        "name": "Card 1",
+        "ord": 0,
+        "qfmt": "{{Front}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      },
+      {
+        "name": "Card 2",
+        "ord": 1,
+        "qfmt": "{{Back}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Front}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      }
+    ],
+    "flds": [
+      {
+        "name": "Front",
+        "ord": 0,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Back",
+        "ord": 1,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      }
+    ],
+    "css": ".card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n",
+    "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    "latexPost": "\\end{document}",
+    "latexsvg": false,
+    "req": [
+      [
+        0,
+        "any",
+        [
+          0
+        ]
+      ],
+      [
+        1,
+        "any",
+        [
+          1
+        ]
+      ]
+    ]
+  },
+  "1629059140121": {
+    "id": 1629059140121,
+    "name": "Basic (type in the answer)",
+    "type": 0,
+    "mod": 0,
+    "usn": 0,
+    "sortf": 0,
+    "did": 1,
+    "tmpls": [
+      {
+        "name": "Card 1",
+        "ord": 0,
+        "qfmt": "{{Front}}\n\n{{type:Back}}",
+        "afmt": "{{Front}}\n\n<hr id=answer>\n\n{{type:Back}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      }
+    ],
+    "flds": [
+      {
+        "name": "Front",
+        "ord": 0,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Back",
+        "ord": 1,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      }
+    ],
+    "css": ".card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n",
+    "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    "latexPost": "\\end{document}",
+    "latexsvg": false,
+    "req": [
+      [
+        0,
+        "any",
+        [
+          0,
+          1
+        ]
+      ]
+    ]
+  },
+  "1629059140122": {
+    "id": 1629059140122,
+    "name": "Cloze",
+    "type": 1,
+    "mod": 0,
+    "usn": 0,
+    "sortf": 0,
+    "did": 1,
+    "tmpls": [
+      {
+        "name": "Cloze",
+        "ord": 0,
+        "qfmt": "{{cloze:Text}}",
+        "afmt": "{{cloze:Text}}<br>\n{{Back Extra}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      }
+    ],
+    "flds": [
+      {
+        "name": "Text",
+        "ord": 0,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Back Extra",
+        "ord": 1,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      }
+    ],
+    "css": ".card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n\n.cloze {\n font-weight: bold;\n color: blue;\n}\n.nightMode .cloze {\n color: lightblue;\n}\n",
+    "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    "latexPost": "\\end{document}",
+    "latexsvg": false,
+    "req": [
+      [
+        0,
+        "any",
+        [
+          0
+        ]
+      ]
+    ]
+  }
+}
+```
+
+So, this is a 'map' of models, keyed by model ID (mid).
+
+type: I have a vague recollection that this is 0 or 1. 1 for models that
+support closures or 0 otherwise. But I don't recall where I got that
+impression. `const.py` in the source has MODEL_STD = 0 and MODEL_CLOZE = 1.
+I have seen MODEL_STD compared to type, so these must be the values. But no
+explanation of what they are. If type is not MODEL_STD, one always gets the
+first template. Evidently, cloze models don't allow multiple templates.
+
+mod: modification timestamp
+
+usn: 'Update Sequence Number'? Fields with this name are scattered throughtout the database. It relates to synchronization.
+
+sortf: ???
+
+did: deck ID. I have a vague recollection that this is the default deck of cards/notes added with this model.
+
+tmpls: an array of templates. A model might have many templates. A separate card is generated for each template.
+
+tmmpls.ord: ordinal, for controlling the order of the templates.
+
+tmpls.bqfmt: In the source, in one place, bqfmt is mapped to q_format_browser.
+'q' is for 'question' (and 'a' is for 'answer'). It seems 'b' is for
+browser. There is some code under a comment `# legacy` defining function
+`templates_for_card` that takes a boolean `browser`. If `browser` is true,
+the bqfmt and bafmt templates are used. If browser is not true or if bqfmt
+or bafmt don't exist, then qfmt and afmt are used. So, it seems that bafrt
+and bqfmt are templates that can override qftm and afmt in the context of a
+browser but doing to is a legacy feature. Maybe, long ago, the templates
+could be rendered in a browser or in other contexts???
+
+tmpls.did: This must be deck ID again, but why would an individual template
+be associated with a particular deck?
+
+tmpls.bfont and tmpls.bsize: I am guessing that again 'b' relates to
+browser. These probably allow different font and font size in a browser.
+
+
+This is an example from a collection.ank21 database:
+
+```
+{
+  "1409030500500": {
+    "id": 1409030500500,
+    "name": "Basic (optional reversed card)-62f40",
+    "type": 0,
+    "mod": 1410892824,
+    "usn": -1,
+    "sortf": 0,
+    "did": 1410882881255,
+    "tmpls": [
+      {
+        "name": "Card 1",
+        "ord": 0,
+        "qfmt": "{{Front}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "Arial",
+        "bsize": 12
+      },
+      {
+        "name": "Card 2",
+        "ord": 1,
+        "qfmt": "{{#Add Reverse}}{{Back}}{{/Add Reverse}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Front}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "Arial",
+        "bsize": 12
+      }
+    ],
+    "flds": [
+      {
+        "name": "Front",
+        "ord": 0,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20,
+        "media": []
+      },
+      {
+        "name": "Back",
+        "ord": 1,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20,
+        "media": []
+      },
+      {
+        "name": "Add Reverse",
+        "ord": 2,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20,
+        "media": []
+      }
+    ],
+    "css": ".card {\n font-familiy: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}",
+    "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    "latexPost": "\\end{document}",
+    "latexsvg": false,
+    "req": [
+      [
+        0,
+        "any",
+        [
+          0
+        ]
+      ],
+      [
+        1,
+        "all",
+        [
+          1,
+          2
+        ]
+      ]
+    ],
+    "tags": [
+      "chinese-w01-l02"
+    ],
+    "vers": []
+  },
+  "1629058828334": {
+    "id": 1629058828334,
+    "name": "Basic",
+    "type": 0,
+    "mod": 0,
+    "usn": 0,
+    "sortf": 0,
+    "did": 1,
+    "tmpls": [
+      {
+        "name": "Card 1",
+        "ord": 0,
+        "qfmt": "{{Front}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      }
+    ],
+    "flds": [
+      {
+        "name": "Front",
+        "ord": 0,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Back",
+        "ord": 1,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      }
+    ],
+    "css": ".card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n",
+    "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    "latexPost": "\\end{document}",
+    "latexsvg": false,
+    "req": [
+      [
+        0,
+        "any",
+        [
+          0
+        ]
+      ]
+    ]
+  },
+  "1629058828338": {
+    "id": 1629058828338,
+    "name": "Cloze",
+    "type": 1,
+    "mod": 0,
+    "usn": 0,
+    "sortf": 0,
+    "did": 1,
+    "tmpls": [
+      {
+        "name": "Cloze",
+        "ord": 0,
+        "qfmt": "{{cloze:Text}}",
+        "afmt": "{{cloze:Text}}<br>\n{{Back Extra}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      }
+    ],
+    "flds": [
+      {
+        "name": "Text",
+        "ord": 0,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Back Extra",
+        "ord": 1,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      }
+    ],
+    "css": ".card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n\n.cloze {\n font-weight: bold;\n color: blue;\n}\n.nightMode .cloze {\n color: lightblue;\n}\n",
+    "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    "latexPost": "\\end{document}",
+    "latexsvg": false,
+    "req": [
+      [
+        0,
+        "any",
+        [
+          0
+        ]
+      ]
+    ]
+  },
+  "1629058828335": {
+    "id": 1629058828335,
+    "name": "Basic (and reversed card)",
+    "type": 0,
+    "mod": 0,
+    "usn": 0,
+    "sortf": 0,
+    "did": 1,
+    "tmpls": [
+      {
+        "name": "Card 1",
+        "ord": 0,
+        "qfmt": "{{Front}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      },
+      {
+        "name": "Card 2",
+        "ord": 1,
+        "qfmt": "{{Back}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Front}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      }
+    ],
+    "flds": [
+      {
+        "name": "Front",
+        "ord": 0,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Back",
+        "ord": 1,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      }
+    ],
+    "css": ".card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n",
+    "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    "latexPost": "\\end{document}",
+    "latexsvg": false,
+    "req": [
+      [
+        0,
+        "any",
+        [
+          0
+        ]
+      ],
+      [
+        1,
+        "any",
+        [
+          1
+        ]
+      ]
+    ]
+  },
+  "1629058828337": {
+    "id": 1629058828337,
+    "name": "Basic (type in the answer)",
+    "type": 0,
+    "mod": 0,
+    "usn": 0,
+    "sortf": 0,
+    "did": 1,
+    "tmpls": [
+      {
+        "name": "Card 1",
+        "ord": 0,
+        "qfmt": "{{Front}}\n\n{{type:Back}}",
+        "afmt": "{{Front}}\n\n<hr id=answer>\n\n{{type:Back}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      }
+    ],
+    "flds": [
+      {
+        "name": "Front",
+        "ord": 0,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Back",
+        "ord": 1,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      }
+    ],
+    "css": ".card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n",
+    "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    "latexPost": "\\end{document}",
+    "latexsvg": false,
+    "req": [
+      [
+        0,
+        "any",
+        [
+          0,
+          1
+        ]
+      ]
+    ]
+  },
+  "1629058828336": {
+    "id": 1629058828336,
+    "name": "Basic (optional reversed card)",
+    "type": 0,
+    "mod": 0,
+    "usn": 0,
+    "sortf": 0,
+    "did": 1,
+    "tmpls": [
+      {
+        "name": "Card 1",
+        "ord": 0,
+        "qfmt": "{{Front}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      },
+      {
+        "name": "Card 2",
+        "ord": 1,
+        "qfmt": "{{#Add Reverse}}{{Back}}{{/Add Reverse}}",
+        "afmt": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Front}}",
+        "bqfmt": "",
+        "bafmt": "",
+        "did": null,
+        "bfont": "",
+        "bsize": 0
+      }
+    ],
+    "flds": [
+      {
+        "name": "Front",
+        "ord": 0,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Back",
+        "ord": 1,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      },
+      {
+        "name": "Add Reverse",
+        "ord": 2,
+        "sticky": false,
+        "rtl": false,
+        "font": "Arial",
+        "size": 20
+      }
+    ],
+    "css": ".card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n",
+    "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    "latexPost": "\\end{document}",
+    "latexsvg": false,
+    "req": [
+      [
+        0,
+        "any",
+        [
+          0
+        ]
+      ],
+      [
+        1,
+        "all",
+        [
+          1,
+          2
+        ]
+      ]
+    ]
+  }
+}
+```
+
+This has added `flds.media`, but only in the first model. The others don't
+have it. It is an empty array in all the cases I have seen.
+
+Otherwise, this looks about the same as in anki2.
+
+###### decks
+
+An example from a collection.anki2 database:
+
+```
+{
+  "1": {
+    "id": 1,
+    "mod": 0,
+    "name": "Default",
+    "usn": 0,
+    "lrnToday": [ 0, 0 ],
+    "revToday": [ 0, 0 ],
+    "newToday": [ 0, 0 ],
+    "timeToday": [ 0, 0 ],
+    "collapsed": true,
+    "browserCollapsed": true,
+    "desc": "",
+    "dyn": 0,
+    "conf": 1,
+    "extendNew": 0,
+    "extendRev": 0
+  }
+}
+```
+
+An example from a collection.anki21 database:
+```
+{
+  "1629058964075":{
+    "id":1629058964075,
+    "mod":1629059039,
+    "name":"Coursera - Chinese for Beginners",
+    "usn":-1,
+    "lrnToday":[0,0],
+    "revToday":[0,0],
+    "newToday":[0,5],
+    "timeToday":[0,44860],
+    "collapsed":true,
+    "browserCollapsed":true,
+    "desc":"Please see the <a href='https://ankiweb.net/shared/info/'>shared deck page</a> for more info.",
+    "dyn":0,
+    "conf":1,
+    "extendNew":0,
+    "extendRev":0
+  },
+  "1":{
+    "id":1,
+    "mod":0,
+    "name":"Default",
+    "usn":0,
+    "lrnToday":[0,0],
+    "revToday":[0,0],
+    "newToday":[0,0],
+    "timeToday":[0,0],
+    "collapsed":true,
+    "browserCollapsed":true,
+    "desc":"",
+    "dyn":0,
+    "conf":1,
+    "extendNew":0,
+    "extendRev":0
+  }
+}
+```
+
+These appear to be the same structure.
+
+Keyed by deck ID (did).
+
+mod: modification time.
+
+name: the name of the deck
+
+usn: Update Sequence Number - to do with synchronization
+
+lrnToday: counts of reviews of learning cards
+
+revToday: counts of reviews of non-learning cards
+
+newToday: counts of new cards
+
+timeToday: study time today
+
+collapsed: I think true if the deck is collapsed in the deck browser
+
+browserCollapsed: ???
+
+desc: probably a description
+
+dyn: probably whether the deck is dynamic
+
+conf: ???
+
+extendNew: ??? - maybe for adjusting the number of new cards?
+
+extendRev: ??? - maybe for adjusting the number of review cards?
+
+
+###### dconf
+
+An example from a collection.anki2 database:
+
+```
+{
+  "1": {
+    "id": 1,
+    "mod": 0,
+    "name": "Default",
+    "usn": 0,
+    "maxTaken": 60,
+    "autoplay": true,
+    "timer": 0,
+    "replayq": true,
+    "new": {
+      "bury": false,
+      "delays": [
+        1,
+        10
+      ],
+      "initialFactor": 2500,
+      "ints": [
+        1,
+        4,
+        0
+      ],
+      "order": 1,
+      "perDay": 20
+    },
+    "rev": {
+      "bury": false,
+      "ease4": 1.3,
+      "ivlFct": 1,
+      "maxIvl": 36500,
+      "perDay": 200,
+      "hardFactor": 1.2
+    },
+    "lapse": {
+      "delays": [
+        10
+      ],
+      "leechAction": 1,
+      "leechFails": 8,
+      "minInt": 1,
+      "mult": 0
+    },
+    "dyn": false,
+    "newMix": 0,
+    "newPerDayMinimum": 0,
+    "interdayLearningMix": 0,
+    "reviewOrder": 0
+  }
+}
+```
+
+This is a serialization of the deck configuration. Very specific to the workings of the Anki scheduler.
+
+##### graves
+
+I haven't seen an example with anything in this table.
+
+```
+sqlite> .schema graves
+CREATE TABLE graves (
+  usn integer NOT NULL,
+  oid integer NOT NULL,
+  type integer NOT NULL
+);
+```
+
+##### notes
+
+```
+qlite> .schema notes
+CREATE TABLE notes (
+  id integer PRIMARY KEY,
+  guid text NOT NULL,
+  mid integer NOT NULL,
+  mod integer NOT NULL,
+  usn integer NOT NULL,
+  tags text NOT NULL,
+  flds text NOT NULL,
+  -- The use of type integer for sfld is deliberate, because it means that integer values in this
+  -- field will sort numerically.
+  sfld integer NOT NULL,
+  csum integer NOT NULL,
+  flags integer NOT NULL,
+  data text NOT NULL
+);
+CREATE INDEX ix_notes_usn ON notes (usn);
+CREATE INDEX ix_notes_csum ON notes (csum);
+```
+
+##### revlog
+
+```
+sqlite> .schema revlog
+CREATE TABLE revlog (
+  id integer PRIMARY KEY,
+  cid integer NOT NULL,
+  usn integer NOT NULL,
+  ease integer NOT NULL,
+  ivl integer NOT NULL,
+  lastIvl integer NOT NULL,
+  factor integer NOT NULL,
+  time integer NOT NULL,
+  type integer NOT NULL
+);
+CREATE INDEX ix_revlog_usn ON revlog (usn);
+CREATE INDEX ix_revlog_cid ON revlog (cid);
+```
+
+
 ## Charts
 
 I have tried [chart.js](https://chartjs.org). It's quite simple for a basic chart. 
@@ -2203,6 +3395,11 @@ work with.
 * No synchronization between devices / databases
 
 ## Changes
+
+### 2.0.1 - 20220918
+
+Remove the distinction between imports of anki2 and anki21 apkg files. 
+For the purposes of import to srf, they are the same.
 
 ### 2.0.0 - 20220917
 

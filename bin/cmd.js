@@ -602,12 +602,13 @@ function importFile (opts) {
   }
   unzip(file)
   .then(data => {
-    if (data['collection.anki21']) {
-      srf.importAnki21(opts, data);
-    } else if (data['collection.anki2']) {
-      srf.importAnki2(data);
+    if (
+      data['collection.anki2'] ||
+      data['collection.anki21']
+    ) {
+      srf.importAnki(opts, data);
     } else {
-      throw new Error(file + ' is not an Anki deck package');
+      throw new Error(file + ' is not a supported Anki deck package: it contains neither collection.anki2 nor collection.anki21');
     }
   })
   .catch(err => {
