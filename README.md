@@ -32,14 +32,27 @@ Fieldsets and templates have a templateset attribute. For each fieldset,
 one card is produces for each template with matching templateset value.
 
 You study the cards. The cards are produced automatically when you add
-fieldsets or templates.
+fieldsets or templates. Each card is scheduled for study according to the
+scheduling algorithm. Each day, some of the cards you have never seen may
+be presented as new cards to study, according to your workload.
 
-#### Manually
+Cards start as unseen cards. Then they are presented as new cards with a
+short interval. Each time you review a card, its interval is adjusted
+according to how you rate it: Again, Hard, Good or Easy. As you learn the
+card the interval becomes longer until it becomes a mature card with a
+maximal interval: review once a year, by default.
+
+The order that unseen cards are presented as new cards is determined by
+their ordinal, which is copied from the fieldset.
+
+It's all about the cards.
+
+#### Create Cards Manually
 
 You can create templates and fieldsets manually in the browser. I don't
 recommend it. The UI is crude. But it's an option.
 
-#### Import CSV files
+#### Create Cards by importing CSV files
 
 Create two CSV files:
  * templates.csv
@@ -105,11 +118,29 @@ Read below for details of all the options for the templates. They are
 [Mustache](https://github.com/janl/mustache.js) templates with all the
 field values available.
 
-#### Import Anki .apkg or .colpkg file
+##### Add some media files
 
-Download a shared Anki deck or export one or more decks from Anki and
-import them to srf. Note that srf doesn't distinguish decks so all the
-cards will be merged into a single pool, if you import multiple decks.
+The fieldsets might refer to media files (images, audio, video, etc.). You can
+just copy these to the media directory which is ~/.local/share/srf/media by
+default.
+
+For example, a field might include an image with something like:
+`<img src=\"my-image.png\" />`, or an audio file with something like:
+`[sound:my-audio.mp3]`.
+
+#### Create Cards by importing an Anki .apkg or .colpkg file
+
+These files include templates, fieldsets, media  and cards and they may
+include study history. They are an easy way to get started if you have a
+relavant shared deck or if you have been using Anki and want to transfer
+your study to srf.
+
+Download a shared Anki deck or export a collection package including one or
+more decks from Anki and import them to srf.
+
+Srf doesn't distinguish decks so all the cards will be merged into a single
+pool, if you import multiple decks. If you want to keep them separate in
+srf, you can create multiple databases.
 
 Anki shared decks are available from several sources. Of course, from
 [AnkiWeb](https://ankiweb.net/shared/decks/), but there are other sites
@@ -3489,6 +3520,10 @@ work with.
 * No synchronization between devices / databases
 
 ## Changes
+
+### 2.1.1
+
+README changes
 
 ### 2.1.0 - 20220918
 
