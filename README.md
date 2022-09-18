@@ -871,13 +871,13 @@ default: 0.5
 After responding 'Hard' to a review, the new interval is the previous
 interval multiplied by this factor.
 
-### goodFactor
+#### goodFactor
 
 After responding 'Good' to a review, the new interval is the previous
 interval multiplied by this factor, the card factor and the 'correct'
 factor. See 'scheduler' below for details.
 
-### easyFactor
+#### easyFactor
 
 After responding 'Easy' to a review, the new interval is the interval for a
 'Good' response multiplied by this factor.
@@ -959,6 +959,11 @@ well you remembered the card:
  * Hard: you remembered the card but it was a bit hard to recall
  * Good: you remembered the card 
  * Easy: you remembered the card but it was too easy
+
+What you should remember, when you see the front side, and what constitutes
+an adequate recollection is up to you. Some cards may be very specific and
+fact based while others might be more vague or conceptual. It's up to your
+own judgement.
 
 Keyboard shortcuts for these are 'j', 'k', 'l' and ';' respectively. These
 are hard coded, but it is easy to edit the templates in the views directory
