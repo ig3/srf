@@ -11,6 +11,11 @@ $ npm install -g @ig3/srf
 
 ## Operation
 
+ 1. Create some cards (see below)
+ 2. Run the server: `srf`
+
+The server listens on http://localhost:8000 by default.
+
 ### Create some cards
 
 The basic elements of srf are cards, produced from fieldsets and
