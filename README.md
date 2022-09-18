@@ -89,8 +89,8 @@ For example:
 
 ```
 templateset,fields
-Test1,"{“Front”: “Who you gonna call?”, “Back”: “Ghost Busters!”}"
-Test1,"{“Front”: “Where's Waldo?”, “Back”: “Hold on a sec... I'm looking.”}"
+Test1,"{""Front"": ""Who you gonna call?"", ""Back"": ""Ghost Busters!""}"
+Test1,"{""Front"": ""Where's Waldo?"", ""Back"": ""Hold on a sec... I'm still looking.""}"
 ```
 
 You can have as many fields as you want in your templates and fieldsets.
