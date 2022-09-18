@@ -22,19 +22,44 @@ The server listens on http://localhost:8000 by default.
 The basic elements of srf are cards, produced from fieldsets and
 templates.
 
-A fieldset is a set of name/value pairs.
+A fieldset is a set of name/value pairs that you want to remember in
+relationship to each other, stored as JSON.
+
+For example:
+
+```
+{
+  "Country": "Canada',
+  "Capital": "Ottawa",
+  "Continent": "North America"
+  "Area': "over 9.98 million square kilometres",
+  "Population": "38 million"
+}
+```
 
 A template is a pair of Mustache templates for the front and back of a card
 that include some of the fields in the fieldset, and some css for styling
 the card.
 
-Fieldsets and templates have a templateset attribute. For each fieldset,
-one card is produces for each template with matching templateset value.
+For example:
 
-You study the cards. The cards are produced automatically when you add
-fieldsets or templates. Each card is scheduled for study according to the
-scheduling algorithm. Each day, some of the cards you have never seen may
-be presented as new cards to study, according to your workload.
+```
+Front: The <span class="keyword">capital</span> of {{Country}} is?
+Back: {{Capital}}
+css: .keyword { font-style: italic; }
+```
+
+A single template can be used to produce cards from many fieldsets.
+
+Templates are grouped into sets identified by templateset name.
+
+Each fieldset is related to a templateset and one card is produced for each
+template in the templateset.
+
+You study the cards. The cards are produced automatically when you add or
+edit fieldsets or templates. Each card is scheduled for study according to
+the scheduling algorithm. Each day, some of the cards you have never seen
+may be presented as new cards to study, according to your workload.
 
 Cards start as unseen cards. Then they are presented as new cards with a
 short interval. Each time you review a card, its interval is adjusted
@@ -43,7 +68,7 @@ card the interval becomes longer until it becomes a mature card with a
 maximal interval: review once a year, by default.
 
 The order that unseen cards are presented as new cards is determined by
-their ordinal, which is copied from the fieldset.
+their ordinal (ord), which is copied from the fieldset.
 
 It's all about the cards.
 
@@ -51,6 +76,16 @@ It's all about the cards.
 
 You can create templates and fieldsets manually in the browser. I don't
 recommend it. The UI is crude. But it's an option.
+
+On the home page, click Templates or Fieldsets buttons at the bottom of the
+page to view, edit or add templates or fieldsets.
+
+Click Templatesets to view a summary of template sets, their fields and the
+templates in them.
+
+When you edit a fieldset, the set of fields available to be set is the
+union of the sets of fields used in each template in the selected
+templateset.
 
 #### Create Cards by importing CSV files
 
@@ -926,7 +961,7 @@ ewma(n) = w(n-1) * decayFactor + w(n) * (1 - decayFactor)
 Run the web server. This is the default command (i.e. if srf is run without
 specifying a command on the command line, it runs the webserver).
 
-#### import <filename>
+#### import \<filename>
 
 Import an Anki export (i.e. a .apkg file). This is the primary way to get
 cards into srf. To migrate from Anki to srf, export decks from Anki,
