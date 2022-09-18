@@ -582,8 +582,16 @@ function runServer (opts, args) {
 }
 
 function importFile (opts) {
-  console.log('import file ', opts);
   const file = opts._[1];
+  if (!file) {
+    console.error('Missing file to import');
+    process.exit(1);
+  }
+  if (!fs.existsSync(file)) {
+    console.error(file + ': File not found.');
+    process.exit(1);
+  }
+
   const srf = require('../lib/srf')({
     dir: opts.dir,
     database: opts.database,
@@ -596,77 +604,7 @@ function importFile (opts) {
     process.exit();
   });
 
-  if (!file) {
-    console.error('Missing file to import');
-    process.exit(1);
-  }
-  unzip(file)
-  .then(data => {
-    if (
-      data['collection.anki2'] ||
-      data['collection.anki21']
-    ) {
-      srf.importAnki(opts, data);
-    } else {
-      throw new Error(file + ' is not a supported Anki deck package: it contains neither collection.anki2 nor collection.anki21');
-    }
-  })
-  .catch(err => {
-    console.log('failed with ', err);
-  });
-}
-
-/**
- * unzip returns a promise that resolves to an object containing
- * the zip file contents, keyed by filename, with file data as buffers.
- */
-function unzip (file) {
-  return new Promise((resolve, reject) => {
-    const yauzl = require('yauzl');
-    yauzl.open(file, { lazyEntries: true }, (err, zipFile) => {
-      if (err) throw err;
-
-      const data = {};
-
-      let handleCount = 0;
-      function incrementHandleCount () {
-        handleCount++;
-      }
-      function decrementHandleCount () {
-        handleCount--;
-        if (handleCount === 0) {
-          console.log('all handles are closed');
-          resolve(data);
-        }
-      }
-
-      incrementHandleCount();
-      zipFile.on('close', decrementHandleCount);
-
-      zipFile.readEntry();
-
-      zipFile.on('entry', entry => {
-        if (/\/$/.test(entry.fileName)) {
-          zipFile.readEntry();
-        } else {
-          zipFile.openReadStream(entry, (err, readStream) => {
-            if (err) throw err;
-            const chunks = [];
-            readStream.on('data', (chunk) => {
-              chunks.push(Buffer.from(chunk));
-            });
-            readStream.on('error', err => {
-              reject(err);
-            });
-            readStream.on('end', () => {
-              data[entry.fileName] = Buffer.concat(chunks);
-              zipFile.readEntry();
-            });
-          });
-        }
-      });
-    });
-  });
+  srf.importFile(opts, file);
 }
 
 function fixDatabase (opts) {

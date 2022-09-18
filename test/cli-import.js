@@ -39,8 +39,10 @@ t.test('cli import', t => {
       ' --directory ' + tmpDir.name +
       ' import nosuchfile';
     exec(cmd, (err, stdout, stderr) => {
+      console.log('stdout: ' + stdout);
+      console.log('stderr: ' + stderr);
       if (err) {
-        t.ok(stderr.indexOf('ENOENT: no such file or directory, open \'nosuchfile\'') !== -1, 'check stderr');
+        t.equal(stderr, 'nosuchfile: File not found.\n', 'check stderr');
         return t.end();
       }
       t.fail('should not succeed');
@@ -58,13 +60,13 @@ t.test('cli import', t => {
       ' --directory ' + tmpDir.name +
       ' import ' + path.join(__dirname, 'data', 'collection-2021-08-16@08-24-34.colpkg');
     exec(cmd, (err, stdout, stderr) => {
+      console.log('import stdout:\n' + stdout);
+      console.log('import stderr:\n' + stderr);
       if (err) {
         console.log('err: ', err);
         t.fail('should not fail');
         return t.end();
       }
-      console.log('import stdout:\n', stdout);
-      console.log('import stderr:\n', stderr);
       t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
       const dbpath = path.join(tmpDir.name, 'srf.db');
       t.ok(fs.existsSync(dbpath), 'check for database "' + dbpath + '"');
@@ -710,13 +712,13 @@ t.test('cli import', t => {
       ' --directory ' + tmpDir.name +
       ' import ' + path.join(__dirname, 'data', 'Coursera_-Chinese_for_Beginners.apkg');
     exec(cmd, (err, stdout, stderr) => {
+      console.log('import stdout:\n' + stdout);
+      console.log('import stderr:\n' + stderr);
       if (err) {
         console.log('err: ', err);
         t.fail('should not fail');
         return t.end();
       }
-      console.log('import stdout:\n', stdout);
-      console.log('import stderr:\n', stderr);
 
       t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
       t.ok(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
@@ -742,6 +744,8 @@ t.test('cli import', t => {
       ' --directory ' + tmpDir.name +
       ' import ' + path.join(__dirname, 'data', 'Coursera_-Chinese_for_Beginners_modified.apkg');
     exec(cmd, (err, stdout, stderr) => {
+      console.log('import stdout:\n' + stdout);
+      console.log('import stderr:\n' + stderr);
       if (err) {
         console.log('err: ', err);
         t.fail('should not fail');
@@ -758,6 +762,146 @@ t.test('cli import', t => {
       t.equals(db.prepare('select count() from revlog').get()['count()'], 3, 'check count of revlog');
       db.close();
       t.end();
+    });
+  });
+
+  t.test('import templates CSV file', t => {
+    t.teardown(() => {
+      tmpDir.removeCallback();
+    });
+    const tmpDir = tmp.dirSync({ unsafeCleanup: true });
+    const cmd =
+      path.join(__dirname, '..', 'bin', 'cmd.js') +
+      ' --directory ' + tmpDir.name +
+      ' import ' + path.join(__dirname, 'data', 'templates.csv');
+    exec(cmd, (err, stdout, stderr) => {
+      console.log('import stdout:\n' + stdout);
+      console.log('import stderr:\n' + stderr);
+      if (err) {
+        console.log('err: ', err);
+        t.fail('should not fail');
+        return t.end();
+      }
+      const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
+      t.ok(db, 'get a database handle');
+      const templates = db.prepare('select * from template').all();
+      t.deepEqual(templates, [
+        {
+          id: 1,
+          templateset: 'Test1',
+          name: 'Card 1',
+          front: '{{Front}}',
+          back: '{{Back}}',
+          css: '.card {\n  Background-color: red;\n}'
+        },
+        {
+          id: 2,
+          templateset: 'Test1',
+          name: 'Card 2',
+          front: '{{Back}}',
+          back: '{{Front}}',
+          css: '.card {\n  Background-color: red;\n}'
+        }
+      ], 'templates loaded successfully');
+      db.close();
+      const cmd =
+        path.join(__dirname, '..', 'bin', 'cmd.js') +
+        ' --directory ' + tmpDir.name +
+        ' import ' + path.join(__dirname, 'data', 'fieldsets.csv');
+      exec(cmd, (err, stdout, stderr) => {
+        console.log('import stdout:\n' + stdout);
+        console.log('import stderr:\n' + stderr);
+        if (err) {
+          console.log('err: ', err);
+          t.fail('should not fail');
+          return t.end();
+        }
+        const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
+        t.ok(db, 'get a database handle');
+        const templates = db.prepare('select * from template').all();
+        t.deepEqual(templates, [
+          {
+            id: 1,
+            templateset: 'Test1',
+            name: 'Card 1',
+            front: '{{Front}}',
+            back: '{{Back}}',
+            css: '.card {\n  Background-color: red;\n}'
+          },
+          {
+            id: 2,
+            templateset: 'Test1',
+            name: 'Card 2',
+            front: '{{Back}}',
+            back: '{{Front}}',
+            css: '.card {\n  Background-color: red;\n}'
+          }
+        ], 'templates loaded successfully');
+        const fieldsets = db.prepare('select * from fieldset').all();
+        t.deepEqual(fieldsets, [
+          {
+            "id": 1,
+            "guid": "asdf",
+            "templateset": "Test1",
+            "fields": '{"Front": "test front", "Back": "test back"}',
+            "ord": 1
+          },
+          {
+            "id": 2,
+            "guid": "qwer",
+            "templateset": "Test1",
+            "fields": '{"Front": "test front 2", "Back": "test back 2"}',
+            "ord": 2
+          }
+        ], 'fieldsets loaded successfully');
+        const cards = db.prepare('select id, fieldsetid, templateid, interval, due, factor, views, lapses, ord from card').all();
+        t.ok(cards.length === 4, '4 cards created');
+        t.deepEqual(cards, [
+          {
+            id: 1,
+            fieldsetid: 1,
+            templateid: 1,
+            interval: 0,
+            due: 0,
+            factor: 2,
+            views: 0,
+            lapses: 0,
+            ord: 1
+          }, {
+            id: 2,
+            fieldsetid: 1,
+            templateid: 2,
+            interval: 0,
+            due: 0,
+            factor: 2,
+            views: 0,
+            lapses: 0,
+            ord: 1
+          }, {
+            id: 3,
+            fieldsetid: 2,
+            templateid: 1,
+            interval: 0,
+            due: 0,
+            factor: 2,
+            views: 0,
+            lapses: 0,
+            ord: 2
+          }, {
+            id: 4,
+            fieldsetid: 2,
+            templateid: 2,
+            interval: 0,
+            due: 0,
+            factor: 2,
+            views: 0,
+            lapses: 0,
+            ord: 2
+          }
+        ], 'cards created correctly');
+        db.close();
+        t.end();
+      });
     });
   });
 });

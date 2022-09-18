@@ -1,0 +1,7 @@
+templateset,name,front,back,css
+Test1,Card 1,{{Front}},{{Back}},".card {
+  Background-color: red;
+}"
+Test1,Card 2,{{Back}},{{Front}},".card {
+  Background-color: red;
+}"

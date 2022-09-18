@@ -11,7 +11,95 @@ $ npm install -g @ig3/srf
 
 ## Operation
 
-### Import cards
+### Create some cards
+
+The basick elements of srf are cards, produced from fieldsets and
+templates.
+
+A fieldset is a set of name/value pairs.
+
+A template is a pair of Mustache templates for the front and back of a card
+that include some of the fields in the fieldset, and some css for styling
+the card.
+
+Fieldsets and templates have a templateset attribute. For each fieldset,
+one card is produces for each template with matching templateset value.
+
+You study the cards. The cards are produced automatically when you add
+fieldsets or templates.
+
+#### Manually
+
+You can create templates and fieldsets manually in the browser. I don't
+recommend it. The UI is crude. But it's an option.
+
+#### Import CSV files
+
+Create two CSV files:
+ * templates.csv
+ * fieldsets.csv
+
+Import each file with:
+
+```
+srf import templates.csv
+srf import fieldsets.csv
+```
+
+##### templates.csv
+
+The templates determine which cards are produced and how the are presented.
+One card is produced for each template with matching templateset value.
+
+The fields for a template are:
+ * templateset - the name of the templateset, must match same on fieldset
+ * name - the name of the template
+ * front - the mustache template code for the front of the card
+ * back - the mustache template code for the back of the card
+ * css - the CSS for rendering the card
+
+Make a CSV file with these headings and appropriate data.
+
+For example:
+
+```
+templateset,name,front,back,css
+Basic,Card 1,{{Front}},{{Back}},".card { Background-color: red; }"
+Basic,Card 2,{{Back}},{{Front}},".card { Background-color: red; }"
+```
+
+You can create many templatesets and each templateset can have as many
+templates as you like. One card will be produced for each template with
+templateset matching that of a fieldset.
+
+##### fieldsets.csv
+
+The fields for a fieldset are:
+ * guid - optional guid that uniquely identifies the fieldset
+ * templateset - the templateset for rendering the fieldset
+ * fields - the fields data as a JSON string
+ * ord - an ordinal number for sorting the fieldsets
+
+guid will default to md5 checksum of the concatenation of the templateset
+and fields values.
+
+ord will default to the row number * 10.
+
+For example:
+
+```
+templateset,fields
+Test1,"{“Front”: “Who you gonna call?”, “Back”: “Ghost Busters!”}"
+Test1,"{“Front”: “Where's Waldo?”, “Back”: “Hold on a sec... I'm looking.”}"
+```
+
+You can have as many fields as you want in your templates and fieldsets.
+
+Read below for details of all the options for the templates. They are
+[Mustache](https://github.com/janl/mustache.js) templates with all the
+field values available.
+
+#### Import Anki .apkg or .colpkg file
 
 Download a shared Anki deck or export one or more decks from Anki and
 import them to srf. Note that srf doesn't distinguish decks so all the
@@ -3396,7 +3484,9 @@ work with.
 
 ## Changes
 
-### 2.0.1 - 20220918
+### 2.1.0 - 20220918
+
+Add support for import of CSV files for templates and fieldsets.
 
 Remove the distinction between imports of anki2 and anki21 apkg files. 
 For the purposes of import to srf, they are the same.
