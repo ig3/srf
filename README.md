@@ -13,6 +13,7 @@ $ npm install -g @ig3/srf
 
  1. Create some cards (see below)
  2. Run the server: `srf`
+ 3. Study: http://localhost:8000
 
 The server listens on http://localhost:8000 by default.
 
