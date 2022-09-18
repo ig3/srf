@@ -390,11 +390,17 @@ function runServer (opts, args) {
     // To present a select of template sets the form helper needs an object
     // keyed by select value with value being the displayed text.
     const templatesets = {};
-    console.log('templatesets: ' + JSON.stringify(srf.getTemplatesets(), null, 2));
     srf.getTemplatesets().forEach(set => {
       templatesets[set.name] = set.name;
+      // make sure the fieldset has all the fields in the templateset
+      if (set.name === fieldset.templateset) {
+        set.fields.forEach(field => {
+          if (fieldset.fields[field] === undefined) {
+            fieldset.fields[field] = '';
+          }
+        });
+      }
     });
-    console.log('templatesets: ' + JSON.stringify(templatesets, null, 2));
     res.render('fieldset', {
       fieldset: fieldset,
       templatesets: templatesets

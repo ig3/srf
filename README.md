@@ -3565,6 +3565,8 @@ work with.
 
 README changes
 
+Ensure when editing that a fieldset includes all fields in the templateset.
+
 ### 2.1.0 - 20220918
 
 Add support for import of CSV files for templates and fieldsets.
