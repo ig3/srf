@@ -378,18 +378,13 @@ The set of fields are defined in the template set definition.
 
 ##### Template Sets
 
-View a list of all template sets in the system. Click on a template set to
-edit it.
+View a list of all template sets in the system.
 
-A template set defines the set of fields that each associated fieldset may
-have and that the template handlebards code may refer to.
+The view is read-only. To change them, add or edit the templates.
 
-Each template set has two attributes:
-
-Name: the name of the template set.
-
-Fields: JSON data: an array of field names.
-For example `["Field 1", "Field 2"]`.
+The fields of a templateset are all the fields of all the templates in the
+templateset. If you add a field to one of the templates, it will be added
+to the templateset.
 
 ##### Field Sets
 
@@ -3561,7 +3556,11 @@ work with.
 
 ## Changes
 
-### 2.1.2
+### 2.1.3
+
+Correct description of templatesets in README.
+
+### 2.1.2 - 20220919
 
 README changes.
 
