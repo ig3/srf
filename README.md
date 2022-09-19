@@ -3567,6 +3567,8 @@ README changes
 
 Ensure when editing that a fieldset includes all fields in the templateset.
 
+Change card factor on import to 2.
+
 ### 2.1.0 - 20220918
 
 Add support for import of CSV files for templates and fieldsets.
