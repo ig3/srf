@@ -3561,13 +3561,17 @@ work with.
 
 ## Changes
 
-### 2.1.1
+### 2.1.2
 
-README changes
+README changes.
 
 Ensure when editing that a fieldset includes all fields in the templateset.
 
-Change card factor on import to 2.
+On import, set card factor to 2.
+
+### 2.1.1
+
+README changes
 
 ### 2.1.0 - 20220918
 
