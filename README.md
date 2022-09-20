@@ -59,7 +59,7 @@ template in the templateset.
 You study the cards. The cards are produced automatically when you add or
 edit fieldsets or templates. They are presented for review at intervals
 determined by the scheduling algoriithm, accoring to how you rate your
-ability to recall them: Agin, Hard, Good or Easy.
+ability to recall them: Again, Hard, Good or Easy.
 
 Each day, if your study workload isn't excessive, some new cards will be
 presented for study. The number of new cards is regulated automatically. If
