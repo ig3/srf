@@ -92,9 +92,11 @@ page to view, edit or add templates or fieldsets.
 Click Templatesets to view a summary of template sets, their fields and the
 templates in them.
 
-When you edit a fieldset, the set of fields available to be set is the
-union of the sets of fields used in each template in the selected
-templateset.
+When you edit a fieldset, the fields you can set are determined from the
+templates in the selected templateset: every field included in any template
+in the templateset. You can't set fields that are not included in any
+template. If you want to set another field, include it in at least one of
+the templates.
 
 #### Create Cards by importing CSV files
 
