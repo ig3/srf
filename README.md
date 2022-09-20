@@ -57,9 +57,18 @@ Each fieldset is related to a templateset and one card is produced for each
 template in the templateset.
 
 You study the cards. The cards are produced automatically when you add or
-edit fieldsets or templates. Each card is scheduled for study according to
-the scheduling algorithm. Each day, some of the cards you have never seen
-may be presented as new cards to study, according to your workload.
+edit fieldsets or templates. They are presented for review at intervals
+determined by the scheduling algoriithm, accoring to how you rate your
+ability to recall them: Agin, Hard, Good or Easy.
+
+Each day, if your study workload isn't excessive, some new cards will be
+presented for study. The number of new cards is regulated automatically. If
+you have a large backlog: if you don't review all cards scheduled for
+review in a timely manner or your study time exceeds your configured limits
+(default: 1 hour), then no new cards will be presented. Otherwise, new
+cards will be presented, up to the daily limit you configure (default: 20
+new cards per day). But you can always choose to see new cards, regardless
+of the algorithm: just click `New Card` on the home page.
 
 Cards start as unseen cards. Then they are presented as new cards with a
 short interval. Each time you review a card, its interval is adjusted
@@ -3559,7 +3568,7 @@ work with.
 
 ### 2.1.3
 
- * Correct description of templatesets in README.
+ * README changes.
  * Add LICENSE.
  * Remove old cruft from repository.
 
