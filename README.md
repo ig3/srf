@@ -3541,8 +3541,9 @@ work with.
 
 * Pure JavaScript on Node
 * Browser based
+* No runtime dependencies - works offline
 * Simple scheduler without the complexity of Anki queues or decks
-* SQLite3 database
+* Simple SQLite3 database
 * No obscure collation function in the database
 * Import from Anki deck exports
 
@@ -3558,7 +3559,9 @@ work with.
 
 ### 2.1.3
 
-Correct description of templatesets in README.
+ * Correct description of templatesets in README.
+ * Add LICENSE.
+ * Remove old cruft from repository.
 
 ### 2.1.2 - 20220919
 
