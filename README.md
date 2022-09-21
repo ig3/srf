@@ -3653,6 +3653,7 @@ work with.
  * README changes.
  * Add LICENSE.
  * Remove old cruft from repository.
+ * Backup the database daily.
 
 ### 2.1.2 - 20220919
 

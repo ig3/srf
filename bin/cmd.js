@@ -60,6 +60,8 @@ if (opts.help) {
 
   if (command === 'import') {
     importFile(opts, subargv);
+  } else if (command === 'backup') {
+    backupDatabase();
   } else if (command === 'fix') {
     fixDatabase(opts, subargv);
   } else if (command === undefined || command === 'run') {
@@ -91,6 +93,21 @@ function showUsage () {
     ' [--media <media-directory>]' +
     ' [--database <database-name>]' +
     ' import <filename>');
+}
+
+/**
+ * backupDatabase creates a backup of the srf database.
+ */
+function backupDatabase() {
+  const srf = require('../lib/srf')({
+    dir: opts.dir,
+    database: opts.database,
+    media: opts.media,
+    config: opts.config,
+    debug: opts.verbose
+  });
+
+  srf.backupDatabase();
 }
 
 /**
@@ -127,6 +144,9 @@ function runServer (opts, args) {
     config: opts.config,
     debug: opts.verbose
   });
+
+  srf.backupDatabase();
+  setInterval(srf.backupDatabase, 1000 * 60 * 60 * 24);
 
   process.on('SIGINT', () => {
     console.log('closing database connection');
