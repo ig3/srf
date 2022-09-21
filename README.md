@@ -763,7 +763,7 @@ the preview window) then take a break from study. It doesn't work well and
 I will probably remove this. I set this to 0 - disabling the feature by
 default.
 
-####  backupRetention (milliseconds)
+####  backupRetention
 
 default: 30 days
 
@@ -809,6 +809,15 @@ default: 1 year
 
 The maximum interval (time until next review) for a card that is Easy.
 
+#### learningThreshold (seconds)
+
+default: 1 week
+
+The interval beyond which cards are considered to be 'learning' cards
+rather than 'new' cards. Beyond this threshold, they are scheduled
+according to the actual interval since they were last reviewed, rather than
+the scheduled interval.
+
 #### matureThreshold (seconds)
 
 default: 21 days
@@ -833,6 +842,17 @@ determining the intervals of cards. The percentCorrectTarget is the target
 percentage of 'correct' responses. The 'correct factor' is adjusted to
 achieve this target. The adjustment is very slow due to the long delay
 between setting an interval and reviewing the card. 
+
+#### percentCorrectSensitivity
+
+default: 0.001
+
+The correct factor is adjusted periodically, according to the difference
+between the actual percentage of 'correct' responses (not 'Again') and the
+target. This factor determines how sensitive the adjustment is to this
+difference. If it is larger, the correct factor will be adjusted more. If
+it is too large, the correct factor will become unstable, fluctuating
+wildly.
 
 #### correctFactorAdjustmentInterval
 
@@ -1029,6 +1049,65 @@ The only exception is new cards. They don't have a due time. Instead, they
 are presented when study time does not exceed configured limits, up to a
 maximum number of new cards per day.
 
+## Card Lifecycle
+
+Cards progress through the following stages:
+ * unseen
+ * new
+ * learning
+ * mature
+
+### Unseen
+
+When you add cards to srf, initially they are unseen. If you add a thousand
+cards, you probably don't want to study them all on the day you add them.
+Most of them remain unseen for some time before they are presented as new
+cards.
+
+If you look at the database. These unseen cards will have an interval of 0.
+Cards that have been seen have an interval greater than 0. Even if these
+cards have a due time set, the due time is ignored until they are selected
+to be presented as new cards.
+
+### New
+
+Eventually an unseen card is presented for study for the first time,
+becoming a 'new' card. It is deemed to be a new card until its interval
+reaches the learning threshold (config.learningThreshold).
+
+At this stage, your ability to remember the card might be quite volatile.
+On the one hand, the novelty of it might make it easier to remember. On the
+other hand, the unfamiliarity of it might make it harder to rememger.
+
+New cards are scheduled according to their scheduled interval, not the
+actual interval since they were last studied. If a card has a scheduled
+interval of 30 minutes but you don't study overnight so you don't see it
+until 10 hours later, it is scheduled on the basis of the scheduled 30
+minute interval, not the 10 hour interval.
+
+### Learning
+
+After familiarizing with a new card, the real work of committing it to long
+term memory begins. Intervals are still fairly short and your ability to
+recall the card might be quite sensitive to the actual interval. Reviewing
+the card a few days late might make the card much more difficult to recall.
+
+During this phase, the card is scheduled according to the actual interval
+since last review. If you don't review it on time (maybe because of exams
+or vaction) but when you do you recall it well, it is the actual interval
+through which you were able to recall it that matters.
+
+### Mature
+
+Eventually the card is well committed to long term memory. You might still
+forget it if you don't review it for too long, but the exact interval
+doesn't make much difference.
+
+By default, cards are considered mature when their interval reaches 21
+days. The scheduling algorithm is still applied and the interval will still
+gradually increase, up to the maximum interval (config.maxInterval) which,
+by default, is one year.
+
 ## Scheduler
 
 There are two aspects to the scheduler:
@@ -1105,21 +1184,21 @@ then it will be scheduled for review in 5 days.
 
 This is for cards that you could remember well: the timing since the last
 review was good - it was not too hard and not too easy. The card will be
-scheduled for review after a longer interval than the time since it was
-last studied.
+scheduled for review after a longer interval.
+
+For new cards (scheduled interval is less than config.learningThreshold),
+the previous schduled interval is used to calculate the new interval. For
+learning and mature cards, the actual interval since last review is used.
+This only makes a difference if there is a delay from scheduled review to
+actual review. The principle is, if you still remembered it well after a
+longer interval than scheduled, then use that longer interval to calculate
+the next interval.
 
 The new interval is the greater of:
-
  * config.goodMinInterval
- * the time since the last review multiplied by config.goodMinFactor
- * the time since the last review multiplied by the product of
+ * the previous interval multiplied by config.goodMinFactor
+ * the previous interval multiplied by the product of
 config.goodFactor, the card ease factor and the overall correct factor.
-
-The time since the last review will typically be longer than the last
-interval because cards are typically not reviewed immediately when they
-become due. For example, after taking a one week break from study, the time
-since the last review will be at least a week, even for a new card with an
-interval of only 60 seconds.
 
 The card ease factor depends on how easy the card is. It accommodates the
 fact that some cards are easier than others and that the ease of a card
@@ -1211,9 +1290,10 @@ due for review.
 
 ### New Cards
 
-Cards that have never been studied are 'new' cards.
+Cards that have never been studied are 'unseen' cards. But eventually they
+are selected to be presented for study: they become a 'new' card.
 
-A new cards is presented for study if:
+A new card is presented for study if:
 
  * Study time is less than config.studyTimeTarget, including:
    * total study time in the past 24 hours
