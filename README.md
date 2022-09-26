@@ -3650,10 +3650,10 @@ work with.
 
 ### 2.1.3
 
- * README changes.
- * Add LICENSE.
- * Remove old cruft from repository.
- * Backup the database daily.
+ * README changes
+ * LICENSE
+ * Remove old cruft
+ * Daily database backup
 
 ### 2.1.2 - 20220919
 
