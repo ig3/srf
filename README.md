@@ -3648,6 +3648,10 @@ work with.
 
 ## Changes
 
+### 2.1.4
+
+ * Fix calculation of last interval
+
 ### 2.1.3
 
  * README changes
