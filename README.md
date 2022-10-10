@@ -19,8 +19,13 @@ The server listens on http://localhost:8000 by default.
 
 ### Create some cards
 
-The basic elements of srf are cards, produced from fieldsets and
-templates.
+There are three ways to create cards:
+ * Add them one at a time via the browser
+ * Import CSV files
+ * Import Anki .apkg or .colpkg file
+
+Cards are the basic elements of study. They are produced from fieldsets,
+transformed by templates.
 
 A fieldset is a set of name/value pairs that you want to remember in
 relationship to each other, stored as JSON.
