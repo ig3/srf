@@ -301,7 +301,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 345600,
           due: 1629388800,
-          factor: 2.3812973337151138,
+          factor: 2,
           views: 1,
           lapses: 0,
           ord: 0
@@ -312,7 +312,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9384
@@ -323,7 +323,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 345600,
           due: 1629388800,
-          factor: 2.3812973337151138,
+          factor: 2,
           views: 1,
           lapses: 0,
           ord: 10
@@ -334,7 +334,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9385
@@ -345,7 +345,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 60,
           due: 1629059712,
-          factor: 0,
+          factor: 2,
           views: 1,
           lapses: 0,
           ord: 20
@@ -356,7 +356,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9386
@@ -367,7 +367,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 60,
           due: 1629059719,
-          factor: 0,
+          factor: 2,
           views: 1,
           lapses: 0,
           ord: 30
@@ -378,7 +378,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9387
@@ -389,7 +389,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 60,
           due: 1629059696,
-          factor: 0,
+          factor: 2,
           views: 1,
           lapses: 0,
           ord: 40
@@ -400,7 +400,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9388
@@ -411,7 +411,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9389
@@ -422,7 +422,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9390
@@ -433,7 +433,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9390
@@ -444,7 +444,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9391
@@ -455,7 +455,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9391
@@ -466,7 +466,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9392
@@ -477,7 +477,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9392
@@ -488,7 +488,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9393
@@ -499,7 +499,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9393
@@ -510,7 +510,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9394
@@ -521,7 +521,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9394
@@ -532,7 +532,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9395
@@ -543,7 +543,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9395
@@ -554,7 +554,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9396
@@ -565,7 +565,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9396
@@ -576,7 +576,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9397
@@ -587,7 +587,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9397
@@ -598,7 +598,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9398
@@ -609,7 +609,7 @@ t.test('cli import', t => {
           templateid: 2,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9398
@@ -620,7 +620,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9399
@@ -631,7 +631,7 @@ t.test('cli import', t => {
           templateid: 1,
           interval: 0,
           due: 0,
-          factor: 0,
+          factor: 2,
           views: 0,
           lapses: 0,
           ord: 9400
@@ -840,18 +840,18 @@ t.test('cli import', t => {
         const fieldsets = db.prepare('select * from fieldset').all();
         t.deepEqual(fieldsets, [
           {
-            "id": 1,
-            "guid": "asdf",
-            "templateset": "Test1",
-            "fields": '{"Front": "test front", "Back": "test back"}',
-            "ord": 1
+            id: 1,
+            guid: 'asdf',
+            templateset: 'Test1',
+            fields: '{"Front": "test front", "Back": "test back"}',
+            ord: 1
           },
           {
-            "id": 2,
-            "guid": "qwer",
-            "templateset": "Test1",
-            "fields": '{"Front": "test front 2", "Back": "test back 2"}',
-            "ord": 2
+            id: 2,
+            guid: 'qwer',
+            templateset: 'Test1',
+            fields: '{"Front": "test front 2", "Back": "test back 2"}',
+            ord: 2
           }
         ], 'fieldsets loaded successfully');
         const cards = db.prepare('select id, fieldsetid, templateid, interval, due, factor, views, lapses, ord from card').all();

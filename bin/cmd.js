@@ -98,7 +98,7 @@ function showUsage () {
 /**
  * backupDatabase creates a backup of the srf database.
  */
-function backupDatabase() {
+function backupDatabase () {
   const srf = require('../lib/srf')({
     dir: opts.dir,
     database: opts.database,

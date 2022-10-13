@@ -337,8 +337,8 @@ The home page presents some basic study statistics:
  * The number of cards currently overdue (due more than 24 hours ago)
  * The number of cards due now
  * The number of new cards seen in the past 24 hours and the number
-   remaining to be seen, should workload permit: (config.maxNewCards - the
-   number of new cards seen in the past 24 hours)
+   remaining to be seen, should workload permit: (config.newCardLimit - the
+   limit on new cards in the past 24 hours)
  * The time until the next card is due
  * A histogram of study time per hour through past and next 24 hours
 
@@ -703,7 +703,10 @@ For example, a json file might be:
   "dispersionFactor": 5,
 
   // The maximum number of new cards in 24 hours.
-  "maxNewCards": 20,
+  "newCardLimit": 20,
+
+  // The mimimum percentCorrect for new cards to be presented
+  "newCardMinPercentCorrect": 75,
 
   // Study time (seconds) per day beyond which no new cards
   "studyTimeLimit": "1 hour",
@@ -878,11 +881,17 @@ calculating the next due time of a card. This randomization helps to avoid
 cards always appearing together, even if they always get the same response.
 It is a percentage of the interval.
 
-#### maxNewCards
+#### newCardLimit
 
 default: 20
 
 The maximum number of new cards to be presented within 24 hours.
+
+#### newCardMinPercentCorrect
+
+default: 75
+
+The minimum value of percentCorrect for viewing new cards.
 
 #### studyTimeLimit
 
@@ -1306,7 +1315,8 @@ A new card is presented for study if:
    * estimated total study time in the next 24 hours
    * estimated average study time per 24 hours in the next 5 days
  * There are no cards due more than 24 hours ago (i.e. overdue)
- * Total new cards in the past 24 hours is less than config.maxNewCards
+ * Total new cards in the past 24 hours is less than config.newCardLimit
+ * percentCorrect is at least config.newCardMinPercentCorrect
  * There is no card due for review or it is more than 5 minutes since the last new card was presented
 
 This regulates the introduction of new cards to maintain daily study time
@@ -3653,9 +3663,11 @@ work with.
 
 ## Changes
 
-### 2.1.4
+### 2.2.0
 
  * Fix calculation of last interval
+ * Change config.maxNewCards to config.newCardLimit
+ * Add config.newCardMinPercentCorrect
 
 ### 2.1.3
 
