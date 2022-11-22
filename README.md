@@ -3663,6 +3663,10 @@ work with.
 
 ## Changes
 
+### 2.2.1 - 20221122
+
+Update dependencies
+
 ### 2.2.0
 
  * Fix calculation of last interval
