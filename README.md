@@ -715,7 +715,7 @@ For example, a json file might be:
   "maxFactor": 10000,
 
   // minimum intervals according to responses to reviews
-  "againMinInterval": 20,
+  "againMaxInterval": "1 day",
   "hardMinInterval": 30,
   "goodMinInterval": 60,
   "goodMinFactor": 1.1,
@@ -901,17 +901,17 @@ If the time spent studying during the past 24 hours or the estimated time
 to study cards due in the next 24 hours exceeds this limit then new cards
 will not be presented.
 
-#### againMinInterval (seconds)
+#### againMaxInterval (seconds)
 
-default: 10
+default: 1 day
 
-This is the mimum interval for cards after response 'Again'.
+The maximum interval for cards after response 'Again'.
 
-#### hardMinInterval (seconds)
+#### hardMaxInterval (seconds)
 
-default: 30
+default: 1 week
 
-This is the minimum interval after responding 'Hard' to a review.
+This is the maximum interval after responding 'Hard' to a review.
 
 #### goodMinInterval (seconds)
 
@@ -933,18 +933,19 @@ This is the minimum interval after responding 'Easy' to a review.
 
 #### againFactor
 
-default: 0.1
+default: 0.3
 
 After responding 'Again' to a review, the new interval is the previous
-interval multiplied by this factor.
-
+interval multiplied by this factor, but with a maximum of againMaxInterval
+which, by default, is 1 day.
 
 #### hardFactor
 
 default: 0.5
 
 After responding 'Hard' to a review, the new interval is the previous
-interval multiplied by this factor.
+interval multiplied by this factor, but with a maximum of hardMaxInterval
+which, by default, is 1 week.
 
 #### goodFactor
 
@@ -1165,31 +1166,28 @@ describe the default configuration.
 #### Again
 
 This is for cards that you could not remember: that you want to see again
-sooner rather than later. The card is scheduled to be reviewed in 10% of
-the time since it was last reviewed, with a minimum of 20 seconds.
+sooner rather than later. The card is scheduled to be reviewed in 30% of
+the time since it was last reviewed, with a maximum of 1 day.
 
 For example, if you last reviewed a card 1 hour ago but couldn't remember
-it, it will be scheduled for review in 6 minutes. If you can't remember it
-again after 6 minutes then it will be scheduled for review in 20 seconds:
-the minimum interval. On the other hand, if you last reviewed a card 2
-months ago, it will be scheduled for review in about 1 week. If you then
-remember it OK and answer Good, it's interval will return to 2 months after
-just a few Good reviews at shorter intervals but if you continue to click
-Again, it will soon have minimum interval, until you can remember it again.
+it, it will be scheduled for review in 18 minutes. If you can't remember it
+again after 18 minutes then it will be scheduled for review in about 5
+minutes.
 
-It is normal that cards that were well remembered and progressed to longer
-intervals later become difficult to remember. The interval might simply be
-too long, leading to forgetting. But another reason is that other cards
-have been introduced, leading to confusion. This might cause failure to
-correctly remember a set of similar cards, until they have been reviewed
-enough that they are easily / reliably distinguished.
+But there is a maximum interval. If it is more than 3 weeks since you last
+reviewed the card, the new interval will be 1 week.
+
+Cards that were easily remembered at a long interval might become
+difficult. For example, other similar cards may have been introduced,
+leading to confusion. This might make the old card difficult until it can
+be reliably distinguished from the new one.
 
 #### Hard
 
 This is for cards that you could remember but they were too hard: it was
 too long since the last review and you want to see the card again sooner.
 The card is scheduled to be reviewed in 50% of the time since it was last
-reviewed, with a minimum of 30 seconds.
+reviewed, with a maximum of 1 week.
 
 For example, if you last reviewed a card 10 days ago but found it hard,
 then it will be scheduled for review in 5 days.
@@ -3662,6 +3660,12 @@ work with.
 * No synchronization between devices / databases
 
 ## Changes
+
+### 3.0.0 - 20230109
+
+Changed the scheduling algorith again. Changed Again and Hard to have
+maximum intervals instead of minimum intervals and changed the default
+again factor to 0.3.
 
 ### 2.2.2 - 20221216
 
