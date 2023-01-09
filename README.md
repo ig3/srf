@@ -3661,6 +3661,10 @@ work with.
 
 ## Changes
 
+### 3.0.1 - 20230109
+
+Change default again factor to 0.5 and hard factor to 0.8.
+
 ### 3.0.0 - 20230109
 
 Changed the scheduling algorith again. Changed Again and Hard to have
