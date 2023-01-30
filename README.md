@@ -91,8 +91,10 @@ It's all about the cards.
 You can create templates and fieldsets manually in the browser. I don't
 recommend it. The UI is crude. But it's an option.
 
-On the home page, click Templates or Fieldsets buttons at the bottom of the
-page to view, edit or add templates or fieldsets.
+On the home page, click the Templates or Fieldsets buttons at the bottom of
+the page to view, edit or add templates or fieldsets. Click an item in the
+list to edit it or click the Add button at the top of the list to add a new
+item.
 
 Click Templatesets to view a summary of template sets, their fields and the
 templates in them.

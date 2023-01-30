@@ -324,6 +324,7 @@ function runServer (opts, args) {
       statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
       res.render('front', {
         card: card,
+        interval: srf.formatSeconds(card.interval),
         front: card.front,
         template: template,
         cardStartTime: cardStartTime,
@@ -367,6 +368,7 @@ function runServer (opts, args) {
       intervals.easy = srf.formatSeconds(intervals.easy);
       res.render('back', {
         card: card,
+        interval: srf.formatSeconds(card.interval),
         back: card.back,
         template: card.template,
         cardStartTime: cardStartTime,
@@ -478,7 +480,6 @@ function runServer (opts, args) {
 
   app.get('/templatesets', (req, res) => {
     const templatesets = srf.getTemplatesets();
-    console.log('templatesets: ', templatesets);
     res.render('templatesets', {
       templatesets: templatesets
     });
@@ -519,14 +520,12 @@ function runServer (opts, args) {
 
   app.get('/template/:id', (req, res) => {
     const template = srf.getTemplate(req.params.id);
-    console.log('template: ', template);
     // To present a select of template sets the form helper needs an object
     // keyed by select value with value being the displayed text.
     const templatesets = {};
     srf.getTemplatesets().forEach(set => {
       templatesets[set.id] = set.name;
     });
-    console.log('templatesets: ', templatesets);
     res.render('template', {
       template: template,
       templatesets: templatesets
@@ -548,7 +547,6 @@ function runServer (opts, args) {
     srf.getTemplatesets().forEach(set => {
       templatesets[set.id] = set.name;
     });
-    console.log('templatesets: ', templatesets);
     res.render('template', {
       template: template,
       templatesets: templatesets
@@ -556,10 +554,8 @@ function runServer (opts, args) {
   });
 
   app.post('/template/:id', (req, res) => {
-    console.log('save template ', req.params);
     console.log('id ' + typeof req.params.id);
     if (req.params.id === '0') {
-      console.log('create a new template');
       console.log('body ', req.body);
       srf.createTemplate(
         req.body.templatesetid,
@@ -570,8 +566,6 @@ function runServer (opts, args) {
       );
       res.send('ok');
     } else {
-      console.log('update an existing template');
-      console.log('body ', req.body);
       srf.updateTemplate(
         req.body.templatesetid,
         req.body.name,
