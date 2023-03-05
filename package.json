@@ -29,12 +29,12 @@
   "dependencies": {
     "@ig3/config": "^0.2.2",
     "better-sqlite3": "^8.0.1",
-    "csv-parse": "^5.3.3",
+    "csv-parse": "^5.3.4",
     "express": "^4.18.2",
-    "express-handlebars": "^6.0.6",
+    "express-handlebars": "^6.0.7",
     "getopts": "^2.3.0",
     "handlebars-form-helper": "^1.0.4",
-    "json5": "^2.2.1",
+    "json5": "^2.2.3",
     "md5": "^2.3.0",
     "mustache": "^4.2.0",
     "serve-favicon": "^2.5.0",
@@ -47,7 +47,7 @@
     "@ig3/eslint-config-entrain": "^3.0.1",
     "c8": "^7.12.0",
     "multi-tape": "^1.7.0",
-    "tape": "^5.6.1",
+    "tape": "^5.6.3",
     "tmp": "^0.2.1"
   },
   "eslintConfig": {
