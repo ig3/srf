@@ -227,10 +227,15 @@ Add templates by adding records to the template table.
 
 Add fieldsets by adding records to the fieldset table.
 
-
 See [the database description](#srf-database) for a description of the database
 and details of these tables.
 
+After modifying template or fieldset tables, generate missing cards and
+delete orphaned cards by running fix:
+
+```
+$ srf fix
+```
 
 ### Run the server
 
