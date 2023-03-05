@@ -19,10 +19,11 @@ The server listens on http://localhost:8000 by default.
 
 ### Create some cards
 
-There are three ways to create cards:
+There are various ways to create cards:
  * Add them one at a time via the browser
  * Import CSV files
  * Import Anki .apkg or .colpkg file
+ * Direct database update
 
 Cards are the basic elements of study. They are produced from fieldsets,
 transformed by templates.
@@ -214,6 +215,22 @@ $ srf import <shared_deck.apkg>
 While you can create templates, template sets and field sets manually, from
 which cards will be generated, the interface for doing so is a bit crude.
 It will be easier to get started with an import.
+
+#### Create Cards by direct database update
+
+You can write your own application to add cards to the srf database.
+
+By default, the srf database is ~/.local/share/srf/srf.db and media files
+are in ~/.local/share/srf/media.
+
+Add templates by adding records to the template table.
+
+Add fieldsets by adding records to the fieldset table.
+
+
+See [the database description](#srf-database) for a description of the database
+and details of these tables.
+
 
 ### Run the server
 
@@ -1601,7 +1618,20 @@ produced for each template in the templateset (i.e. for each template with
 the same templateset value).
 
 #### fields
-The field values as a JSON serialization.
+The field values as a JSON serialization. Keys are field names and values
+are field values, which may be substituted into cards according to the
+templates in the template table.
+
+For example:
+
+```
+{
+  "Audio":"[sound:喂你好.mp3]",
+  "Hanzi":"喂你好",
+  "Pinyin":"Wèi nǐ hǎo",
+  "English":"Hello? (on the telephone)"
+}
+```
 
 #### ord
 For ordering the presentation of the cards. When a card is produced from
