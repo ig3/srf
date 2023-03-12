@@ -871,22 +871,21 @@ default: 90
 
 The percentage of 'correct' responses (not 'Again') is a factor in
 determining the intervals of cards. The percentCorrectTarget is the target
-percentage of 'correct' responses. The 'correct factor' is adjusted to
-achieve this target. The adjustment is very slow due to the long delay
-between setting an interval and reviewing the card. 
+percentage of 'correct' responses. The interval and due date of cards are
+adjusted according to the difference between the percent correct and this
+target, multiplied by percentCorrectSensitivity.
 
 #### percentCorrectSensitivity
 
-default: 0.001
+default: 0.0001
 
-The correct factor is adjusted periodically, according to the difference
-between the actual percentage of 'correct' responses (not 'Again') and the
-target. This factor determines how sensitive the adjustment is to this
-difference. If it is larger, the correct factor will be adjusted more. If
-it is too large, the correct factor will become unstable, fluctuating
-wildly.
+This determines the sensitivity to the difference between percent correct
+and percentCorrectTarget, when adjusting the interval and due date of
+learning and mature cards.
 
-#### correctFactorAdjustmentInterval
+#### correctFactorAdjustmentInterval (deprecated)
+
+This is no longer used.
 
 default: 1 day
 
@@ -1234,15 +1233,12 @@ The new interval is the greater of:
  * config.goodMinInterval
  * the previous interval multiplied by config.goodMinFactor
  * the previous interval multiplied by the product of
-config.goodFactor, the card ease factor and the overall correct factor.
+config.goodFactor and the card ease factor.
 
 The card ease factor depends on how easy the card is. It accommodates the
 fact that some cards are easier than others and that the ease of a card
 varies with time. It is an exponentially weighted moving average of
 response values.
-
-The overall correct factor depends on how easy "mature" cards are to
-answer. It is adjusted to achieve a target percentage of correct answers.
 
 ##### Card Ease
 
@@ -1278,25 +1274,6 @@ Thus the card ease factor is specific to each card and changes as your
 success recalling the card changes. And the ease factor changes how quickly
 the interval grows: from quite slowly (card ease factor around 1) to quite
 quickly (ease factors closer to 2 or more).
-
-##### Correct Factor
-
-The correct factor is based on the ease of 'mature' cards recently reviewed.
-
-It is adjusted to achieve an average of config.percentCorrectTarget
-(default 90%) 'correct' answers (i.e. not Again).
-
-The window for calculation of the correct factor is
-config.percentCorrectWindow (default 1 month).
-
-Mature cards are those with an interval greater than config.matureThreshold
-(default 21 days).
-
-The 'correct' factor is adjusted up or down according to whether the
-average percent correct is greater than or less than
-config.percentCorrectTarget (default 90%).
-
-It is adjusted slowly, only once per day.
 
 #### Easy
 
@@ -3697,6 +3674,14 @@ work with.
 * No synchronization between devices / databases
 
 ## Changes
+
+### 3.0.x - 20230312
+
+Eliminate the correct factor.
+
+Add adjustment of interval and due date of learning and mature cards,
+according to the difference between percent correct and
+percentCorrectTarget.
 
 ### 3.0.1 - 20230109
 
