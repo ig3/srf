@@ -3683,6 +3683,8 @@ Add adjustment of interval and due date of learning and mature cards,
 according to the difference between percent correct and
 percentCorrectTarget.
 
+Tune down the ease weights.
+
 ### 3.0.1 - 20230109
 
 Change default again factor to 0.5 and hard factor to 0.8.
