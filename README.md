@@ -3675,7 +3675,7 @@ work with.
 
 ## Changes
 
-### 3.0.x - 20230312
+### 3.0.2 - 20230314
 
 Eliminate the correct factor.
 
