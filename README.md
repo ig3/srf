@@ -1090,12 +1090,13 @@ maximum number of new cards per day.
 ## Card Lifecycle
 
 Cards progress through the following stages:
- * unseen
- * new
- * learning
- * mature
+ * unseen / unconcious incompetence / UI
+ * new / concious incompetence / CI
+ * learning / concious competence / CC
+ * mature / unconcious competence / UC
+ * mastered / mastery / M
 
-### Unseen
+### Unseen / unconcious incompetence / UI
 
 When you add cards to srf, initially they are unseen. If you add a thousand
 cards, you probably don't want to study them all on the day you add them.
@@ -1107,7 +1108,7 @@ Cards that have been seen have an interval greater than 0. Even if these
 cards have a due time set, the due time is ignored until they are selected
 to be presented as new cards.
 
-### New
+### New / concious incompetence / CI
 
 Eventually an unseen card is presented for study for the first time,
 becoming a 'new' card. It is deemed to be a new card until its interval
@@ -1123,7 +1124,7 @@ interval of 30 minutes but you don't study overnight so you don't see it
 until 10 hours later, it is scheduled on the basis of the scheduled 30
 minute interval, not the 10 hour interval.
 
-### Learning
+### Learning / concious competence / CC
 
 After familiarizing with a new card, the real work of committing it to long
 term memory begins. Intervals are still fairly short and your ability to
@@ -1135,16 +1136,22 @@ since last review. If you don't review it on time (maybe because of exams
 or vaction) but when you do you recall it well, it is the actual interval
 through which you were able to recall it that matters.
 
-### Mature
+### Mature / unconcious competence / UC
 
-Eventually the card is well committed to long term memory. You might still
-forget it if you don't review it for too long, but the exact interval
-doesn't make much difference.
+Eventually the card is well committed to long term memory. When you see the
+card, you recognize it immediately, without having to think about it. The
+the exact interval doesn't make much difference.
 
 By default, cards are considered mature when their interval reaches 21
 days. The scheduling algorithm is still applied and the interval will still
 gradually increase, up to the maximum interval (config.maxInterval) which,
 by default, is one year.
+
+### Mastered / mastery / M
+
+Finally, cards reach the interval limit. They are mastered. 
+
+By default, the interval limit is 1 year (config.maxInterval). 
 
 ## Scheduler
 
@@ -3674,6 +3681,15 @@ work with.
 * No synchronization between devices / databases
 
 ## Changes
+
+### 3.0.3 - WIP
+
+Change card stages to:
+ * 0 / unseen / unconcious incompetence / UI
+ * 1 / new / concious incompetence / CI
+ * 2 / learning / concious competence / CC
+ * 3 / mature / unconcious competence / UC
+ * 4 / mastered / mastery / M
 
 ### 3.0.2 - 20230314
 
