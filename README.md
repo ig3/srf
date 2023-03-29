@@ -3682,7 +3682,7 @@ work with.
 
 ## Changes
 
-### 3.0.3 - WIP
+### 3.0.3 - 20230330
 
 Change card stages to:
  * 0 / unseen / unconcious incompetence / UI
