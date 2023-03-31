@@ -464,7 +464,7 @@ once since the start of study.
 This is the total number of cards with interval greater than
 config.matureThreshold.
 
-#### Percent correct
+#### Percent Correct
 
 This is the percentage of reviews of mature cards that are 'correct' (i.e.
 not Again) over the window config.percentCorrectWindow.
@@ -472,7 +472,7 @@ not Again) over the window config.percentCorrectWindow.
 #### Correct factor
 
 This is the factor for calculation of new card intervals for ease Good or
-Easy, based on percent correct Vs config.percentCorrectTarget.
+Easy, based on Percent Correct Vs config.percentCorrectTarget.
 
 #### Card views today
 
@@ -716,7 +716,7 @@ For example, a json file might be:
   // The interval (seconds) beyond which a card is considered 'mature'
   "matureThreshold": "21 days",
 
-  // The window (seconds) in which to average percent correct reviews
+  // The window (seconds) in which to average Percent Correct reviews
   "percentCorrectWindow": "14 days",
 
   // The interval (seconds) between correct factor adjustments
@@ -857,13 +857,24 @@ default: 21 days
 The interval beyond which cards are considered 'mature'. This doesn't
 affect reviews. It only affects some of the statistics.
 
+This affects the calculation of Percent Correct, which is compared against
+percentCorrectTarget. Only review of cards with an interval greater than
+matureThreshold are considered in calculating Percent Correct.
+
+A card is considered lapsed if its interval changes from longer than
+matureThreshold to shorter than matureThreshold.
+
+A card is counted as mature (Unconcious Competence) or mastered if its
+interval is greater than matureThreshold.
+
 #### percentCorrectWindow (seconds)
 
 default: 1 month
 
 The percentage of 'correct' responses (not 'Again') is a factor in
 determining the intervals of cards. All responses within this window are
-considered in determining the percentage.
+considered in determining the percentage. Results of reviews longer ago
+than percentCorrectWindow are ignored.
 
 #### percentCorrectTarget (percent)
 
@@ -872,14 +883,14 @@ default: 90
 The percentage of 'correct' responses (not 'Again') is a factor in
 determining the intervals of cards. The percentCorrectTarget is the target
 percentage of 'correct' responses. The interval and due date of cards are
-adjusted according to the difference between the percent correct and this
+adjusted according to the difference between the Percent Correct and this
 target, multiplied by percentCorrectSensitivity.
 
 #### percentCorrectSensitivity
 
 default: 0.0001
 
-This determines the sensitivity to the difference between percent correct
+This determines the sensitivity to the difference between Percent Correct
 and percentCorrectTarget, when adjusting the interval and due date of
 learning and mature cards.
 
@@ -3696,7 +3707,7 @@ Change card stages to:
 Eliminate the correct factor.
 
 Add adjustment of interval and due date of learning and mature cards,
-according to the difference between percent correct and
+according to the difference between Percent Correct and
 percentCorrectTarget.
 
 Tune down the ease weights.
