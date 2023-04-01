@@ -18,15 +18,15 @@
 <div id="chart1" class="chart"></div>
 <h3>Minutes Studied per day</h3>
 <div id="chart2" class="chart"></div>
-<h3>Cards Due per day</h3>
-<div id="chart3" class="chart"></div>
-<h3>Cards per interval</h3>
-<div id="chart4" class="chart"></div>
 <h3>New Cards per day</h3>
 <div id="chart5" class="chart"></div>
 <h3>Matured &amp; Lapsed</h3>
 <div id="chart6" class="chart"></div>
 </div>
+<h3>Cards Due per day</h3>
+<div id="chart3" class="chart"></div>
+<h3>Cards per interval</h3>
+<div id="chart4" class="chart"></div>
 <div class="buttons">
 <a href="/" class="default_action"><button>Home</button></a>
 </div>
@@ -37,7 +37,7 @@
     [ {{{chart1Data}}} ], {
       margin: {t: 0},
       yaxis: { title: 'cards' },
-      xaxis: { title: 'day#' }
+      xaxis: { title: 'date' }
     }
   );
   let chart2 = document.getElementById('chart2');
@@ -45,7 +45,7 @@
     [ {{{chart2Data}}} ], {
       margin: {t: 0},
       yaxis: { title: 'min' },
-      xaxis: { title: 'day#' }
+      xaxis: { title: 'date' }
     }
   );
 
@@ -54,7 +54,7 @@
     [ {{{chart3Data}}} ], {
       margin: {t: 0},
       yaxis: { title: 'cards' },
-      xaxis: { title: 'day#' }
+      xaxis: { title: 'day' }
     }
   );
 
@@ -72,7 +72,7 @@
     [ {{{chart5Data}}} ], {
       margin: {t: 0},
       yaxis: { title: 'cards' },
-      xaxis: { title: 'day#' }
+      xaxis: { title: 'date' }
     }
   );
 
@@ -108,7 +108,7 @@
   Plotly.newPlot(chart6,
     chart6Data, {
       margin: {t: 0},
-      xaxis: { title: 'day#' },
+      xaxis: { title: 'date' },
       yaxis: {
         title: 'matured, lapsed, net (cards)',
         range: [ r1min, r1max ]

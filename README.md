@@ -3693,6 +3693,10 @@ work with.
 
 ## Changes
 
+### 3.0.4 - 20230402
+
+Change stats charts to by date instead of day#
+
 ### 3.0.3 - 20230330
 
 Change card stages to:
