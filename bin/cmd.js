@@ -164,9 +164,13 @@ function runServer (opts, args) {
   app.use(favicon(pa.join(__dirname, '..', 'public', 'favicon.ico')));
   const expressHandlebars = require('express-handlebars');
   const hbsFormHelper = require('handlebars-form-helper');
-  const hbs = expressHandlebars.create({});
+  const hbs = expressHandlebars.create({
+    helpers: {
+      json (context) { return JSON.stringify(context); }
+    }
+  });
   hbsFormHelper.registerHelpers(hbs.handlebars, { namespace: 'form' });
-  app.engine('handlebars', expressHandlebars.engine());
+  app.engine('handlebars', hbs.engine);
   if (opts.views && fs.existsSync(opts.views)) {
     app.set('views', [
       opts.views,
@@ -242,12 +246,9 @@ function runServer (opts, args) {
     const dueCount = srf.getCountCardsDueToday();
     const nextDue = srf.getNextDue() || now;
 
-    const chart1Data = srf.getChartCardsStudiedPerDay();
-    const chart2Data = srf.getChartMinutesStudiedPerDay();
-    const chart3Data = srf.getChartCardsDuePerDay();
-    const chart4Data = srf.getChartCardsPerInterval();
-    const chart5Data = srf.getChartNewCardsPerDay();
-    const chart6Data = srf.getChartMaturedAndLapsedPerDay();
+    const charts = srf.getChartsDailyStats();
+    charts.chartCardsPerInterval = srf.getChartCardsPerInterval();
+    charts.chartCardsDuePerDay = srf.getChartCardsDuePerDay();
 
     const cardsSeen = srf.getCountCardsSeen();
     const days = srf.getCountDaysStudied();
@@ -269,12 +270,7 @@ function runServer (opts, args) {
       countCC: srf.getCountCardsStage2(),
       countUC: srf.getCountCardsStage3(),
       countM: srf.getCountCardsStage4(),
-      chart1Data: JSON.stringify(chart1Data),
-      chart2Data: JSON.stringify(chart2Data),
-      chart3Data: JSON.stringify(chart3Data),
-      chart4Data: JSON.stringify(chart4Data),
-      chart5Data: JSON.stringify(chart5Data),
-      chart6Data: JSON.stringify(chart6Data),
+      charts: charts,
       theme: config.theme
     });
   });

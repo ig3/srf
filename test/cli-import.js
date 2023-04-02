@@ -1,6 +1,6 @@
 'use stcript';
 
-const dbSchema = '8';
+const dbSchema = '10';
 const t = require('tape');
 
 const exec = require('child_process').exec;
@@ -642,6 +642,7 @@ t.test('cli import', t => {
       t.deepEqual(revlogs, [
         {
           id: 1629059006719,
+          revdate: '2021-08-16',
           cardid: 1,
           ease: 'easy',
           interval: 345600,
@@ -653,6 +654,7 @@ t.test('cli import', t => {
         },
         {
           id: 1629059013936,
+          revdate: '2021-08-16',
           cardid: 3,
           ease: 'easy',
           interval: 345600,
@@ -664,6 +666,7 @@ t.test('cli import', t => {
         },
         {
           id: 1629059023099,
+          revdate: '2021-08-16',
           cardid: 5,
           ease: 'good',
           interval: 600,
@@ -675,6 +678,7 @@ t.test('cli import', t => {
         },
         {
           id: 1629059027405,
+          revdate: '2021-08-16',
           cardid: 7,
           ease: 'good',
           interval: 600,
@@ -686,6 +690,7 @@ t.test('cli import', t => {
         },
         {
           id: 1629059039045,
+          revdate: '2021-08-16',
           cardid: 9,
           ease: 'good',
           interval: 600,

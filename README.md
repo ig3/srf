@@ -3700,6 +3700,15 @@ work with.
 
 ## Changes
 
+### 4.0.0 - 20230403
+
+Improve performance of rendering charts on stats page
+
+Add table dailystats and re-implement generation of daily stats charts to
+get data from dailystats.
+
+Removed the old getChart methods and added getChartsDailyStats.
+
 ### 3.0.5 - 20230402
 
 Add revdate to revlog to improve performance of generating charts.
