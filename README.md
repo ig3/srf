@@ -1649,20 +1649,22 @@ intermix.
 A revlog record is produced each time a card is reviewed.
 
 ```
-CREATE TABLE "revlog" (
-	"id"	integer NOT NULL,
-	"cardid"	integer NOT NULL,
-	"ease"	text NOT NULL,
-	"interval"	integer NOT NULL,
-	"lastinterval"	integer NOT NULL,
-	"factor"	real NOT NULL,
-	"viewtime"	integer NOT NULL,
-	"studytime"	integer NOT NULL,
-	"lapses"	integer NOT NULL
-);
+CREATE TABLE revlog (
+  id            integer default (cast(ROUND((julianday('now') - 2440587.5)*86400000) as int)) not null,
+  revdate       text default (strftime('%Y-%m-%d','now','localtime')) not null,
+  cardid        integer not null,
+  ease          text not null,
+  interval      integer not null,
+  lastinterval  integer not null,
+  factor        real not null,
+  viewtime      integer not null,
+  studytime     integer not null,
+  lapses        integer not null
+)
 ```
 
  * id: record create time, ms since epoch
+ * revdate: the date, localtime, of the review
  * cardid: fk to card.id
  * ease: the ease of the review: again, hard, good or easy
  * interval: the new interval in seconds
@@ -1671,6 +1673,11 @@ CREATE TABLE "revlog" (
  * viewtime: the time spent viewing the card
  * studytime: the time spent studying the card, for study time calculations
  * lapses: the number of times the card has lapsed
+
+The revdate field is redundant with id but it reduces processing time to
+produce statistics charts that are grouped by date, where the date is
+local timezone. Performing the conversion dynamically, per record, when the
+charts are produced adds significant time to the query or processing.
 
 ### template
 A template record associates a templateset name with a pair of mustache
@@ -3692,6 +3699,10 @@ work with.
 * No synchronization between devices / databases
 
 ## Changes
+
+### 3.0.5 - 20230402
+
+Add revdate to revlog to improve performance of generating charts.
 
 ### 3.0.4 - 20230402
 
