@@ -1,6 +1,6 @@
 'use stcript';
 
-const dbSchema = '11';
+const dbSchema = '12';
 const t = require('tape');
 
 const exec = require('child_process').exec;

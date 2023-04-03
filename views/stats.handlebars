@@ -14,67 +14,99 @@
 </table>
 </div>
 <div class="charts">
+
 <h3>Card Views per day</h3>
 <div id="cardViewPerDay" class="chart"></div>
+
 <h3>Minutes Studied per day</h3>
 <div id="minutesStudiedPerDay" class="chart"></div>
+
+<h3>Percent Correct</h3>
+<div id="percentCorrect" class="chart"></div>
+
 <h3>New Cards per day</h3>
 <div id="newCardsPerDay" class="chart"></div>
+
 <h3>Matured &amp; Lapsed</h3>
 <div id="matured" class="chart"></div>
 </div>
+
 <h3>Cards Due per day</h3>
 <div id="cardsDuePerDay" class="chart"></div>
+
 <h3>Cards per interval</h3>
 <div id="cardsPerInterval" class="chart"></div>
+
 <div class="buttons">
 <a href="/" class="default_action"><button>Home</button></a>
 </div>
 <script src="/js/plotly-latest.min.js" charset="utf-8"></script>
 <script>
   let cardViewPerDay = document.getElementById('cardViewPerDay');
-  Plotly.newPlot(cardViewPerDay,
-    [ {{{json charts.chartCardViewsPerDay}}} ], {
-      margin: {t: 0},
-      yaxis: { title: 'cards' },
-      xaxis: { title: 'date' }
-    }
-  );
+  if (cardViewPerDay) {
+    Plotly.newPlot(cardViewPerDay,
+      [ {{{json charts.chartCardViewsPerDay}}} ], {
+        margin: {t: 0},
+        yaxis: { title: 'cards' },
+        xaxis: { title: 'date' }
+      }
+    );
+  }
+
   let minutesStudiedPerDay = document.getElementById('minutesStudiedPerDay');
-  Plotly.newPlot(minutesStudiedPerDay,
-    [ {{{json charts.chartMinutesStudiedPerDay}}} ], {
-      margin: {t: 0},
-      yaxis: { title: 'min' },
-      xaxis: { title: 'date' }
-    }
-  );
+  if (minutesStudiedPerDay) {
+    Plotly.newPlot(minutesStudiedPerDay,
+      [ {{{json charts.chartMinutesStudiedPerDay}}} ], {
+        margin: {t: 0},
+        yaxis: { title: 'min' },
+        xaxis: { title: 'date' }
+      }
+    );
+  }
+
+  let percentCorrect = document.getElementById('percentCorrect');
+  if (percentCorrect) {
+    Plotly.newPlot(percentCorrect,
+      [ {{{json charts.chartPercentCorrect}}} ], {
+        margin: {t: 0},
+        yaxis: { title: 'percent' },
+        xaxis: { title: 'date' }
+      }
+    );
+  }
 
   let newCardsPerDay  = document.getElementById('newCardsPerDay');
-  Plotly.newPlot(newCardsPerDay ,
-    [ {{{json charts.chartNewCardsPerDay}}} ], {
-      margin: {t: 0},
-      yaxis: { title: 'cards' },
-      xaxis: { title: 'date' }
-    }
-  );
+  if (newCardsPerDay) {
+    Plotly.newPlot(newCardsPerDay ,
+      [ {{{json charts.chartNewCardsPerDay}}} ], {
+        margin: {t: 0},
+        yaxis: { title: 'cards' },
+        xaxis: { title: 'date' }
+      }
+    );
+  }
 
   let cardsDuePerDay = document.getElementById('cardsDuePerDay');
-  Plotly.newPlot(cardsDuePerDay,
-    [ {{{json charts.chartCardsDuePerDay}}} ], {
-      margin: {t: 0},
-      yaxis: { title: 'cards' },
-      xaxis: { title: 'day' }
-    }
-  );
+  if (cardsDuePerDay) {
+    Plotly.newPlot(cardsDuePerDay,
+      [ {{{json charts.chartCardsDuePerDay}}} ], {
+        margin: {t: 0},
+        yaxis: { title: 'cards' },
+        xaxis: { title: 'day' }
+      }
+    );
+  }
 
   let cardsPerInterval = document.getElementById('cardsPerInterval');
-  Plotly.newPlot(cardsPerInterval,
-    [ {{{json charts.chartCardsPerInterval}}} ], {
-      margin: {t: 0},
-      yaxis: { title: 'cards' },
-      xaxis: { title: 'days' }
-    }
-  );
+  if (cardsPerInterval) {
+    Plotly.newPlot(cardsPerInterval,
+      [ {{{json charts.chartCardsPerInterval}}} ], {
+        margin: {t: 0},
+        yaxis: { title: 'cards' },
+        xaxis: { title: 'days' }
+      }
+    );
+  }
 
   const chart6Data = [
     {{{json charts.chartMatureTrace1}}},
@@ -108,28 +140,31 @@
   chart6Data[3].line = {
     color: 'rgb(100, 100, 200)'
   };
+
   let matured = document.getElementById('matured');
-  Plotly.newPlot(matured,
-    chart6Data, {
-      margin: {t: 0},
-      xaxis: { title: 'date' },
-      yaxis: {
-        title: 'matured, lapsed, net (cards)',
-        range: [ r1min, r1max ]
-      },
-      yaxis2: {
-        title: 'cumulative (cards)',
-        overlaying: 'y',
-        side: 'right',
-        range: [ r2min, r2max ]
-      },
-      legend: {
-        orientation: 'h',
-        x: 0.2,
-        xanchor: 'left',
-        y: 1.1
+  if (matured) {
+    Plotly.newPlot(matured,
+      chart6Data, {
+        margin: {t: 0},
+        xaxis: { title: 'date' },
+        yaxis: {
+          title: 'matured, lapsed, net (cards)',
+          range: [ r1min, r1max ]
+        },
+        yaxis2: {
+          title: 'cumulative (cards)',
+          overlaying: 'y',
+          side: 'right',
+          range: [ r2min, r2max ]
+        },
+        legend: {
+          orientation: 'h',
+          x: 0.2,
+          xanchor: 'left',
+          y: 1.1
+        }
       }
-    }
-  );
+    );
+  }
 
 </script>

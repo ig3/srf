@@ -3851,3 +3851,5 @@ percent correct is calculated.
 Add 'if exists' to all 'drop index' statements.
 
 Fix import test
+
+Add chart of percent correct
