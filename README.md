@@ -471,7 +471,8 @@ config.matureThreshold.
 #### Percent Correct
 
 This is the percentage of reviews of mature cards that are 'correct' (i.e.
-not Again) over the window config.percentCorrectWindow.
+not Again) over the window config.percentCorrectWindow. It is only
+calculated if there are at least 
 
 #### Correct factor
 
@@ -879,6 +880,13 @@ The percentage of 'correct' responses (not 'Again') is a factor in
 determining the intervals of cards. All responses within this window are
 considered in determining the percentage. Results of reviews longer ago
 than percentCorrectWindow are ignored.
+
+#### minPercentCorrectCount
+
+default: 10
+
+The minimum number of mature cards in the percent correct window at which
+percent correct is calculated.
 
 #### percentCorrectTarget (percent)
 
@@ -3834,3 +3842,8 @@ Add card.lastinterval
 Database schema 11
 
 Reorder changes
+
+### 4.0.2 - WIP
+
+Add a minimum count of mature cards in the percent correct window at which
+percent correct is calculated.
