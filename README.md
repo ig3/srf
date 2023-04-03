@@ -3847,3 +3847,7 @@ Reorder changes
 
 Add a minimum count of mature cards in the percent correct window at which
 percent correct is calculated.
+
+Add 'if exists' to all 'drop index' statements.
+
+Fix import test
