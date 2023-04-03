@@ -27,13 +27,13 @@ create table card (
   ord          integer not null
 );
 
-drop index idx_card_id;
+drop index if exists idx_card_id;
 create index idx_card_id on card (id);
 
-drop index idx_card_due_interval;
+drop index if exists idx_card_due_interval;
 create index idx_card_due_interval on card (due, interval);
 
-drop index idx_card_fieldsetid_templateid;
+drop index if exists idx_card_fieldsetid_templateid;
 create unique index idx_card_fieldsetid_templateid on card (fieldsetid, templateid);
 
 insert into card (id, fieldsetid, templateid, modified, interval, lastinterval, due, factor, views, lapses, ord) select id, fieldsetid, templateid, modified, interval, interval as lastinterval, due, factor, views, lapses, ord from oldcard;

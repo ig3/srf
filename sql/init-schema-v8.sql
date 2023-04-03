@@ -13,7 +13,7 @@ create table fieldset (
   ord           integer default 0
 );
 
-drop index idx_fieldset_id;
+drop index if exists idx_fieldset_id;
 create index idx_fieldset_id on fieldset (id);
 
 insert into fieldset (id, guid, templateset, fields) select id, guid, templateset, fields from oldfieldset;

@@ -17,7 +17,7 @@ create table revlog (
   lapses        integer not null
 );
 
-drop index idx_revlog_id;
+drop index if exists idx_revlog_id;
 create index idx_revlog_id on revlog (id);
 
 insert into revlog (id, cardid, ease, interval, lastinterval, factor, viewtime, studytime, lapses) select id, cardid, case ease when 1 then 'again' when 2 then 'hard' when 3 then 'good' when 4 then 'easy' end as ease, interval, lastinterval, factor, viewtime, studytime, lapses from oldrevlog;

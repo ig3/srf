@@ -13,7 +13,7 @@ create table fieldset (
   fields        text not null
 );
 
-drop index idx_fieldset_id;
+drop index if exists idx_fieldset_id;
 create index idx_fieldset_id on fieldset (id);
 
 insert into fieldset (id, guid, templateset, fields) select oldfieldset.id, oldfieldset.guid, templateset.name, oldfieldset.fields from oldfieldset join templateset on templateset.id = oldfieldset.templatesetid;
