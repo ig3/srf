@@ -20,7 +20,10 @@ create table revlog (
 
 drop index idx_revlog_id;
 create index idx_revlog_id on revlog (id);
+drop index idx_revlog_revdate;
 create index idx_revlog_revdate on revlog (revdate);
+drop index idx_revlog_cardid_id;
+create index idx_revlog_caradid_id on revlog (cardid, id);
 
 insert into revlog (id, revdate, cardid, ease, interval, lastinterval, factor, viewtime, studytime, lapses) select id, strftime('%Y-%m-%d', id/1000, 'unixepoch', 'localtime') as revdate, cardid, ease, interval, lastinterval, factor, viewtime, studytime, lapses from oldrevlog;
 

@@ -1551,6 +1551,7 @@ Fields:
  * templateid
  * modified
  * interval
+ * lastinterval
  * due
  * factor
  * views
@@ -1567,6 +1568,18 @@ This is the current scheduling interval: the time (seconds) from one review
 to the next. When a card is reviewed, a new interval is determined, based
 on how the card was rated (again, hard, good or easy) and the new interval
 is used to determine when the card is next due for review.
+
+This is adjusted according to the difference between recent percent correct
+answers and the target for percent correct. It is a factor in calculation
+of the next interval for the card.
+
+#### lastinterval
+When a card is reviewed, lastinterval is set to interval but interval might
+be adjusted before the card is reviewed again while lastinterval is not. It
+is always the interval when the card was last reviewed.
+
+The lastinterval is copied to the lastinterval field of revlog and used to
+determine if the card has matured or lapsed.
 
 #### due
 This is the time (seconds since the epoch) when the card is due to be
@@ -3704,37 +3717,75 @@ work with.
 
 ## Changes
 
-### 4.0.1 - WIP
+### 1.1.0 - 20220916
 
-Delete all records from dailystats after an Anki package import, which may
-include revlog entries for the imported deck(s). This will force the stats
-to be recalculated, including the new revlog entries.
+Add commandline option htdocs and support for an htdocs directory to
+override the static content built into the srf server.
 
-### 4.0.0 - 20230403
+### 1.2.0 - 20220916
 
-Improve performance of rendering charts on stats page
+Add commandline option views and support for a views directory to override
+the handlebars templates built into the web server.
 
-Add table dailystats and re-implement generation of daily stats charts to
-get data from dailystats.
+### 1.2.1 - 20220917
 
-Removed the old getChart methods and added getChartsDailyStats.
+Remove templateset.fields - it is redundant with the actual fields in the
+templates of the templateset.
 
-### 3.0.5 - 20230402
+### 2.0.0 - 20220917
 
-Add revdate to revlog to improve performance of generating charts.
+Remove fieldsets table entirely.
+Add fieldset.ord
 
-### 3.0.4 - 20230402
+### 2.1.0 - 20220918
 
-Change stats charts to by date instead of day#
+Add support for import of CSV files for templates and fieldsets.
 
-### 3.0.3 - 20230330
+Remove the distinction between imports of anki2 and anki21 apkg files. 
+For the purposes of import to srf, they are the same.
 
-Change card stages to:
- * 0 / unseen / unconcious incompetence / UI
- * 1 / new / concious incompetence / CI
- * 2 / learning / concious competence / CC
- * 3 / mature / unconcious competence / UC
- * 4 / mastered / mastery / M
+### 2.1.1
+
+README changes
+
+### 2.1.2 - 20220919
+
+README changes.
+
+Ensure when editing that a fieldset includes all fields in the templateset.
+
+On import, set card factor to 2.
+
+### 2.1.3
+
+ * README changes
+ * LICENSE
+ * Remove old cruft
+ * Daily database backup
+
+### 2.2.0
+
+ * Fix calculation of last interval
+ * Change config.maxNewCards to config.newCardLimit
+ * Add config.newCardMinPercentCorrect
+
+### 2.2.1 - 20221122
+
+Update dependencies
+
+### 2.2.2 - 20221216
+
+Update dependencies
+
+### 3.0.0 - 20230109
+
+Changed the scheduling algorith again. Changed Again and Hard to have
+maximum intervals instead of minimum intervals and changed the default
+again factor to 0.3.
+
+### 3.0.1 - 20230109
+
+Change default again factor to 0.5 and hard factor to 0.8.
 
 ### 3.0.2 - 20230314
 
@@ -3746,72 +3797,40 @@ percentCorrectTarget.
 
 Tune down the ease weights.
 
-### 3.0.1 - 20230109
+### 3.0.3 - 20230330
 
-Change default again factor to 0.5 and hard factor to 0.8.
+Change card stages to:
+ * 0 / unseen / unconcious incompetence / UI
+ * 1 / new / concious incompetence / CI
+ * 2 / learning / concious competence / CC
+ * 3 / mature / unconcious competence / UC
+ * 4 / mastered / mastery / M
 
-### 3.0.0 - 20230109
+### 3.0.4 - 20230402
 
-Changed the scheduling algorith again. Changed Again and Hard to have
-maximum intervals instead of minimum intervals and changed the default
-again factor to 0.3.
+Change stats charts to by date instead of day#
 
-### 2.2.2 - 20221216
+### 3.0.5 - 20230402
 
-Update dependencies
+Add revdate to revlog to improve performance of generating charts.
 
-### 2.2.1 - 20221122
+### 4.0.0 - 20230403
 
-Update dependencies
+Improve performance of rendering charts on stats page
 
-### 2.2.0
+Add table dailystats and re-implement generation of daily stats charts to
+get data from dailystats.
 
- * Fix calculation of last interval
- * Change config.maxNewCards to config.newCardLimit
- * Add config.newCardMinPercentCorrect
+Removed the old getChart methods and added getChartsDailyStats.
 
-### 2.1.3
+### 4.0.1 - 20230403
 
- * README changes
- * LICENSE
- * Remove old cruft
- * Daily database backup
+Delete all records from dailystats after an Anki package import, which may
+include revlog entries for the imported deck(s). This will force the stats
+to be recalculated, including the new revlog entries.
 
-### 2.1.2 - 20220919
+Add card.lastinterval
 
-README changes.
+Database schema 11
 
-Ensure when editing that a fieldset includes all fields in the templateset.
-
-On import, set card factor to 2.
-
-### 2.1.1
-
-README changes
-
-### 2.1.0 - 20220918
-
-Add support for import of CSV files for templates and fieldsets.
-
-Remove the distinction between imports of anki2 and anki21 apkg files. 
-For the purposes of import to srf, they are the same.
-
-### 2.0.0 - 20220917
-
-Remove fieldsets table entirely.
-Add fieldset.ord
-
-### 1.2.1 - 20220917
-
-Remove templateset.fields - it is redundant with the actual fields in the
-templates of the templateset.
-
-### 1.2.0 - 20220916
-
-Add commandline option views and support for a views directory to override
-the handlebars templates built into the web server.
-
-### 1.1.0 - 20220916
-
-Add commandline option htdocs and support for an htdocs directory to
-override the static content built into the srf server.
+Reorder changes
