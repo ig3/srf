@@ -214,7 +214,11 @@ $ srf import <shared_deck.apkg>
 
 While you can create templates, template sets and field sets manually, from
 which cards will be generated, the interface for doing so is a bit crude.
-It will be easier to get started with an import.
+It may be easier to get started with an import.
+
+Anki collection packages and shared decks can include review logs. These
+will be imported and merged with existing logs. Daily stats will be cleared
+and recalculated to including the new revlog entries.
 
 #### Create Cards by direct database update
 
@@ -3699,6 +3703,12 @@ work with.
 * No synchronization between devices / databases
 
 ## Changes
+
+### 4.0.1 - WIP
+
+Delete all records from dailystats after an Anki package import, which may
+include revlog entries for the imported deck(s). This will force the stats
+to be recalculated, including the new revlog entries.
 
 ### 4.0.0 - 20230403
 
