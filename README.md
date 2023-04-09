@@ -3843,7 +3843,7 @@ Database schema 11
 
 Reorder changes
 
-### 4.0.2 - WIP
+### 4.0.2 - 20230410
 
 Add a minimum count of mature cards in the percent correct window at which
 percent correct is calculated.
@@ -3853,3 +3853,5 @@ Add 'if exists' to all 'drop index' statements.
 Fix import test
 
 Add chart of percent correct
+
+Update dependencies
