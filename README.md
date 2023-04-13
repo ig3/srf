@@ -924,9 +924,24 @@ default: 90
 
 The percentage of 'correct' responses (not 'Again') is a factor in
 determining the intervals of cards. The percentCorrectTarget is the target
-percentage of 'correct' responses. The interval and due date of cards are
-adjusted according to the difference between the Percent Correct and this
-target, multiplied by percentCorrectSensitivity.
+percentage of 'correct' responses.
+
+The interval and due date of cards are adjusted according to the difference
+between the Percent Correct and this target, multiplied by
+percentCorrectSensitivity.
+
+Cards actually have two interval values: interval and lastinterval. The
+interval value is the interval, including any adjustments. The lastinterval
+value is what the interval was when the card was last reviewed, without any
+adjustments.
+
+Revlog also has two interval values: interval and lastinterval. But here
+their values are different. The value of interval is the new interval of
+the card, after review, based on the ease. The value of lastinterval is the
+unadjusted interval of the card the last time it was reviewed. It is used
+to determine if the card has matured or lapsed. It is redundant with the
+interval value of the previous revlog record for the card but saves a lot
+of lookup producing the statistics.
 
 #### percentCorrectSensitivity
 
