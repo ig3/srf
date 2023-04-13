@@ -490,9 +490,19 @@ config.matureThreshold.
 
 #### Percent Correct
 
-This is the percentage of reviews of mature cards that are 'correct' (i.e.
-not Again) over the window config.percentCorrectWindow. It is only
-calculated if there are at least 
+This is the percentage of 'correct' responses (a.k.a. not Again) for cards
+with intervals between config.matureThreshold and config.maxInterval,
+reviewed in the window config.percentCorrectWindow.
+
+Cards with maximum interval are excluded on the premise that they are
+mastered and it is not performance on these cards that should be regulated,
+but rather performance on mature cards (Unconcious Competence). 
+
+Maybe this should also include the learning cards, but these are excluded
+on the premise that while learning the error rate will be relativley high
+and the regulation effectively regulates how quickly cards progress through
+learning to mastered, even though the learning cards are not included in
+the calculation of percent correct.
 
 #### Correct factor
 
@@ -3882,3 +3892,6 @@ Add Admin page
 Move links to templates, template sets and field sets to the admin page
 Add config page - read only view of configuration
 Add link to config page to the admin page
+
+### 4.1.1 - WIP
+Review calculation of percent correct: upper bound to config.maxInterval
