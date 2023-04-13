@@ -400,7 +400,23 @@ are in ~/.local/share/srf/media.
 
 Study a new card, regardless of study time and number of new cards studied.
 
-##### Templates
+##### Admin
+
+View the admin page, with links to administer templates, template sets and
+field sets, and view configuration.
+
+##### Stats
+
+View the statistics page.
+
+##### Help
+
+This will be documentation, if I ever write it.
+
+### Admin
+Links to the administration pages:
+
+#### Templates
 
 View a list of all templates in the system. Click on a template to edit it.
 
@@ -420,7 +436,7 @@ fieldset includes a field `English` then include this in the template with
 
 The set of fields are defined in the template set definition.
 
-##### Template Sets
+#### Template Sets
 
 View a list of all template sets in the system.
 
@@ -430,7 +446,7 @@ The fields of a templateset are all the fields of all the templates in the
 templateset. If you add a field to one of the templates, it will be added
 to the templateset.
 
-##### Field Sets
+#### Field Sets
 
 View a list of all field sets in the system. Click on a field set to edit
 it. Click the New button to add a field set.
@@ -448,6 +464,10 @@ file containing the media data.
 
 At the moment, the only supported media types are image/jpeg and
 audio/mpeg. These are inserted as img tags and `audio` respectively.
+
+#### Config
+
+A read-only view of the loaded configuration.
 
 ### Stats Page
 
@@ -3856,7 +3876,7 @@ Add chart of percent correct
 
 Update dependencies
 
-### 4.0.3 - WIP
+### 4.1.0 - 20230413
 
 Add Admin page
 Move links to templates, template sets and field sets to the admin page
