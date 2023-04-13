@@ -3855,3 +3855,10 @@ Fix import test
 Add chart of percent correct
 
 Update dependencies
+
+### 4.0.3 - WIP
+
+Add Admin page
+Move links to templates, template sets and field sets to the admin page
+Add config page - read only view of configuration
+Add link to config page to the admin page

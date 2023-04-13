@@ -166,7 +166,7 @@ function runServer (opts, args) {
   const hbsFormHelper = require('handlebars-form-helper');
   const hbs = expressHandlebars.create({
     helpers: {
-      json (context) { return JSON.stringify(context); }
+      json (context, indent=0) { return JSON.stringify(context, null, indent); }
     }
   });
   hbsFormHelper.registerHelpers(hbs.handlebars, { namespace: 'form' });
@@ -232,6 +232,21 @@ function runServer (opts, args) {
       newCardsRemaining: newCardsRemaining,
       mode: mode,
       theme: config.theme
+    });
+  });
+
+  app.get('/admin', (req, res) => {
+    const config = srf.getConfig();
+    res.render('admin', {
+      theme: config.theme
+    });
+  });
+
+  app.get('/config', (req, res) => {
+    const config = srf.getConfig();
+    res.render('config', {
+      theme: config.theme,
+      config: config
     });
   });
 
