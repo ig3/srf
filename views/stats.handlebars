@@ -97,14 +97,30 @@
     );
   }
 
+  const intervalData = [
+    {{{json charts.chartCardsPerLastInterval}}},
+    {{{json charts.chartCardsPerInterval}}}
+  ];
+  intervalData[0].line = {
+    color: 'rgb(150, 250, 150)'
+  };
+  intervalData[1].line = {
+    color: 'rgb(100, 100, 200)'
+  };
   let cardsPerInterval = document.getElementById('cardsPerInterval');
   if (cardsPerInterval) {
     Plotly.newPlot(cardsPerInterval,
-      [ {{{json charts.chartCardsPerInterval}}} ], {
+      intervalData, {
         margin: {t: 0},
         yaxis: { title: 'cards' },
-        xaxis: { title: 'days' }
-      }
+        xaxis: { title: 'days' },
+        legend: {
+          orientation: 'h',
+          x: 0.2,
+          xanchor: 'left',
+          y: 1.1
+        }
+      } 
     );
   }
 

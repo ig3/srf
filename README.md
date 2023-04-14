@@ -554,7 +554,12 @@ today.
 
 ##### Cards per interval
 
-This is the number of cards with the given interval in days.
+This is the number of cards with the given interval in days. There are two
+lines: Adjusted Interval and Unadjusted Interval. The Adjusted Interval is
+the interval after adjustment for percent correct. The Unadjusted Interval
+is the interval as set when the card was last viewed. The adjusted interval
+is the interval that will be the basis for calculation of the interval
+after the next review.
 
 ##### New Cards per day
 
@@ -3946,3 +3951,5 @@ Review calculation of percent correct: upper bound to config.maxInterval
 
 Fix fixRevlogInterval to get card interval from card.lastinterval (the
 unadjusted interval) rather than card.interval (the adjusted interval).
+
+Add a plot of unadjusted interval to Cards per interval.

@@ -263,6 +263,7 @@ function runServer (opts, args) {
 
     const charts = srf.getChartsDailyStats();
     charts.chartCardsPerInterval = srf.getChartCardsPerInterval();
+    charts.chartCardsPerLastInterval = srf.getChartCardsPerLastInterval();
     charts.chartCardsDuePerDay = srf.getChartCardsDuePerDay();
 
     const cardsSeen = srf.getCountCardsSeen();
