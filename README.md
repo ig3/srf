@@ -572,8 +572,41 @@ usage:
   srf --help
   srf [options...] [run]
   srf [options...] import <filename>
+  srf [options...] backup
   srf [options...] fix
 ```
+
+### run
+
+Run the server. This is the default.
+
+### import
+
+Import an Anki apkg or colpkg file, or a csv file containing template or
+fieldset data.
+
+### backup
+
+Create a backup of the srf database.
+
+The server makes a backup of the database each time it starts and then once
+every 24 hours if it runs that long.
+
+The backups are in the same directory as the database, with timestamp
+appended to their name.
+
+### fix
+
+This performs several 'fixes':
+
+ * create any missing cards from fieldsets and templates and delete any
+   cards for which there is no longer a fieldset and template.
+ * fix revlog entries:
+   * make revlog IDs unique
+   * set 'lastinterval' to 'interval' of the previous revlog entry for the
+     card
+   * set 'interval' of the last revlog entry for a card to the 'lastinterval'
+     of the card
 
 ### options
 
@@ -3910,3 +3943,6 @@ Add link to config page to the admin page
 
 ### 4.1.1 - WIP
 Review calculation of percent correct: upper bound to config.maxInterval
+
+Fix fixRevlogInterval to get card interval from card.lastinterval (the
+unadjusted interval) rather than card.interval (the adjusted interval).
