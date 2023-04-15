@@ -166,7 +166,9 @@ function runServer (opts, args) {
   const hbsFormHelper = require('handlebars-form-helper');
   const hbs = expressHandlebars.create({
     helpers: {
-      json (context, indent=0) { return JSON.stringify(context, null, indent); }
+      json (context, indent = 0) {
+        return JSON.stringify(context, null, indent);
+      }
     }
   });
   hbsFormHelper.registerHelpers(hbs.handlebars, { namespace: 'form' });

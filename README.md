@@ -1787,6 +1787,11 @@ produce statistics charts that are grouped by date, where the date is
 local timezone. Performing the conversion dynamically, per record, when the
 charts are produced adds significant time to the query or processing.
 
+lastinterval is recorded to avoid having to do a lookup of the interval of
+the previous revlog for the card. It is used in determining if a card has
+lapsed or matured and if the card was new. It is also used in calculating
+percent correct.
+
 ### template
 A template record associates a templateset name with a pair of mustache
 templates for front and back of a card and some CSS for styling the card.
