@@ -3951,7 +3951,7 @@ Move links to templates, template sets and field sets to the admin page
 Add config page - read only view of configuration
 Add link to config page to the admin page
 
-### 4.1.1 - WIP
+### 4.1.1 - 20230417
 Review calculation of percent correct: upper bound to config.maxInterval
 
 Fix fixRevlogInterval to get card interval from card.lastinterval (the
