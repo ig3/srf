@@ -3958,3 +3958,6 @@ Fix fixRevlogInterval to get card interval from card.lastinterval (the
 unadjusted interval) rather than card.interval (the adjusted interval).
 
 Add a plot of unadjusted interval to Cards per interval.
+
+### 4.1.2 - WIP
+Fix adjustCards to complete before next due is determined

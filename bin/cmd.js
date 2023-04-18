@@ -194,14 +194,13 @@ function runServer (opts, args) {
     const now = Math.floor(Date.now() / 1000);
     const studyTimeToday = srf.getStudyTimeToday();
     const dueStudyTime = srf.getEstimatedAverageStudyTime(1);
-    const nextDue = srf.getNextDue();
+    const nextDue = srf.getNextDue() || now;
 
     const dueNow = srf.getCountCardsDueNow();
     const nextCard = srf.getNextCard();
     const studyNow = !!nextCard;
     const statsPast24Hours = srf.getStatsPast24Hours();
     const statsNext24Hours = srf.getStatsNext24Hours();
-    const timeToNextDue = tc.seconds((nextDue || now) - now);
     const overdue = srf.getCountCardsOverdue();
 
     const chart1Data = srf.getChartStudyTime();
@@ -221,7 +220,7 @@ function runServer (opts, args) {
       dueStudyTime: Math.floor(dueStudyTime / 60),
       totalStudyTime: Math.floor((studyTimeToday + dueStudyTime) / 60),
       dueNow: dueNow,
-      timeToNextDue: timeToNextDue.toFullString().slice(0, -4),
+      timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
       chart1Data: JSON.stringify(chart1Data),
       studyNow: studyNow,
       studyTimePast24Hours: Math.floor(statsPast24Hours.time / 60),
