@@ -20,9 +20,9 @@ The server listens on http://localhost:8000 by default.
 ### Create some cards
 
 There are various ways to create cards:
- * Add them one at a time via the browser
- * Import CSV files
  * Import Anki .apkg or .colpkg file
+ * Import CSV files
+ * Add them one at a time via the browser
  * Direct database update
 
 Cards are the basic elements of study. They are produced from fieldsets,
@@ -87,24 +87,44 @@ their ordinal (ord), which is copied from the fieldset.
 
 It's all about the cards.
 
-#### Create Cards Manually
+#### Create Cards by importing an Anki .apkg or .colpkg file
 
-You can create templates and fieldsets manually in the browser. I don't
-recommend it. The UI is crude. But it's an option.
+The easiest way to get started with srf is by importing an Anki
+[Packaged Deck](https://docs.ankiweb.net/exporting.html). This will import
+the Anki cards, notes and note types into srf.
 
-On the home page, click the Templates or Fieldsets buttons at the bottom of
-the page to view, edit or add templates or fieldsets. Click an item in the
-list to edit it or click the Add button at the top of the list to add a new
-item.
+If you have been using Anki, you can export your own decks. Be sure ti
+include media when you export your decks. If you include scheduling
+information, it will be preserved.
 
-Click Templatesets to view a summary of template sets, their fields and the
-templates in them.
+Anki collection packages and shared decks can include review logs. These
+will be imported and merged with existing logs. Daily stats will be cleared
+and recalculated to including the new revlog entries.
 
-When you edit a fieldset, the fields you can set are determined from the
-templates in the selected templateset: every field included in any template
-in the templateset. You can't set fields that are not included in any
-template. If you want to set another field, include it in at least one of
-the templates.
+Otherwise, you can download a shared Anki deck from
+[AnkiWeb](https://ankiweb.net/shared/decks/) or use various tools to
+produce Anki Packaged Deck files from other sources.
+
+Srf doesn't distinguish decks. If you import multiple decks or a deck
+collection, all the cards will appear in a single pool in srf. If you want
+to keep decks separate, you can import each deck into a separate srf
+database.
+
+Note that srf only supports simple cards. In particular, closures are not
+supported. See below for what is/isn't supported. Start with something
+basic.
+
+To import an Anki packaged deck:
+
+```
+$ srf import <shared_deck.apkg>
+```
+
+To import an Anki deck collection:
+
+```
+$ srf import <deck_collection.colpkg>
+```
 
 #### Create Cards by importing CSV files
 
@@ -115,8 +135,8 @@ Create two CSV files:
 Import each file with:
 
 ```
-srf import templates.csv
-srf import fieldsets.csv
+$ srf import templates.csv
+$ srf import fieldsets.csv
 ```
 
 ##### templates.csv
@@ -172,53 +192,34 @@ Read below for details of all the options for the templates. They are
 [Mustache](https://github.com/janl/mustache.js) templates with all the
 field values available.
 
-##### Add some media files
+##### Add media files
 
-The fieldsets might refer to media files (images, audio, video, etc.). You can
-just copy these to the media directory which is ~/.local/share/srf/media by
+If the fieldsets refer to media files (images, audio, video, etc.), you
+will have to copy these to the media directory: ~/.local/share/srf/media by
 default.
 
 For example, a field might include an image with something like:
 `<img src=\"my-image.png\" />`, or an audio file with something like:
 `[sound:my-audio.mp3]`.
 
-#### Create Cards by importing an Anki .apkg or .colpkg file
+#### Create Cards Manually
 
-These files include templates, fieldsets, media  and cards and they may
-include study history. They are an easy way to get started if you have a
-relavant shared deck or if you have been using Anki and want to transfer
-your study to srf.
+You can create templates and fieldsets manually in the browser. I don't
+recommend it. The UI is crude. But it's an option.
 
-Download a shared Anki deck or export a collection package including one or
-more decks from Anki and import them to srf.
+On the home page, click the Templates or Fieldsets buttons at the bottom of
+the page to view, edit or add templates or fieldsets. Click an item in the
+list to edit it or click the Add button at the top of the list to add a new
+item.
 
-Srf doesn't distinguish decks so all the cards will be merged into a single
-pool, if you import multiple decks. If you want to keep them separate in
-srf, you can create multiple databases.
+Click Templatesets to view a summary of template sets, their fields and the
+templates in them.
 
-Anki shared decks are available from several sources. Of course, from
-[AnkiWeb](https://ankiweb.net/shared/decks/), but there are other sites
-that share decks. Search for 'Anki shared decks' and find one with cards on
-a topic you are interested in.
-
-Note that srf only supports simple cards. In particular, closures are not
-supported. See below for what is/isn't supported. Start with something
-basic.
-
-There are also tools available that will translate cards from other tools
-to Anki format, generate Anki decks from spreadsheet, etc.
-
-```
-$ srf import <shared_deck.apkg>
-```
-
-While you can create templates, template sets and field sets manually, from
-which cards will be generated, the interface for doing so is a bit crude.
-It may be easier to get started with an import.
-
-Anki collection packages and shared decks can include review logs. These
-will be imported and merged with existing logs. Daily stats will be cleared
-and recalculated to including the new revlog entries.
+When you edit a fieldset, the fields you can set are determined from the
+templates in the selected templateset: every field included in any template
+in the templateset. You can't set fields that are not included in any
+template. If you want to set another field, include it in at least one of
+the templates.
 
 #### Create Cards by direct database update
 
