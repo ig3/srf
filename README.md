@@ -3960,6 +3960,6 @@ unadjusted interval) rather than card.interval (the adjusted interval).
 
 Add a plot of unadjusted interval to Cards per interval.
 
-### 4.1.2 - WIP
+### 4.1.2 - 20230424
 Fix adjustCards to complete before next due is determined
 Fix logging reviews of new cards
