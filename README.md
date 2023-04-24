@@ -619,6 +619,10 @@ This performs several 'fixes':
 #### --help|-h
 Display usage and exit.
 
+#### --port|-p
+Set the port that the srf server listens on.
+
+Default is 8000.
 #### --directory|--dir
 Set the root directory, in which the database and media files are located.
 
@@ -3963,3 +3967,6 @@ Add a plot of unadjusted interval to Cards per interval.
 ### 4.1.2 - 20230424
 Fix adjustCards to complete before next due is determined
 Fix logging reviews of new cards
+
+### 4.2.0 - WIP
+Add options --port

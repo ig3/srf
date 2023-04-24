@@ -8,9 +8,10 @@ const { v4: uuidv4 } = require('uuid');
 
 const getopts = require('getopts');
 const opts = getopts(process.argv.slice(2), {
-  string: ['directory', 'database', 'htdocs', 'views', 'media', 'config'],
+  string: ['port', 'directory', 'database', 'htdocs', 'views', 'media', 'config'],
   alias: {
     help: ['h'],
+    port: ['p'],
     directory: ['dir'],
     database: ['db'],
     config: ['c'],
@@ -18,6 +19,7 @@ const opts = getopts(process.argv.slice(2), {
   },
   default: {
     directory: pa.join(process.env.HOME, '.local', 'share', 'srf'),
+    port: '8000',
     database: 'srf.db',
     media: 'media',
     htdocs: 'htdocs',
@@ -80,6 +82,7 @@ function showUsage () {
     ' --help');
   console.log('  ' +
     pa.basename(process.argv[1]) +
+    ' [--port <port>]' +
     ' [--directory <root-directory>]' +
     ' [--config <config-file>]' +
     ' [--htdocs <htdocs-directory>]' +
@@ -602,7 +605,7 @@ function runServer (opts, args) {
     res.status(404).send('Not found');
   });
 
-  const server = app.listen(8000, () => {
+  const server = app.listen(opts.port, () => {
     const host = server.address().address;
     const port = server.address().port;
     if (process.stdout.isTTY) {
