@@ -774,7 +774,7 @@ For example, a json file might be:
   "previewWindow": 0,
 
   // Backup retention time (milliseconds)
-  "backupRetention": "7 days",
+  "backupRetention": "30 days",
 
   // Minimum number of backups to keep
   "minBackups": 2,
@@ -791,14 +791,22 @@ For example, a json file might be:
   "maxGoodInterval": "1 year',
   "maxEasyInterval": "1 year",
 
+  // The interval (seconds) beyond which a card is considered 'learning'
+  learningThreshold: '1 week',
+
   // The interval (seconds) beyond which a card is considered 'mature'
   "matureThreshold": "21 days",
 
   // The window (seconds) in which to average Percent Correct reviews
-  "percentCorrectWindow": "14 days",
+  "percentCorrectWindow": "1 month",
 
-  // The interval (seconds) between correct factor adjustments
-  "correctFactorAdjustmentInterval": "1 day",
+  // The minimum number of mature cards in the percent correct window
+  // at which percent correct is calculated.
+  minPercentCorrectCount: 10,
+
+  // The target for percent correct reviews
+  percentCorrectTarget: 90,
+  percentCorrectSensitivity: 0.0001,
 
   // The factor used to add dispersion to the due time.
   // As percentage of the total interval.
@@ -818,14 +826,14 @@ For example, a json file might be:
 
   // minimum intervals according to responses to reviews
   "againMaxInterval": "1 day",
-  "hardMinInterval": 30,
+  "hardMinInterval": "1 week",
   "goodMinInterval": 60,
   "goodMinFactor": 1.1,
-  "easyMinInterval": "7 days",
+  "easyMinInterval": "1 days",
 
   // Static interval factors
-  "againFactor": 0.1,
-  "hardFactor": 0.5,
+  "againFactor": 0.5,
+  "hardFactor": 0.8,
   "goodFactor": 1.0,
   "easyFactor": 1.5,
 
@@ -833,8 +841,8 @@ For example, a json file might be:
   "weightAgain": 0,
   "weightHard": 1,
   "weightGood": 1.5,
-  "weightEasy": 2
-
+  "weightEasy": 2,
+  "decayFactor": 0.95
 }
 ```
 
@@ -994,18 +1002,6 @@ This determines the sensitivity to the difference between Percent Correct
 and percentCorrectTarget, when adjusting the interval and due date of
 learning and mature cards.
 
-#### correctFactorAdjustmentInterval (deprecated)
-
-This is no longer used.
-
-default: 1 day
-
-The correct factor is one of the factors used to determine the intervals of
-cards. This is the minimum time between adjustments of this factor.
-
-  // The factor used to add dispersion to the due time.
-  // As percentage of the total interval.
-
 #### dispersionFactor
 
 default: 5
@@ -1067,7 +1063,7 @@ This is the minimum interval after responding 'Easy' to a review.
 
 #### againFactor
 
-default: 0.3
+default: 0.5
 
 After responding 'Again' to a review, the new interval is the previous
 interval multiplied by this factor, but with a maximum of againMaxInterval
@@ -1075,7 +1071,7 @@ which, by default, is 1 day.
 
 #### hardFactor
 
-default: 0.5
+default: 0.8
 
 After responding 'Hard' to a review, the new interval is the previous
 interval multiplied by this factor, but with a maximum of hardMaxInterval
@@ -1083,11 +1079,15 @@ which, by default, is 1 week.
 
 #### goodFactor
 
+default: 1.0
+
 After responding 'Good' to a review, the new interval is the previous
 interval multiplied by this factor, the card factor and the 'correct'
 factor. See 'scheduler' below for details.
 
 #### easyFactor
+
+default: 1.5
 
 After responding 'Easy' to a review, the new interval is the interval for a
 'Good' response multiplied by this factor.
