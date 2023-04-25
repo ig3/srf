@@ -3974,3 +3974,6 @@ Fix update of daily stats new card count
 
 ### 4.2.1 - 20230425
 Minimum interval of 1 second
+
+### 4.2.2 - WIP
+Change dailystats.studyminutes to dailystats.studytime
