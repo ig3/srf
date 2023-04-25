@@ -3972,4 +3972,5 @@ Fix logging reviews of new cards
 Add options --port
 Fix update of daily stats new card count
 
-
+### 4.2.1 - 20230425
+Minimum interval of 1 second
