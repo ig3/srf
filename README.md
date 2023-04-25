@@ -3977,3 +3977,4 @@ Minimum interval of 1 second
 
 ### 4.2.2 - WIP
 Change dailystats.studyminutes to dailystats.studytime
+Improve calculation of average study time per day
