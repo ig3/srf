@@ -3968,5 +3968,8 @@ Add a plot of unadjusted interval to Cards per interval.
 Fix adjustCards to complete before next due is determined
 Fix logging reviews of new cards
 
-### 4.2.0 - WIP
+### 4.2.0 - 20230425
 Add options --port
+Fix update of daily stats new card count
+
+
