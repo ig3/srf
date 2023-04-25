@@ -321,10 +321,10 @@ The srf scheduler does not suffer from
 The srf scheduler has an equivalent to Anki ease factor for each card
 but it is simpler: it is the
 [exponentially weighted moving average](https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average)
-of the weighted answers. The default answer weights are 0, 1, 2 and 4 for
-Again, Hard, Good and Easy and the default decay factor is 0.9, but these
+of the weighted answers. The default answer weights are 0, 1, 1.5 and 2 for
+Again, Hard, Good and Easy and the default decay factor is 0.95, but these
 are all configurable. By default, the range of the ease factor is 0.0
-through 4.0: somewhat equivalent to Anki ease factors 0% to 400%. With srf
+through 4.0: somewhat equivalent to Anki ease factors 0% to 200%. With srf
 the ease factor never gets 'stuck' at an unreasonably low setting. It
 always adapts to the recent ease of the card.
 
@@ -832,8 +832,8 @@ For example, a json file might be:
   // Answer weights
   "weightAgain": 0,
   "weightHard": 1,
-  "weightGood": 2,
-  "weightEasy": 4
+  "weightGood": 1.5,
+  "weightEasy": 2
 
 }
 ```
@@ -1108,14 +1108,14 @@ weighted moving average of review replies: the card ease factor.
 
 #### weightGood
 
-default: 2
+default: 1.5
 
 The weight of an answer of Good when calculating the exponentially
 weighted moving average of review replies: the card ease factor.
 
 #### weightEasy
 
-default: 4
+default: 2
 
 The weight of an answer of Easy when calculating the exponentially
 weighted moving average of review replies: the card ease factor.
