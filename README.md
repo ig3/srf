@@ -3975,7 +3975,7 @@ Fix update of daily stats new card count
 ### 4.2.1 - 20230425
 Minimum interval of 1 second
 
-### 4.2.2 - WIP
+### 4.2.2 - 20230427
 Change dailystats.studyminutes to dailystats.studytime
 Improve calculation of average study time per day
 Fix calculation of estimated study time
