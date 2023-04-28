@@ -69,3 +69,7 @@ audio {
 a:visited {
   color: lightgray;
 }
+
+.status th {
+  text-align: left;
+}

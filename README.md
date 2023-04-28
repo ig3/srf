@@ -363,11 +363,10 @@ The home page presents some basic study statistics:
  * Daily study time averaged over the past 14 days
  * The percentage of correct (not 'Again') responses to mature cards in the
    past 14 days
- * The number of cards currently overdue (due more than 24 hours ago)
- * The number of cards due now
+ * The number of cards due and overdue (due more than 24 hours ago)
  * The number of new cards seen in the past 24 hours and the number
-   remaining to be seen, should workload permit: (config.newCardLimit - the
-   limit on new cards in the past 24 hours)
+   remaining to be seen. If there are cards remaining to be seen, this will
+   be followed by an explanation of why a new card isn't presented now.
  * The time until the next card is due
  * A histogram of study time per hour through past and next 24 hours
 
@@ -537,6 +536,12 @@ days.
 #### Next card due in
 
 The time until the next card is due for review.
+
+#### New cards (seen/remaining)
+
+The counts of new cards seen in the past 24 hours and remaining to be seen.
+If there are cards remaining to be seen, this will be followed by an
+explanation of why a new card isn't presented now.
 
 #### Charts
 
@@ -827,7 +832,7 @@ For example, a json file might be:
   // minimum intervals according to responses to reviews
   "againMaxInterval": "1 day",
   "hardMinInterval": "1 week",
-  "goodMinInterval": 60,
+  "goodMinInterval": "5 minutes",
   "goodMinFactor": 1.1,
   "easyMinInterval": "1 days",
 
@@ -1045,7 +1050,7 @@ This is the maximum interval after responding 'Hard' to a review.
 
 #### goodMinInterval (seconds)
 
-default: 60
+default: 5 minutes
 
 This is the minimum interval after responding 'Good' to a review.
 
@@ -3979,3 +3984,6 @@ Minimum interval of 1 second
 Change dailystats.studyminutes to dailystats.studytime
 Improve calculation of average study time per day
 Fix calculation of estimated study time
+
+### 4.3.0 - WIP
+Provide feedback on why new cards are not presented

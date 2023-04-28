@@ -11,6 +11,10 @@
 <tr><th>Study time today:</th><td>{{studyTimeToday}} (hh:mm:ss)</td></tr>
 <tr><th>Average time per day:</th><td>{{averageStudyTimePerDay}} (hh:mm:ss)</td></tr>
 <tr><th>Next card is due in:</th><td>{{timeToNextDue}} (hh:mm:ss)</td></tr>
+<tr><th>New cards (seen/remaining):</th><td>{{newCardsSeen}}/{{newCardsRemaining}}</td></tr>
+{{#if newCardsRemaining}}
+<tr><td>{{whyNotNew}}</td></tr>
+{{/if}}
 </table>
 </div>
 <div class="charts">

@@ -198,6 +198,7 @@ function runServer (opts, args) {
     const studyTimeToday = srf.getStudyTimeToday();
     const dueStudyTime = srf.getEstimatedAverageStudyTime(1);
     const nextDue = srf.getNextDue() || now;
+    const whyNotNew = srf.getWhyNotNewCard();
 
     const dueNow = srf.getCountCardsDueNow();
     const nextCard = srf.getNextCard();
@@ -223,6 +224,7 @@ function runServer (opts, args) {
       dueStudyTime: Math.floor(dueStudyTime / 60),
       totalStudyTime: Math.floor((studyTimeToday + dueStudyTime) / 60),
       dueNow: dueNow,
+      whyNotNew: whyNotNew,
       timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
       chart1Data: JSON.stringify(chart1Data),
       studyNow: studyNow,
@@ -264,6 +266,9 @@ function runServer (opts, args) {
     const cardsViewedToday = srf.getCountCardsViewedToday();
     const dueCount = srf.getCountCardsDueToday();
     const nextDue = srf.getNextDue() || now;
+    const newCardsSeen = srf.getCountNewCardsPast24Hours();
+    const newCardsRemaining = srf.getCountNewCardsRemaining();
+    const whyNotNew = srf.getWhyNotNewCard();
 
     const charts = srf.getChartsDailyStats();
     charts.chartCardsPerInterval = srf.getChartCardsPerInterval();
@@ -277,6 +282,9 @@ function runServer (opts, args) {
 
     res.render('stats', {
       dueCount: dueCount,
+      newCardsSeen: newCardsSeen,
+      newCardsRemaining: newCardsRemaining,
+      whyNotNew: whyNotNew,
       timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
       cardsViewedToday: cardsViewedToday,
       studyTimeToday: tc.seconds(studyTimeToday).toFullString().slice(0, -4),
