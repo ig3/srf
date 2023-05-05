@@ -3985,6 +3985,9 @@ Change dailystats.studyminutes to dailystats.studytime
 Improve calculation of average study time per day
 Fix calculation of estimated study time
 
-### 4.3.0 - WIP
+### 4.3.0 - 20230506
 Provide feedback on why new cards are not presented
 Fix getAverageStudyTime
+
+### 4.3.1 - WIP
+Update dependencies
