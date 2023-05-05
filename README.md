@@ -3987,3 +3987,4 @@ Fix calculation of estimated study time
 
 ### 4.3.0 - WIP
 Provide feedback on why new cards are not presented
+Fix getAverageStudyTime
