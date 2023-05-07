@@ -308,6 +308,9 @@ srf is able to import Anki decks that use only basic features of Anki. Not
 all field and media types are supported, but enough for many decks / cards
 to work.
 
+[Spaced Repetition for Efficient Learning](https://gwern.net/spaced-repetition)
+provides an overview and links to research on spaced repetition.
+
 ## Comparison to Anki
 
 srf provides only a small subset of the features of Anki: enough for my
@@ -3991,3 +3994,4 @@ Fix getAverageStudyTime
 
 ### 4.3.1 - WIP
 Update dependencies
+Fix new card time limit
