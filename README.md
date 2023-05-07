@@ -3995,3 +3995,4 @@ Fix getAverageStudyTime
 ### 4.3.1 - WIP
 Update dependencies
 Fix new card time limit
+Make minimum interval between new cards = studyTimeLimit / newCardLimit
