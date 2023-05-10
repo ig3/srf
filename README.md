@@ -363,13 +363,12 @@ The home page presents some basic study statistics:
  * The number of cards reviewed and minutes studied in the past 24 hours
  * The number of cards due and estimated minutes to study in the next 24
    hours
- * Daily study time averaged over the past 14 days
+ * Daily study time: average and target
  * The percentage of correct (not 'Again') responses to mature cards in the
    past 14 days
  * The number of cards due and overdue (due more than 24 hours ago)
  * The number of new cards seen in the past 24 hours and the number
-   remaining to be seen. If there are cards remaining to be seen, this will
-   be followed by an explanation of why a new card isn't presented now.
+   remaining to be seen.
  * The time until the next card is due
  * A histogram of study time per hour through past and next 24 hours
 
@@ -533,8 +532,9 @@ This is the total time spent studying today.
 
 #### Average time per day
 
-This is the average total study time per day, averaged over the past 14
-days.
+This is the average total study time per day, averaged over the past week
+(actual study time) and coming week (estimated based on cards due and
+recent performance).
 
 #### Next card due in
 
@@ -543,8 +543,14 @@ The time until the next card is due for review.
 #### New cards (seen/remaining)
 
 The counts of new cards seen in the past 24 hours and remaining to be seen.
-If there are cards remaining to be seen, this will be followed by an
-explanation of why a new card isn't presented now.
+If there are cards remaining to be seen. The new cards remaining is the
+current new card limit less new cards seen in the past 24 hours. The
+current new card limit is config.newCardLimit, reduced according to average
+study time. Study time is averaged over the past week (actual study time)
+and the coming week (estimated based on cards due). The limit is 100% of
+config.newCardLimit when average study time is less than 95% of
+config.studyTimeLimit. It is reduced to 0 when average study time reaches
+105% of config.studyTimeLimit.
 
 #### Charts
 
@@ -1432,39 +1438,10 @@ due for review.
 Cards that have never been studied are 'unseen' cards. But eventually they
 are selected to be presented for study: they become a 'new' card.
 
-A new card is presented for study if:
-
- * Study time is less than config.studyTimeTarget, including:
-   * total study time in the past 24 hours
-   * average study time per 24 hours in the past 14 days
-   * estimated total study time in the next 24 hours
-   * estimated average study time per 24 hours in the next 5 days
- * There are no cards due more than 24 hours ago (i.e. overdue)
- * Total new cards in the past 24 hours is less than config.newCardLimit
- * percentCorrect is at least config.newCardMinPercentCorrect
- * There is no card due for review or it is more than 5 minutes since the last new card was presented
-
-This regulates the introduction of new cards to maintain daily study time
-close to config.studyTimeTarget. If study time falls below the target, more
-new cards are introduced, up to the daily maximum. If study time exceeds
-the target, no more new cards are presented, allowing you to focus on
-learning the cards already seen without becoming overloaded.
-
-Estimates of future study time are based on number of cards due and average
-time per card, per day, over the past 10 days.
-
-Note that studyTimeTarget is a limit per 24 hours, not a limit per day. srf
-considers study time in the past 24 hours and the next 24 hours from the
-current time, without regard to what the actual time is, local time or day
-boundaries.
-
-In the event of a significant backlog of due cards (e.g. after not studying
-for several days), no new cards will be presented until the backlog is
-cleared: there are no overdue cards and study time in the past 24 hours is
-less than the target.
-
-In the event of an upcoming surge of due cards, no new cards will be
-presented, even if current study time is low.
+New cards are presented when the number of new cards seen in the past 24
+hours is less than the current new card limit and the time since the last
+new card was presented is greater than config.studyTimeLimit /
+config.newCardLimit or there are no more cards due.
 
 New cards start with a minimal interval. If they remain hard, the interval
 will continue minimal, until you have reviewed the card enough times to
@@ -3996,3 +3973,5 @@ Fix getAverageStudyTime
 Update dependencies
 Fix new card time limit
 Make minimum interval between new cards = studyTimeLimit / newCardLimit
+Simplify regulation of new cards
+Revise home and stats pages

@@ -5,31 +5,28 @@
 <tr><th>Cards seen:</th><td>{{cardsSeen}}</td></tr>
 <tr><th>Cards by Stage:</th><td>{{countUI}} / {{countCI}} / {{countCC}} / {{countUC}} / {{countM}}</td></tr>
 <tr><th>Percent correct:</th><td>{{percentCorrect}}%</td></tr>
+<tr><th>Average time per review:</th><td>{{averageStudyTimePerReview}} (sec)</td></tr>
 <tr><th>Cards reviewed today:</th><td>{{cardsViewedToday}}</td></tr>
 <tr><th>Cards due later today:</th><td>{{dueCount}}</td></tr>
-<tr><th>Average time per review:</th><td>{{averageStudyTimePerReview}} (sec)</td></tr>
+<tr><th>New cards (seen/remaining):</th><td>{{newCardsSeen}}/{{newCardsRemaining}}</td></tr>
 <tr><th>Study time today:</th><td>{{studyTimeToday}} (hh:mm:ss)</td></tr>
 <tr><th>Average time per day:</th><td>{{averageStudyTimePerDay}} (hh:mm:ss)</td></tr>
 <tr><th>Next card is due in:</th><td>{{timeToNextDue}} (hh:mm:ss)</td></tr>
-<tr><th>New cards (seen/remaining):</th><td>{{newCardsSeen}}/{{newCardsRemaining}}</td></tr>
-{{#if newCardsRemaining}}
-<tr><td>{{whyNotNew}}</td></tr>
-{{/if}}
 </table>
 </div>
 <div class="charts">
 
-<h3>Card Views per day</h3>
-<div id="cardViewPerDay" class="chart"></div>
+<h3>New Cards per day</h3>
+<div id="newCardsPerDay" class="chart"></div>
 
-<h3>Minutes Studied per day</h3>
+<h3>Card Reviews per day</h3>
+<div id="cardViewsPerDay" class="chart"></div>
+
+<h3>Minutes of Study per day</h3>
 <div id="minutesStudiedPerDay" class="chart"></div>
 
 <h3>Percent Correct</h3>
 <div id="percentCorrect" class="chart"></div>
-
-<h3>New Cards per day</h3>
-<div id="newCardsPerDay" class="chart"></div>
 
 <h3>Matured &amp; Lapsed</h3>
 <div id="matured" class="chart"></div>
@@ -46,12 +43,12 @@
 </div>
 <script src="/js/plotly-latest.min.js" charset="utf-8"></script>
 <script>
-  let cardViewPerDay = document.getElementById('cardViewPerDay');
-  if (cardViewPerDay) {
-    Plotly.newPlot(cardViewPerDay,
+  let cardViewsPerDay = document.getElementById('cardViewsPerDay');
+  if (cardViewsPerDay) {
+    Plotly.newPlot(cardViewsPerDay,
       [ {{{json charts.chartCardViewsPerDay}}} ], {
         margin: {t: 0},
-        yaxis: { title: 'cards' },
+        yaxis: { title: 'reviews' },
         xaxis: { title: 'date' }
       }
     );

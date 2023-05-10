@@ -195,10 +195,7 @@ function runServer (opts, args) {
 
   app.get('/', (req, res) => {
     const now = Math.floor(Date.now() / 1000);
-    const studyTimeToday = srf.getStudyTimeToday();
-    const dueStudyTime = srf.getEstimatedAverageStudyTime(1);
     const nextDue = srf.getNextDue() || now;
-    const whyNotNew = srf.getWhyNotNewCard();
 
     const dueNow = srf.getCountCardsDueNow();
     const nextCard = srf.getNextCard();
@@ -206,6 +203,8 @@ function runServer (opts, args) {
     const statsPast24Hours = srf.getStatsPast24Hours();
     const statsNext24Hours = srf.getStatsNext24Hours();
     const overdue = srf.getCountCardsOverdue();
+    const averageStudyTime =
+      (srf.getAverageStudyTime(7) + srf.getEstimatedAverageStudyTime(7)) / 2;
 
     const chart1Data = srf.getChartStudyTime();
     const newCardsSeen = srf.getCountNewCardsPast24Hours();
@@ -218,24 +217,18 @@ function runServer (opts, args) {
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     res.render('home', {
-      studyTimeToday: Math.floor(studyTimeToday / 60),
-      targetStudyTime: (config.studyTimeLimit / 60).toFixed(0),
-      averageStudyTime: (srf.getAverageStudyTime(14) / 60).toFixed(0),
-      dueStudyTime: Math.floor(dueStudyTime / 60),
-      totalStudyTime: Math.floor((studyTimeToday + dueStudyTime) / 60),
-      dueNow: dueNow,
-      whyNotNew: whyNotNew,
-      timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
-      chart1Data: JSON.stringify(chart1Data),
-      studyNow: studyNow,
-      studyTimePast24Hours: Math.floor(statsPast24Hours.time / 60),
-      viewedPast24Hours: statsPast24Hours.count,
       statsPast24Hours: statsPast24Hours,
       statsNext24Hours: statsNext24Hours,
+      averageStudyTime: (averageStudyTime / 60).toFixed(0),
+      targetStudyTime: (config.studyTimeLimit / 60).toFixed(0),
       percentCorrect: srf.getPercentCorrect().toFixed(2),
+      dueNow: dueNow,
       overdue: overdue,
       newCardsSeen: newCardsSeen,
       newCardsRemaining: newCardsRemaining,
+      timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
+      studyNow: studyNow,
+      chart1Data: JSON.stringify(chart1Data),
       mode: mode,
       theme: config.theme
     });
@@ -268,7 +261,6 @@ function runServer (opts, args) {
     const nextDue = srf.getNextDue() || now;
     const newCardsSeen = srf.getCountNewCardsPast24Hours();
     const newCardsRemaining = srf.getCountNewCardsRemaining();
-    const whyNotNew = srf.getWhyNotNewCard();
 
     const charts = srf.getChartsDailyStats();
     charts.chartCardsPerInterval = srf.getChartCardsPerInterval();
@@ -279,25 +271,26 @@ function runServer (opts, args) {
     const days = srf.getCountDaysStudied();
     const newCardsPerDay = (cardsSeen && days) ? cardsSeen / days : 0;
     const config = srf.getConfig();
+    const averageStudyTime =
+      (srf.getAverageStudyTime(7) + srf.getEstimatedAverageStudyTime(7)) / 2;
 
     res.render('stats', {
-      dueCount: dueCount,
-      newCardsSeen: newCardsSeen,
-      newCardsRemaining: newCardsRemaining,
-      whyNotNew: whyNotNew,
-      timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
-      cardsViewedToday: cardsViewedToday,
-      studyTimeToday: tc.seconds(studyTimeToday).toFullString().slice(0, -4),
-      averageStudyTimePerReview: srf.getAverageStudyTimePerReview().toFixed(1),
-      averageStudyTimePerDay: tc.seconds(srf.getAverageStudyTime(14)).toFullString().slice(0, -4),
       newCardsPerDay: newCardsPerDay.toFixed(2),
-      percentCorrect: srf.getPercentCorrect().toFixed(2),
       cardsSeen: cardsSeen,
       countUI: srf.getCountCardsStage0(),
       countCI: srf.getCountCardsStage1(),
       countCC: srf.getCountCardsStage2(),
       countUC: srf.getCountCardsStage3(),
       countM: srf.getCountCardsStage4(),
+      percentCorrect: srf.getPercentCorrect().toFixed(2),
+      cardsViewedToday: cardsViewedToday,
+      dueCount: dueCount,
+      averageStudyTimePerReview: srf.getAverageStudyTimePerReview().toFixed(1),
+      studyTimeToday: tc.seconds(studyTimeToday).toFullString().slice(0, -4),
+      averageStudyTimePerDay: tc.seconds(averageStudyTime).toFullString().slice(0, -4),
+      timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
+      newCardsSeen: newCardsSeen,
+      newCardsRemaining: newCardsRemaining,
       charts: charts,
       theme: config.theme
     });
