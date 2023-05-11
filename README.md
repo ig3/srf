@@ -3969,7 +3969,7 @@ Fix calculation of estimated study time
 Provide feedback on why new cards are not presented
 Fix getAverageStudyTime
 
-### 4.3.1 - WIP
+### 4.4.0 - WIP
 Update dependencies
 Fix new card time limit
 Make minimum interval between new cards = studyTimeLimit / newCardLimit
