@@ -396,6 +396,12 @@ The data is in ~/.local/share/srf by default, including database (srf.db)
 and media files. The database is ~/.local/share/srf/srf.db. Media files
 are in ~/.local/share/srf/media.
 
+At the top right of the home page and front and back pages, there is a
+status indicator. Green, yellow or red depending on study time Vs
+config.studyTimeLimit. Below this are counts of cards due, new cards
+remaining, minutes of study the past 24 hours and minutes of study the next
+24 hours (estimated). 
+
 #### Buttons
 
 ##### New Card
@@ -3969,9 +3975,12 @@ Fix calculation of estimated study time
 Provide feedback on why new cards are not presented
 Fix getAverageStudyTime
 
-### 4.4.0 - WIP
+### 4.4.0 - 20230511
 Update dependencies
 Fix new card time limit
 Make minimum interval between new cards = studyTimeLimit / newCardLimit
 Simplify regulation of new cards
 Revise home and stats pages
+
+### 4.4.1 - WIP
+Add new cards remaining below traffic lights

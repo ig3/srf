@@ -330,6 +330,7 @@ function runServer (opts, args) {
       card.front = srf.render(template.front, fields);
       fields.FrontSide = card.front;
       card.back = srf.render(template.back, fields);
+      const newCardsRemaining = srf.getCountNewCardsRemaining();
       const dueNow = srf.getCountCardsDueNow();
       const statsPast24Hours = srf.getStatsPast24Hours();
       const statsNext24Hours = srf.getStatsNext24Hours();
@@ -351,7 +352,8 @@ function runServer (opts, args) {
         statsPast24Hours: statsPast24Hours,
         statsNext24Hours: statsNext24Hours,
         maxViewTime: config.maxViewTime,
-        dueNow: dueNow
+        dueNow: dueNow,
+        newCardsRemaining: newCardsRemaining
       });
     } else {
       res.redirect('/');
@@ -369,6 +371,7 @@ function runServer (opts, args) {
       card.front = srf.render(template.front, fields);
       fields.FrontSide = card.front;
       card.back = srf.render(template.back, fields);
+      const newCardsRemaining = srf.getCountNewCardsRemaining();
       const dueNow = srf.getCountCardsDueNow();
       const statsPast24Hours = srf.getStatsPast24Hours();
       const statsNext24Hours = srf.getStatsNext24Hours();
@@ -396,7 +399,8 @@ function runServer (opts, args) {
         statsNext24Hours: statsNext24Hours,
         maxViewTime: config.maxViewTime,
         intervals: intervals,
-        dueNow: dueNow
+        dueNow: dueNow,
+        newCardsRemaining: newCardsRemaining
       });
     } else {
       res.redirect('/');
