@@ -3984,3 +3984,4 @@ Revise home and stats pages
 
 ### 4.4.1 - WIP
 Add new cards remaining below traffic lights
+Fix legend position on Cards per interval
