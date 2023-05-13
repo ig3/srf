@@ -3982,7 +3982,7 @@ Make minimum interval between new cards = studyTimeLimit / newCardLimit
 Simplify regulation of new cards
 Revise home and stats pages
 
-### 4.4.1 - WIP
+### 4.4.1 - 20230514
 Add new cards remaining below traffic lights
 Fix legend position on Cards per interval
 Add title to signal stats
