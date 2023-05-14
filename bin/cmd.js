@@ -208,6 +208,7 @@ function runServer (opts, args) {
 
     const chart1Data = srf.getChartStudyTime();
     const newCardsSeen = srf.getCountNewCardsPast24Hours();
+    const newCardLimit = srf.getCurrentNewCardLimit();
     const newCardsRemaining = srf.getCountNewCardsRemaining();
     const config = srf.getConfig();
     const ratio = statsPast24Hours.time / config.studyTimeLimit;
@@ -225,6 +226,7 @@ function runServer (opts, args) {
       dueNow: dueNow,
       overdue: overdue,
       newCardsSeen: newCardsSeen,
+      newCardLimit: newCardLimit,
       newCardsRemaining: newCardsRemaining,
       timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
       studyNow: studyNow,
@@ -260,6 +262,7 @@ function runServer (opts, args) {
     const dueCount = srf.getCountCardsDueToday();
     const nextDue = srf.getNextDue() || now;
     const newCardsSeen = srf.getCountNewCardsPast24Hours();
+    const newCardLimit = srf.getCurrentNewCardLimit();
     const newCardsRemaining = srf.getCountNewCardsRemaining();
 
     const charts = srf.getChartsDailyStats();
@@ -290,6 +293,7 @@ function runServer (opts, args) {
       averageStudyTimePerDay: tc.seconds(averageStudyTime).toFullString().slice(0, -4),
       timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
       newCardsSeen: newCardsSeen,
+      newCardLimit: newCardLimit,
       newCardsRemaining: newCardsRemaining,
       charts: charts,
       theme: config.theme

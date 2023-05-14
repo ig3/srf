@@ -367,8 +367,7 @@ The home page presents some basic study statistics:
  * The percentage of correct (not 'Again') responses to mature cards in the
    past 14 days
  * The number of cards due and overdue (due more than 24 hours ago)
- * The number of new cards seen in the past 24 hours and the number
-   remaining to be seen.
+ * The number of new cards seen and the limit on new cards for the past 24 hours
  * The time until the next card is due
  * A histogram of study time per hour through past and next 24 hours
 
@@ -532,31 +531,28 @@ This is the average time for each review of a card. It includes small gaps
 between reviews. It is the total study time for the day divided by the
 number of reviews.
 
+#### New cards (seen/remaining)
+
+The number of new cards seen in the past 24 hours and the current limit on
+new cards. The limit is config.newCardLimit, reduced according to average
+study time, from 100% when average study time is less than 95% of
+config.studyTimeLimit to 0% when average study time is above 105% of
+config.studyTimeLimit. New cards will only be shown if the number of new
+cards seen in the past 24 hours is less than the current new card limit.
+
 #### Study time today
 
 This is the total time spent studying today.
 
 #### Average time per day
 
-This is the average total study time per day, averaged over the past week
-(actual study time) and coming week (estimated based on cards due and
-recent performance).
+This is average daily study time, averaged over the past week (actual study
+time) and coming week (estimated based on cards due and recent
+performance).
 
 #### Next card due in
 
 The time until the next card is due for review.
-
-#### New cards (seen/remaining)
-
-The counts of new cards seen in the past 24 hours and remaining to be seen.
-If there are cards remaining to be seen. The new cards remaining is the
-current new card limit less new cards seen in the past 24 hours. The
-current new card limit is config.newCardLimit, reduced according to average
-study time. Study time is averaged over the past week (actual study time)
-and the coming week (estimated based on cards due). The limit is 100% of
-config.newCardLimit when average study time is less than 95% of
-config.studyTimeLimit. It is reduced to 0 when average study time reaches
-105% of config.studyTimeLimit.
 
 #### Charts
 
@@ -3986,3 +3982,6 @@ Revise home and stats pages
 Add new cards remaining below traffic lights
 Fix legend position on Cards per interval
 Add title to signal stats
+
+### 4.4.2 - WIP
+Show new card limit instead of new cards remaining on home and stats pages
