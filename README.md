@@ -535,8 +535,8 @@ number of reviews.
 
 The number of new cards seen in the past 24 hours and the current limit on
 new cards. The limit is config.newCardLimit, reduced according to average
-study time, from 100% when average study time is less than 95% of
-config.studyTimeLimit to 0% when average study time is above 105% of
+study time, from 100% when average study time is less than 90% of
+config.studyTimeLimit to 0% when average study time is above 110% of
 config.studyTimeLimit. New cards will only be shown if the number of new
 cards seen in the past 24 hours is less than the current new card limit.
 
@@ -3985,3 +3985,4 @@ Add title to signal stats
 
 ### 4.4.2 - WIP
 Show new card limit instead of new cards remaining on home and stats pages
+Decrease sensitivity to average study time to range 90% to 110%
