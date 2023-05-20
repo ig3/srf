@@ -786,9 +786,6 @@ For example, a json file might be:
   // Minimum time between related cards (seconds)
   "minTimeBetweenRelatedCards": "5 days"
 
-  // Window (seconds) to look ahead for due cards
-  "previewWindow": 0,
-
   // Backup retention time (milliseconds)
   "backupRetention": "30 days",
 
@@ -823,10 +820,6 @@ For example, a json file might be:
   // The target for percent correct reviews
   percentCorrectTarget: 90,
   percentCorrectSensitivity: 0.0001,
-
-  // The factor used to add dispersion to the due time.
-  // As percentage of the total interval.
-  "dispersionFactor": 5,
 
   // The maximum number of new cards in 24 hours.
   "newCardLimit": 20,
@@ -881,22 +874,6 @@ The set of cards from a single field set are considered related. If one
 card from the set is reviewed, this is the minimum time before any other
 card from the set will be presented for review.
 
-#### previewWindow (seconds)
-
-default: 0
-
-This is the interval to look ahead of current time for due cards. If this
-is 0 then only cards currently due will be presented for review but if this
-is greater than 0 then cards due up to this many seconds in the future will
-be presented for review. This will cause cards to be reviewed before their
-due time, somewhat defeating the spaced repetition algorithm but only
-within the window.
-
-The idea was to allow study until there were no cards due 'soon' (i.e. in
-the preview window) then take a break from study. It doesn't work well and
-I will probably remove this. I set this to 0 - disabling the feature by
-default.
-
 ####  backupRetention
 
 default: 30 days
@@ -927,9 +904,7 @@ this ease will be forced to 'again'.
 
 default: 1 year
 
-The maximum interval (time until next review) for a card. Note that the
-actual maximum time until next review can be a bit larger than this due to
-dispersion of due times.
+The maximum interval (time until next review) for a card.
 
 #### maxGoodInterval (seconds)
 
@@ -1017,15 +992,6 @@ default: 0.0001
 This determines the sensitivity to the difference between Percent Correct
 and percentCorrectTarget, when adjusting the interval and due date of
 learning and mature cards.
-
-#### dispersionFactor
-
-default: 5
-
-The dispersion factor is used to add a random amount to the interval when
-calculating the next due time of a card. This randomization helps to avoid
-cards always appearing together, even if they always get the same response.
-It is a percentage of the interval.
 
 #### newCardLimit
 
@@ -1314,8 +1280,7 @@ review, sooner or later, according to the ease with which it was
 remembered.
 
 The interval to the next review is determined based on the ease of the
-current and past reviews, and a factor that is adjusted to achieve an
-overall 90% successful review of mature cards. 
+current and past reviews.
 
 (Almost) All the scheduling parameters are configurable. The following sections
 describe the default configuration.
@@ -1472,12 +1437,9 @@ return to study, you might have a large backlog: many cards due to study.
 The scheduling algorithm makes it easy to work through the backlog, whether
 it is small or large.
 
-When there is a set of cards due for review, the scheduler prioritises the
-cards with the shorter intervals. You will see short interval cards as soon
-after they are due as possible. Cards with longer intervals will be
-deferred until you have learned the cards with shorter intervals. In this
-way, the backlog will not interfere with review of the cards you are just
-learning: you will continue to learn effectively.
+When there is more than one card due for review, the scheduler prioritises
+the cards with shorter intervals. The selection is slightly randomized: one
+of the next 5 cards due is returned.
 
 If your backlog is too large, you may not be able to review all due cards
 in a day. It may take you several days to catch up. The scheduler will cope
@@ -1490,11 +1452,8 @@ While you have a backlog (cards that were due more than 24 hours ago) no
 new cards will be shown. There is no value in making the backlog larger.
 You can return to learning new cards after you clear your backlog.
 
-But, of course, this is up to you. There is a New Card button on the home
-page. You can click this any time you like to view a new card, regardless
-of how larger, or small you backlog is. The New Card button will present a
-new card regardless of all the automatic limits on new cards.
-
+You can override the scheduler and study a new card at any time by clicking
+the New Card button on the home page.
 
 ## Templates
 
