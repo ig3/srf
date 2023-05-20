@@ -3986,3 +3986,4 @@ Add title to signal stats
 ### 4.4.2 - WIP
 Show new card limit instead of new cards remaining on home and stats pages
 Decrease sensitivity to average study time to range 90% to 110%
+Improve dispersion of due date
