@@ -1,0 +1,1 @@
+select interval, due, datetime(due, "unixepoch", "localtime") from card order by modified desc
