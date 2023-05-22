@@ -326,7 +326,6 @@ function runServer (opts, args) {
     const cardid = parseInt(req.params.id);
     const card = srf.getCard(cardid);
     if (card) {
-      if (card.interval === 0) console.log('new card');
       const cardStartTime = Math.floor(Date.now() / 1000);
       const fields = srf.getFields(card.fieldsetid);
       const template = srf.getTemplate(card.templateid);
