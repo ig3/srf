@@ -3946,3 +3946,4 @@ Add title to signal stats
 Show new card limit instead of new cards remaining on home and stats pages
 Decrease sensitivity to average study time to range 90% to 110%
 Eliminate quantization and dispersion of due
+Fix estimation of upcoming study time
