@@ -3942,8 +3942,9 @@ Add new cards remaining below traffic lights
 Fix legend position on Cards per interval
 Add title to signal stats
 
-### 4.4.2 - WIP
+### 4.4.2 - 20230601
 Show new card limit instead of new cards remaining on home and stats pages
 Decrease sensitivity to average study time to range 90% to 110%
 Eliminate quantization and dispersion of due
-Fix estimation of upcoming study time
+Change estimation of upcoming study time
+Change estimate of average study time
