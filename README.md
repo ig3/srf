@@ -3948,3 +3948,6 @@ Decrease sensitivity to average study time to range 90% to 110%
 Eliminate quantization and dispersion of due
 Change estimation of upcoming study time
 Change estimate of average study time
+
+### 4.4.3 - WIP
+Fix interval between new cards
