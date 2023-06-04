@@ -1,1 +1,1 @@
-select interval, due, datetime(due, "unixepoch", "localtime") from card order by modified desc
+select interval, due, datetime(due, "unixepoch", "localtime") as time from card order by modified desc

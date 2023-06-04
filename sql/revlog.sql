@@ -1,0 +1,1 @@
+select datetime(id/1000, "unixepoch", "localtime") as time, revdate, cardid, ease, interval, lastinterval, factor, viewtime, studytime, lapses from revlog order by id
