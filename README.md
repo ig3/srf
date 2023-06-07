@@ -1178,7 +1178,7 @@ it.
 
 The only exception is new cards. They don't have a due time. Instead, they
 are presented when study time does not exceed configured limits, up to a
-maximum number of new cards per day.
+maximum number of new cards per day. New cards are ordered by card.ord.
 
 ## Card Lifecycle
 
@@ -1200,6 +1200,9 @@ If you look at the database. These unseen cards will have an interval of 0.
 Cards that have been seen have an interval greater than 0. Even if these
 cards have a due time set, the due time is ignored until they are selected
 to be presented as new cards.
+
+If the scheduler determines that a new card should be presented, cards with
+interval = 0 are sorted by ord then id and the first card is presented.
 
 ### New / concious incompetence / CI
 
@@ -3951,3 +3954,4 @@ Change estimate of average study time
 
 ### 4.4.3 - WIP
 Fix interval between new cards
+Fix selection of new cards - ignore card.due
