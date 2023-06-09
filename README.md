@@ -3952,6 +3952,7 @@ Eliminate quantization and dispersion of due
 Change estimation of upcoming study time
 Change estimate of average study time
 
-### 4.4.3 - WIP
+### 4.4.3 - 20230610
 Fix interval between new cards
 Fix selection of new cards - ignore card.due
+Enhance selection of new cards - avoid cards from recently viewed fieldsets
