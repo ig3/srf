@@ -3959,6 +3959,6 @@ Fix interval between new cards
 Fix selection of new cards - ignore card.due
 Enhance selection of new cards - avoid cards from recently viewed fieldsets
 
-### 4.4.4 - WIP
+### 4.4.4 - 20230613
 Don't show new cards if there is a backlog
 Don't show new cards if study time past 24 hours > config.studyTimeLimit
