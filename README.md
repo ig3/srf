@@ -1409,9 +1409,11 @@ Cards that have never been studied are 'unseen' cards. But eventually they
 are selected to be presented for study: they become a 'new' card.
 
 New cards are presented when the number of new cards seen in the past 24
-hours is less than the current new card limit and the time since the last
-new card was presented is greater than config.studyTimeLimit /
-config.newCardLimit or there are no more cards due.
+hours is less than the current new card limit. The new cards are
+interleaved with review cards at approximately equal intervals.
+
+New cards are not presented if there is a backlog of overdue cards or if
+the study time in the past 24 hours exceeds config.studyTimeLimit.
 
 New cards start with a minimal interval. If they remain hard, the interval
 will continue minimal, until you have reviewed the card enough times to
@@ -3956,3 +3958,7 @@ Change estimate of average study time
 Fix interval between new cards
 Fix selection of new cards - ignore card.due
 Enhance selection of new cards - avoid cards from recently viewed fieldsets
+
+### 4.4.4 - WIP
+Don't show new cards if there is a backlog
+Don't show new cards if study time past 24 hours > config.studyTimeLimit
