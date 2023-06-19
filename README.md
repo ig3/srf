@@ -1413,7 +1413,8 @@ hours is less than the current new card limit. The new cards are
 interleaved with review cards at approximately equal intervals.
 
 New cards are not presented if there is a backlog of overdue cards or if
-the study time in the past 24 hours exceeds config.studyTimeLimit.
+the study time in the past 24 hours or estimated study time in the next 24
+hours exceeds config.studyTimeLimit.
 
 New cards start with a minimal interval. If they remain hard, the interval
 will continue minimal, until you have reviewed the card enough times to
@@ -3965,3 +3966,4 @@ Don't show new cards if study time past 24 hours > config.studyTimeLimit
 
 ### 4.4.5 - WIP
 Change default minimum time between related cards to 1 hour
+Don't show new cards if study time next 24 hours > config.studyTimeLimit
