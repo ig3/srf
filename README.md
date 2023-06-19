@@ -784,7 +784,7 @@ For example, a json file might be:
 ```
 {
   // Minimum time between related cards (seconds)
-  "minTimeBetweenRelatedCards": "5 days"
+  "minTimeBetweenRelatedCards": "1 hour"
 
   // Backup retention time (milliseconds)
   "backupRetention": "30 days",
@@ -3962,3 +3962,6 @@ Enhance selection of new cards - avoid cards from recently viewed fieldsets
 ### 4.4.4 - 20230613
 Don't show new cards if there is a backlog
 Don't show new cards if study time past 24 hours > config.studyTimeLimit
+
+### 4.4.5 - WIP
+Change default minimum time between related cards to 1 hour
