@@ -3964,6 +3964,6 @@ Enhance selection of new cards - avoid cards from recently viewed fieldsets
 Don't show new cards if there is a backlog
 Don't show new cards if study time past 24 hours > config.studyTimeLimit
 
-### 4.4.5 - WIP
+### 4.4.5 - 20230529
 Change default minimum time between related cards to 1 hour
 Don't show new cards if study time next 24 hours > config.studyTimeLimit
