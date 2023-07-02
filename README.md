@@ -864,7 +864,7 @@ just the name of the CSS file, less the `.css` extension.
 
 #### minTimeBetweenRelatedCards (seconds)
 
-default: 5 days
+default: 1 hour
 
 A template set typically contains several templates. For each field set, a
 card will be produced for each template in the template set. Thus there
@@ -3967,3 +3967,6 @@ Don't show new cards if study time past 24 hours > config.studyTimeLimit
 ### 4.4.5 - 20230529
 Change default minimum time between related cards to 1 hour
 Don't show new cards if study time next 24 hours > config.studyTimeLimit
+
+### 4.4.6 - WIP
+Avoid showing a card too soon after another of the same fieldset
