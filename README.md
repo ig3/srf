@@ -3970,3 +3970,4 @@ Don't show new cards if study time next 24 hours > config.studyTimeLimit
 
 ### 4.4.6 - WIP
 Avoid showing a card too soon after another of the same fieldset
+Update dependencies
