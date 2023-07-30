@@ -37,7 +37,6 @@
       }
       response.json()
       .then((data) => {
-        console.log('data: ', data);
         if (data.mode === 'go') window.location = '/next';
         else window.location = '/';
       });

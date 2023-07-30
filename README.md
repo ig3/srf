@@ -3974,3 +3974,4 @@ Update dependencies
 Fix intervals between new cards
 Change determination of mode
 Change default action on home and back pages, per mode
+Change home Study button to get a new card if nothing due.

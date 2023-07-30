@@ -310,6 +310,20 @@ function runServer (opts, args) {
     }
   });
 
+  app.get('/studyNow', (req, res) => {
+    const card = srf.getNextCard();
+    if (card) {
+      res.redirect('/card/' + card.id + '/front');
+    } else {
+      const card = srf.getNewCard();
+      if (card) {
+        res.redirect('/card/' + card.id + '/front');
+      } else {
+        res.redirect('/');
+      }
+    }
+  });
+
   app.get('/new', (req, res) => {
     const card = srf.getNewCard();
     if (card) {
