@@ -73,3 +73,7 @@ a:visited {
 .status th {
   text-align: left;
 }
+
+a.default_action button {
+  background-color: lightgreen;
+}

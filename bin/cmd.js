@@ -200,7 +200,6 @@ function runServer (opts, args) {
 
     const dueNow = srf.getCountCardsDueNow();
     const nextCard = srf.getNextCard();
-    const studyNow = !!nextCard;
     const statsPast24Hours = srf.getStatsPast24Hours();
     const statsNext24Hours = srf.getStatsNext24Hours();
     const overdue = srf.getCountCardsOverdue();
@@ -212,6 +211,7 @@ function runServer (opts, args) {
     const newCardLimit = srf.getCurrentNewCardLimit();
     const newCardsRemaining = srf.getCountNewCardsRemaining();
     const mode = getMode(statsPast24Hours, statsNext24Hours);
+    const studyNow = !!nextCard && mode === 'go';
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     res.render('home', {
@@ -413,7 +413,10 @@ function runServer (opts, args) {
     lastReviewTime = now;
     const ease = req.body.ease;
     srf.reviewCard(card, viewTime, studyTime, ease);
-    res.send('ok');
+    const statsPast24Hours = srf.getStatsPast24Hours();
+    const statsNext24Hours = srf.getStatsNext24Hours();
+    const mode = getMode(statsPast24Hours, statsNext24Hours);
+    res.json({ mode: mode });
   });
 
   app.get('/fieldsets', (req, res) => {

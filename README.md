@@ -3973,3 +3973,4 @@ Avoid showing a card too soon after another of the same fieldset
 Update dependencies
 Fix intervals between new cards
 Change determination of mode
+Change default action on home and back pages, per mode
