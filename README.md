@@ -3972,3 +3972,4 @@ Don't show new cards if study time next 24 hours > config.studyTimeLimit
 Avoid showing a card too soon after another of the same fieldset
 Update dependencies
 Fix intervals between new cards
+Change determination of mode

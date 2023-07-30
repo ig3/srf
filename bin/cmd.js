@@ -147,6 +147,7 @@ function runServer (opts, args) {
     config: opts.config,
     debug: opts.verbose
   });
+  const config = srf.getConfig();
 
   srf.backupDatabase();
   setInterval(srf.backupDatabase, 1000 * 60 * 60 * 24);
@@ -210,11 +211,7 @@ function runServer (opts, args) {
     const newCardsSeen = srf.getCountNewCardsPast24Hours();
     const newCardLimit = srf.getCurrentNewCardLimit();
     const newCardsRemaining = srf.getCountNewCardsRemaining();
-    const config = srf.getConfig();
-    const ratio = statsPast24Hours.time / config.studyTimeLimit;
-    const mode = (ratio > 2 && statsPast24Hours.time >= statsNext24Hours.time)
-      ? 'stop'
-      : (ratio > 1.5) ? 'slow' : 'go';
+    const mode = getMode(statsPast24Hours, statsNext24Hours);
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     res.render('home', {
@@ -338,10 +335,7 @@ function runServer (opts, args) {
       const statsPast24Hours = srf.getStatsPast24Hours();
       const statsNext24Hours = srf.getStatsNext24Hours();
       const config = srf.getConfig();
-      const ratio = statsPast24Hours.time / config.studyTimeLimit;
-      const mode = (ratio > 2 && statsPast24Hours.time >= statsNext24Hours.time)
-        ? 'stop'
-        : (ratio > 1.5) ? 'slow' : 'go';
+      const mode = getMode(statsPast24Hours, statsNext24Hours);
       statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
       statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
       res.render('front', {
@@ -379,10 +373,7 @@ function runServer (opts, args) {
       const statsPast24Hours = srf.getStatsPast24Hours();
       const statsNext24Hours = srf.getStatsNext24Hours();
       const config = srf.getConfig();
-      const ratio = statsPast24Hours.time / config.studyTimeLimit;
-      const mode = (ratio > 2 && statsPast24Hours.time >= statsNext24Hours.time)
-        ? 'stop'
-        : (ratio > 1.5) ? 'slow' : 'go';
+      const mode = getMode(statsPast24Hours, statsNext24Hours);
       statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
       statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
       const intervals = srf.getIntervals(card);
@@ -624,6 +615,15 @@ function runServer (opts, args) {
   server.on('error', err => {
     console.error(opts.verbose ? err : err.message);
   });
+
+  function getMode (statsPast24Hours, statsNext24Hours) {
+    const ratio = statsPast24Hours.time / config.studyTimeLimit;
+    return (statsPast24Hours.time < statsNext24Hours.time || ratio < 1.1)
+      ? 'go'
+      : (ratio < 2)
+        ? 'slow'
+        : 'stop';
+  }
 }
 
 function importFile (opts) {
