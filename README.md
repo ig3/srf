@@ -535,10 +535,9 @@ number of reviews.
 
 The number of new cards seen in the past 24 hours and the current limit on
 new cards. The limit is config.newCardLimit, reduced according to average
-study time, from 100% when average study time is less than 90% of
-config.studyTimeLimit to 0% when average study time is above 110% of
-config.studyTimeLimit. New cards will only be shown if the number of new
-cards seen in the past 24 hours is less than the current new card limit.
+study time and config.studyTimeSensitivity. New cards will only be shown if
+the number of new cards seen in the past 24 hours is less than the current
+new card limit.
 
 #### Study time today
 
@@ -805,7 +804,7 @@ For example, a json file might be:
   "maxEasyInterval": "1 year",
 
   // The interval (seconds) beyond which a card is considered 'learning'
-  learningThreshold: '1 week',
+  "learningThreshold": '1 week',
 
   // The interval (seconds) beyond which a card is considered 'mature'
   "matureThreshold": "21 days",
@@ -815,14 +814,17 @@ For example, a json file might be:
 
   // The minimum number of mature cards in the percent correct window
   // at which percent correct is calculated.
-  minPercentCorrectCount: 10,
+  "minPercentCorrectCount": 10,
 
   // The target for percent correct reviews
-  percentCorrectTarget: 90,
-  percentCorrectSensitivity: 0.0001,
+  "percentCorrectTarget": 90,
+  "percentCorrectSensitivity": 0.0001,
 
   // The maximum number of new cards in 24 hours.
   "newCardLimit": 20,
+
+  // Sensitivity of current new card limit to average study time
+  "studyTimeSensitivity": 2.5,
 
   // The mimimum percentCorrect for new cards to be presented
   "newCardMinPercentCorrect": 75,
@@ -998,6 +1000,18 @@ learning and mature cards.
 default: 20
 
 The maximum number of new cards to be presented within 24 hours.
+
+#### studyTimeSensitivity
+
+default: 2.5
+
+This determines how sensitive the current new card limit is to average
+study time.
+
+When average study time is equal to config.studyTimeLimit, the current new
+card limit is 50% of config.newCardLimit. As average study time changes,
+the current new card limit changes from 0% to 100% of config.newCardLimit,
+at a rate determined by config.studyTimeSensitivity.
 
 #### newCardMinPercentCorrect
 
@@ -3975,3 +3989,4 @@ Fix intervals between new cards
 Change determination of mode
 Change default action on home and back pages, per mode
 Change home Study button to get a new card if nothing due.
+Parameterize calculation of current new card limit
