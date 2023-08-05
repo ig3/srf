@@ -634,10 +634,12 @@ function runServer (opts, args) {
   });
 
   function getMode (statsPast24Hours, statsNext24Hours) {
-    const ratio = statsPast24Hours.time / config.studyTimeLimit;
-    return (statsPast24Hours.time < statsNext24Hours.time || ratio < 1.1)
+    return (
+      statsPast24Hours.time < statsNext24Hours.time * 1.1 ||
+        statsPast24Hours.time < config.studyTimeLimit * 1.1
+    )
       ? 'go'
-      : (ratio < 2)
+      : (statsPast24Hours.time < config.studyTimeLimit * 1.5)
         ? 'slow'
         : 'stop';
   }
