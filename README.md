@@ -3982,7 +3982,7 @@ Don't show new cards if study time past 24 hours > config.studyTimeLimit
 Change default minimum time between related cards to 1 hour
 Don't show new cards if study time next 24 hours > config.studyTimeLimit
 
-### 4.4.6 - WIP
+### 4.4.6 - 20230815
 Avoid showing a card too soon after another of the same fieldset
 Update dependencies
 Fix intervals between new cards
@@ -3991,3 +3991,4 @@ Change default action on home and back pages, per mode
 Change home Study button to get a new card if nothing due.
 Parameterize calculation of current new card limit
 Change button colours to highlight default action
+Update dependencies

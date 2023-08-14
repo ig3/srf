@@ -1,6 +1,6 @@
 {
   "name": "@ig3/srf",
-  "version": "4.4.5",
+  "version": "4.4.6",
   "description": "Spaced Repetition Flashcards",
   "keywords": [
     "srf",
@@ -27,10 +27,10 @@
   "license": "ISC",
   "dependencies": {
     "@ig3/config": "^0.2.2",
-    "better-sqlite3": "^8.4.0",
+    "better-sqlite3": "^8.5.0",
     "csv-parse": "^5.4.0",
     "express": "^4.18.2",
-    "express-handlebars": "^7.0.7",
+    "express-handlebars": "^7.1.2",
     "getopts": "^2.3.0",
     "handlebars-form-helper": "^1.0.4",
     "json5": "^2.2.3",
@@ -44,9 +44,9 @@
   },
   "devDependencies": {
     "@ig3/eslint-config-entrain": "^3.0.1",
-    "c8": "^8.0.0",
+    "c8": "^8.0.1",
     "multi-tape": "^1.7.0",
-    "tape": "^5.6.4",
+    "tape": "^5.6.6",
     "tmp": "^0.2.1"
   },
   "eslintConfig": {
