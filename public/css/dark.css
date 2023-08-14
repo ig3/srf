@@ -74,6 +74,10 @@ a:visited {
   text-align: left;
 }
 
+button {
+  background-color: darkgray;
+}
+
 a.default_action button {
-  background-color: lightgreen;
+  background-color: lightgray;
 }
