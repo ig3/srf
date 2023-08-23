@@ -334,13 +334,25 @@ always adapts to the recent ease of the card.
 The srf scheduler does not suffer from
 [Backlog Hell](https://iansworld-nz.blogspot.com/2022/04/anki-backlog-hell.html).
 
-The srf scheduler sorts cards for review first by interval (shorter first)
-then by due date. Thus you can review cards you are learning on time, even
-when you have a backlog. This keeps learning optimal, which is the best way
-to clear the backlog. Also, when you have a backlog, srf automatically
-stops presenting new cards. No need to fuss with it. You can choose to
-review new cards manually if you want, any time: backlog or not. But by
-default you only see new cards if you are caught up with study.
+The srf scheduler has two ways of sorting cards:
+
+ * by ascending interval
+ * by ascending due time
+
+The sort is determined randomly each time a due card is selected with the
+probability of sorting by due time being config.probabilityOldestDue, which
+defaults to 0.2.
+
+This strategy balances studying cards in they order they become due with
+focusing on the cards with minimum interval. It makes a difference only
+when clearing a backlog. It allows the cards with the shortest intervals to
+be studied on time, despite the backlog. At the same time, it allows the
+most overdue cards to be studied, gradually clearing the backlog.
+
+New cards are presented randomly with the number of new cards presented
+each day automatically adjusted to avoid excessive workload and study
+backlog. On the other hand, you can always study a new card, regardless of
+configured limits and backlog.
 
 ## Getting Started
 
@@ -831,6 +843,9 @@ For example, a json file might be:
 
   // Study time (seconds) per day beyond which no new cards
   "studyTimeLimit": "1 hour",
+
+  // The probability of sorting due cards by due instead of inteval
+  "probabilityOldestDue": 0.2,
 
   // The maximum value factor may take.
   "maxFactor": 10000,
@@ -1457,16 +1472,18 @@ return to study, you might have a large backlog: many cards due to study.
 The scheduling algorithm makes it easy to work through the backlog, whether
 it is small or large.
 
-When there is more than one card due for review, the scheduler prioritises
-the cards with shorter intervals. The selection is slightly randomized: one
-of the next 5 cards due is returned.
+When selecting a due card, the scheduler selects either cards that were due
+first or cards with the shortest interval. The probability of getting a
+card that was due first is config.probabilityOldestDue which defaults to
+0.2.
+
+The selection is slightly randomized: one of the next 5 cards due is
+returned.
 
 If your backlog is too large, you may not be able to review all due cards
-in a day. It may take you several days to catch up. The scheduler will cope
-with this, continuing to prioritise the cards you are just learning. You
-may have to increase your daily study time a bit to catch up, but there is
-no need to catch up in a single day. You can work your way through the
-backlog over a few days.
+in a day. It may take you several days to clear the backlog. The scheduler
+allows you to cope with this, providing a balance between studying the most
+overdue cards and studying cards with the shortest intervals on time.
 
 While you have a backlog (cards that were due more than 24 hours ago) no
 new cards will be shown. There is no value in making the backlog larger.
@@ -3992,3 +4009,6 @@ Change home Study button to get a new card if nothing due.
 Parameterize calculation of current new card limit
 Change button colours to highlight default action
 Update dependencies
+
+### 4.4.7 - WIP
+Add option to sort due cards by due instead of interval.
