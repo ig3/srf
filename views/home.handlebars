@@ -12,7 +12,7 @@
 <div class="home {{mode}}">
 <div id="signal">
 <img src="/img/{{theme}}-{{mode}}.png"></br>
-<div title="cards due/new cards remaining/study time past 24 hours/next 24 hours">{{dueNow}}/{{newCardsRemaining}}/{{statsPast24Hours.time}}/{{statsNext24Hours.time}}</div>
+<div title="cards due/new cards remaining/study time past 24 hours/next 24 hours">{{dueNow}}/{{statsPast24Hours.time}}/{{statsNext24Hours.time}}</div>
 </div>
 <h1><a href="/"><img src="img/logo.png"></a>Spaced Repetition Flashcards</h1>
 <table>
@@ -23,11 +23,12 @@
 <tr><th>Past 24 Hours:</th><td>{{statsPast24Hours.count}}</td><td>{{statsPast24Hours.time}}</tr>
 <tr><th>Next 24 Hours:</th><td>{{statsNext24Hours.count}}</td><td>{{statsNext24Hours.time}}</tr>
 <tr><td>&nbsp;</td></tr>
-<tr><th>Daily Study Time (average/target):</th><td>{{averageStudyTime}}/{{targetStudyTime}}</td></tr>
+<tr><th>Average Study Time per day:</th><td>{{averageStudyTime}}</td></tr>
+<tr><th>Average New Cards per day:</th><td>{{averageNewCards}}</td></tr>
+<tr><th>New Cards Past 24 Hours:</th><td>{{newCardsSeen}}</td></tr>
 <tr><th>Percent correct:</th><td>{{percentCorrect}}%</td></tr>
 <tr><th>Cards due/overdue:</th><td>{{dueNow}}/{{overdue}}</td></tr>
-<tr><th>New Cards (seen/limit):</th><td>{{newCardsSeen}}/{{newCardLimit}}</td></tr>
-<tr><th>Next card due in:</th><td>{{timeToNextDue}}</td></tr>
+<tr><th>Time to earliest due card:</th><td>{{timeToNextDue}}</td></tr>
 </tbody>
 </table>
 {{#if studyNow}}

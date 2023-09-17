@@ -1,7 +1,7 @@
 <div id="content">
 <div id="signal">
 <img src="/img/{{theme}}-{{mode}}.png"></br>
-<div title="cards due/new cards remaining/study time past 24 hours/next 24 hours">{{dueNow}}/{{newCardsRemaining}}/{{statsPast24Hours.time}}/{{statsNext24Hours.time}}</div>
+<div title="cards due/new cards remaining/study time past 24 hours/next 24 hours">{{dueNow}}/{{statsPast24Hours.time}}/{{statsNext24Hours.time}}</div>
 </div>
 <div id="card-contents" class="card">
 {{{back}}}
@@ -37,7 +37,7 @@
       }
       response.json()
       .then((data) => {
-        if (data.mode === 'go') window.location = '/next';
+        if (data.mode !== 'stop') window.location = '/next';
         else window.location = '/';
       });
     })

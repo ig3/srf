@@ -203,28 +203,25 @@ function runServer (opts, args) {
     const statsPast24Hours = srf.getStatsPast24Hours();
     const statsNext24Hours = srf.getStatsNext24Hours();
     const overdue = srf.getCountCardsOverdue();
-    const averageStudyTime =
-      (srf.getAverageStudyTime(7) + srf.getEstimatedAverageStudyTime(7)) / 2;
+    const averageStudyTime = srf.getAverageStudyTime(7);
 
+    const averageNewCards = srf.getCountNewCards(60 * 60 * 24 * 7) / 7;
     const chart1Data = srf.getChartStudyTime();
     const newCardsSeen = srf.getCountNewCardsPast24Hours();
-    const newCardLimit = srf.getCurrentNewCardLimit();
-    const newCardsRemaining = srf.getCountNewCardsRemaining();
     const mode = getMode(statsPast24Hours, statsNext24Hours);
-    const studyNow = !!nextCard && mode === 'go';
+    const studyNow = !!nextCard && mode !== 'stop';
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     res.render('home', {
       statsPast24Hours: statsPast24Hours,
       statsNext24Hours: statsNext24Hours,
       averageStudyTime: (averageStudyTime / 60).toFixed(0),
-      targetStudyTime: (config.studyTimeLimit / 60).toFixed(0),
+      averageNewCards: averageNewCards.toFixed(2),
+      targetStudyTime: (config.maxStudyTime / 60).toFixed(0),
       percentCorrect: srf.getPercentCorrect().toFixed(2),
       dueNow: dueNow,
       overdue: overdue,
       newCardsSeen: newCardsSeen,
-      newCardLimit: newCardLimit,
-      newCardsRemaining: newCardsRemaining,
       timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
       studyNow: studyNow,
       chart1Data: JSON.stringify(chart1Data),
@@ -244,7 +241,7 @@ function runServer (opts, args) {
     const config = srf.getConfig();
     res.render('config', {
       theme: config.theme,
-      config: config
+      config: JSON.parse(JSON.sortify(config))
     });
   });
 
@@ -258,9 +255,7 @@ function runServer (opts, args) {
     const cardsViewedToday = srf.getCountCardsViewedToday();
     const dueCount = srf.getCountCardsDueToday();
     const nextDue = srf.getNextDue() || now;
-    const newCardsSeen = srf.getCountNewCardsPast24Hours();
-    const newCardLimit = srf.getCurrentNewCardLimit();
-    const newCardsRemaining = srf.getCountNewCardsRemaining();
+    const newCardsSeen = srf.getCountNewCardsToday();
 
     const charts = srf.getChartsDailyStats();
     charts.chartCardsPerInterval = srf.getChartCardsPerInterval();
@@ -271,8 +266,7 @@ function runServer (opts, args) {
     const days = srf.getCountDaysStudied();
     const newCardsPerDay = (cardsSeen && days) ? cardsSeen / days : 0;
     const config = srf.getConfig();
-    const averageStudyTime =
-      (srf.getAverageStudyTime(7) + srf.getEstimatedAverageStudyTime(7)) / 2;
+    const averageStudyTime = srf.getAverageStudyTime(7);
 
     res.render('stats', {
       newCardsPerDay: newCardsPerDay.toFixed(2),
@@ -290,8 +284,6 @@ function runServer (opts, args) {
       averageStudyTimePerDay: tc.seconds(averageStudyTime).toFullString().slice(0, -4),
       timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
       newCardsSeen: newCardsSeen,
-      newCardLimit: newCardLimit,
-      newCardsRemaining: newCardsRemaining,
       charts: charts,
       theme: config.theme
     });
@@ -311,11 +303,11 @@ function runServer (opts, args) {
   });
 
   app.get('/studyNow', (req, res) => {
-    const card = srf.getNextCard();
+    const card = srf.getNextCard(true);
     if (card) {
       res.redirect('/card/' + card.id + '/front');
     } else {
-      const card = srf.getNewCard();
+      const card = srf.getDueCard(true);
       if (card) {
         res.redirect('/card/' + card.id + '/front');
       } else {
@@ -344,7 +336,6 @@ function runServer (opts, args) {
       card.front = srf.render(template.front, fields);
       fields.FrontSide = card.front;
       card.back = srf.render(template.back, fields);
-      const newCardsRemaining = srf.getCountNewCardsRemaining();
       const dueNow = srf.getCountCardsDueNow();
       const statsPast24Hours = srf.getStatsPast24Hours();
       const statsNext24Hours = srf.getStatsNext24Hours();
@@ -363,8 +354,7 @@ function runServer (opts, args) {
         statsPast24Hours: statsPast24Hours,
         statsNext24Hours: statsNext24Hours,
         maxViewTime: config.maxViewTime,
-        dueNow: dueNow,
-        newCardsRemaining: newCardsRemaining
+        dueNow: dueNow
       });
     } else {
       res.redirect('/');
@@ -382,7 +372,6 @@ function runServer (opts, args) {
       card.front = srf.render(template.front, fields);
       fields.FrontSide = card.front;
       card.back = srf.render(template.back, fields);
-      const newCardsRemaining = srf.getCountNewCardsRemaining();
       const dueNow = srf.getCountCardsDueNow();
       const statsPast24Hours = srf.getStatsPast24Hours();
       const statsNext24Hours = srf.getStatsNext24Hours();
@@ -407,8 +396,7 @@ function runServer (opts, args) {
         statsNext24Hours: statsNext24Hours,
         maxViewTime: config.maxViewTime,
         intervals: intervals,
-        dueNow: dueNow,
-        newCardsRemaining: newCardsRemaining
+        dueNow: dueNow
       });
     } else {
       res.redirect('/');
@@ -635,13 +623,12 @@ function runServer (opts, args) {
 
   function getMode (statsPast24Hours, statsNext24Hours) {
     return (
-      statsPast24Hours.time < statsNext24Hours.time * 1.1 ||
-        statsPast24Hours.time < config.studyTimeLimit * 1.1
-    )
-      ? 'go'
-      : (statsPast24Hours.time < config.studyTimeLimit * 1.5)
-        ? 'slow'
-        : 'stop';
+      statsPast24Hours.time < config.minStudyTime
+        ? 'go'
+        : statsPast24Hours.time < config.maxStudyTime
+          ? 'slow'
+          : 'stop'
+    );
   }
 }
 
@@ -697,3 +684,19 @@ function resolveFullPath (root, path) {
   }
   return pa.join(root, path);
 }
+
+JSON.sortify = function (value, replacer, space) {
+  if (!replacer) {
+    const allKeys = [];
+    const seen = {};
+    JSON.stringify(value, function (key, value) {
+      if (!(key in seen)) {
+        allKeys.push(key);
+        seen[key] = null;
+      }
+      return value;
+    });
+    replacer = allKeys.sort();
+  }
+  return JSON.stringify(value, replacer, space);
+};

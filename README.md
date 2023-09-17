@@ -283,9 +283,7 @@ With this done, your srf server will run whenever you login.
 
 Browse to [http://localhost:8000/](http://localhost:8000/)
 
-The initial stats may not be correct. I don't spend much time looking at
-them. Just click Study and you should get a new card. Once there is some
-data, the stats should come right.
+Click the Study button or press the space bar to study a card.
 
 ## Background
 I used [Anki](https://github.com/ankitects/anki) for a couple of years but
@@ -301,7 +299,7 @@ wanted.
 
 The srf scheduler:
  * prioritizes cards with shorter intervals over those with longer intervals
- * regulates the introduction of new cards to maintain constant study time
+ * regulates the introduction of new cards automatically
  * is written entirely in JavaScript and is easy to modify
 
 srf is able to import Anki decks that use only basic features of Anki. Not
@@ -349,10 +347,13 @@ when clearing a backlog. It allows the cards with the shortest intervals to
 be studied on time, despite the backlog. At the same time, it allows the
 most overdue cards to be studied, gradually clearing the backlog.
 
-New cards are presented randomly with the number of new cards presented
-each day automatically adjusted to avoid excessive workload and study
-backlog. On the other hand, you can always study a new card, regardless of
-configured limits and backlog.
+New cards are presented if total study time the past 24 hours is less than
+config.minStudyTime. They will be interleaved with review cards if there
+are cards for review.
+
+If total study time the past 24 hours is more than config.minStudyTime then
+no more new cards will be presented but review cards will be presented
+until total study time the past 24 hours is config.maxStudyTime.
 
 ## Getting Started
 
@@ -370,16 +371,18 @@ including media, then imported this into srf.
 Browse to http://localhost:8000/.
 
 ### Home Page
+
 The home page presents some basic study statistics:
 
  * The number of cards reviewed and minutes studied in the past 24 hours
  * The number of cards due and estimated minutes to study in the next 24
    hours
- * Daily study time: average and target
+ * Average study time per day
+ * Average new cards per day, averaged over the past week
+ * New cards during the past 24 hours
  * The percentage of correct (not 'Again') responses to mature cards in the
    past 14 days
  * The number of cards due and overdue (due more than 24 hours ago)
- * The number of new cards seen and the limit on new cards for the past 24 hours
  * The time until the next card is due
  * A histogram of study time per hour through past and next 24 hours
 
@@ -390,8 +393,8 @@ displayed again. Alternatively, click the space bar: shortcut for Study.
 
 The scheduler determines when a card is due to be studied. Each time a card
 is reviewed, the scheduler sets a new time when it is due to be studied
-again. The cards to be studied are all those which are past their due date
-and time. If it is more than 24 hours past their due date and time, they
+again. The cards to be studied are all those which are past their due 
+time. If it is more than 24 hours past their due date and time, they
 are considered overdue. 
 
 It's like an [assembly line](https://www.youtube.com/watch?v=59BIB-2FVmM):
@@ -409,15 +412,23 @@ are in ~/.local/share/srf/media.
 
 At the top right of the home page and front and back pages, there is a
 status indicator. Green, yellow or red depending on study time Vs
-config.studyTimeLimit. Below this are counts of cards due, new cards
-remaining, minutes of study the past 24 hours and minutes of study the next
-24 hours (estimated). 
+config.minStudyTime and config.maxStudyTime.
+Below this are counts of cards due, minutes of study the past 24 hours and
+minutes of study the next 24 hours (estimated). 
 
 #### Buttons
 
-##### New Card
+##### Study
 
-Study a new card, regardless of study time and number of new cards studied.
+Study a card. This will select a card according to the scheduling algorithm
+if there is a card due to be studied. If no card is due to be selected, a
+new card will be presented. If there are no more unseen cards, then the
+card with the earliest due date will be presented, even if that is in the
+future. This button will always yield a card to study.
+
+##### Reload
+
+Reload the home page.
 
 ##### Admin
 
@@ -502,10 +513,10 @@ This is the average number of new cards per day since the start of study.
 This is the total number of distinct cards that have been seen at least
 once since the start of study.
 
-#### Mature cards
+#### Cards by Stage
 
-This is the total number of cards with interval greater than
-config.matureThreshold.
+The stage is determined by card interval. The stages are: unseen, new,
+learning, mature and mastered.
 
 #### Percent Correct
 
@@ -523,19 +534,11 @@ and the regulation effectively regulates how quickly cards progress through
 learning to mastered, even though the learning cards are not included in
 the calculation of percent correct.
 
-#### Correct factor
-
-This is the factor for calculation of new card intervals for ease Good or
-Easy, based on Percent Correct Vs config.percentCorrectTarget.
-
-#### Card views today
-
-This is the total number of views today, including multiple reviews of a
-card.
-
-#### Cards due later today
-
-This is the number of cards due to be reviewed in the remainder of the day.
+Card intervals are adjusted according to the difference between the average
+percent correct and config.percentCorrectTarget. If average percent correct
+is less than the target then intervals are shortened, making cards due
+sooner. If it is more than the target then intervals are lengthened, making
+cards due later.
 
 #### Average time per review
 
@@ -543,13 +546,19 @@ This is the average time for each review of a card. It includes small gaps
 between reviews. It is the total study time for the day divided by the
 number of reviews.
 
-#### New cards (seen/remaining)
+#### Cards reviewed today
 
-The number of new cards seen in the past 24 hours and the current limit on
-new cards. The limit is config.newCardLimit, reduced according to average
-study time and config.studyTimeSensitivity. New cards will only be shown if
-the number of new cards seen in the past 24 hours is less than the current
-new card limit.
+This is the total number of distinct cards viewed today. This is a count of
+cards not reviews. A card might be reviewed multiple times in a day but
+this counts the cards, not the reviews.
+
+#### Cards due later today
+
+This is the number of cards due to be reviewed in the remainder of the day.
+
+#### New cards today
+
+The number of new cards seen in the past 24 hours.
 
 #### Study time today
 
@@ -561,9 +570,11 @@ This is average daily study time, averaged over the past week (actual study
 time) and coming week (estimated based on cards due and recent
 performance).
 
-#### Next card due in
+#### Time to earliest due card
 
-The time until the next card is due for review.
+The time until the earliest due card is due. This will be negative if there
+is a card due in the past: if there is currently one or more cards due for
+study.
 
 #### Charts
 
@@ -794,6 +805,9 @@ For example, a json file might be:
 
 ```
 {
+  // Display theme
+  "theme": "dark",
+
   // Minimum time between related cards (seconds)
   "minTimeBetweenRelatedCards": "1 hour"
 
@@ -824,6 +838,9 @@ For example, a json file might be:
   // The window (seconds) in which to average Percent Correct reviews
   "percentCorrectWindow": "1 month",
 
+  // The window (seconds) in which to average new cards per day
+  "newCardsWindow": "2 weeks",
+
   // The minimum number of mature cards in the percent correct window
   // at which percent correct is calculated.
   "minPercentCorrectCount": 10,
@@ -832,23 +849,18 @@ For example, a json file might be:
   "percentCorrectTarget": 90,
   "percentCorrectSensitivity": 0.0001,
 
+  // The interval (seconds) between correct factor adjustments
+  "correctFactorAdjustmentInterval": "1 day",
+
   // The maximum number of new cards in 24 hours.
-  "newCardLimit": 20,
+  "maxNewCardsPerDay": 20,
 
-  // Sensitivity of current new card limit to average study time
-  "studyTimeSensitivity": 2.5,
-
-  // The mimimum percentCorrect for new cards to be presented
-  "newCardMinPercentCorrect": 75,
-
-  // Study time (seconds) per day beyond which no new cards
-  "studyTimeLimit": "1 hour",
+  // The minimum and maximum study time (seconds) per day
+  "minStudyTime": "30 minutes",
+  "maxStudyTime": "1 hour",
 
   // The probability of sorting due cards by due instead of inteval
   "probabilityOldestDue": 0.2,
-
-  // The maximum value factor may take.
-  "maxFactor": 10000,
 
   // minimum intervals according to responses to reviews
   "againMaxInterval": "1 day",
@@ -970,6 +982,13 @@ determining the intervals of cards. All responses within this window are
 considered in determining the percentage. Results of reviews longer ago
 than percentCorrectWindow are ignored.
 
+#### newCardsWindow (seconds)
+
+default: 2 weeks
+
+The window in which new cards per day are averaged. The average new cards
+per day is used to calculate the minimum interval between new cards.
+
 #### minPercentCorrectCount
 
 default: 10
@@ -1010,37 +1029,33 @@ This determines the sensitivity to the difference between Percent Correct
 and percentCorrectTarget, when adjusting the interval and due date of
 learning and mature cards.
 
-#### newCardLimit
+#### maxNewCardsPerDay
 
 default: 20
 
 The maximum number of new cards to be presented within 24 hours.
 
-#### studyTimeSensitivity
+#### minStudyTime
 
-default: 2.5
+default: 30 minutes
 
-This determines how sensitive the current new card limit is to average
-study time.
+Minimum daily study time. New cards will be presented until study time in
+the past 24 hours is more than this.
 
-When average study time is equal to config.studyTimeLimit, the current new
-card limit is 50% of config.newCardLimit. As average study time changes,
-the current new card limit changes from 0% to 100% of config.newCardLimit,
-at a rate determined by config.studyTimeSensitivity.
-
-#### newCardMinPercentCorrect
-
-default: 75
-
-The minimum value of percentCorrect for viewing new cards.
-
-#### studyTimeLimit
+#### maxStudyTime
 
 default: 1 hour
 
-If the time spent studying during the past 24 hours or the estimated time
-to study cards due in the next 24 hours exceeds this limit then new cards
-will not be presented.
+Maximum daily study time. If total study time for the past 24 hours exceeds
+this, no cards will be presented for study, even if there are cards due or
+overdue. This is the upper bound on study time.
+
+#### probabilityOldestDue
+
+default: 0.2
+
+The probability that the next due card presented will be the first one due
+rather than the one with the shortest interval.
 
 #### againMaxInterval (seconds)
 
@@ -1205,9 +1220,8 @@ the current time, you may study the card. If it is in the future, you may
 not study the card. You must wait until the card is due for review to study
 it.
 
-The only exception is new cards. They don't have a due time. Instead, they
-are presented when study time does not exceed configured limits, up to a
-maximum number of new cards per day. New cards are ordered by card.ord.
+New cards are due if total study time over the past 24 hours is less than
+config.minStudyTime.
 
 ## Card Lifecycle
 
@@ -1428,22 +1442,22 @@ next. There are two possiblities:
  1. a new card: a card that has not been studied previously
  2. a card that has been studied previously and is now due for review
 
-The objective of the scheduler is to introduce as many new cards as
-possible, without causing overload: failure to review all cards that are
-due for review.
+The scheduler presents new cards if total study time during the past 24
+hours is less than config.minStudyTime. They are interleaved with due
+cards, if there are cards due for review.
 
 ### New Cards
 
 Cards that have never been studied are 'unseen' cards. But eventually they
 are selected to be presented for study: they become a 'new' card.
 
-New cards are presented when the number of new cards seen in the past 24
-hours is less than the current new card limit. The new cards are
-interleaved with review cards at approximately equal intervals.
+New cards are interleaved with review cards at approximately equal
+intervals.
 
-New cards are not presented if there is a backlog of overdue cards or if
-the study time in the past 24 hours or estimated study time in the next 24
-hours exceeds config.studyTimeLimit.
+New cards are not presented if total study time in the past 24 hours is
+more than config.minStudyTime, if there is a backlog of overdue cards
+(cards due more than 24 hours ago) or if the total number of new cards
+presented in the past 24 hours is more than config.maxNewCardsPerDay.
 
 New cards start with a minimal interval. If they remain hard, the interval
 will continue minimal, until you have reviewed the card enough times to
@@ -4010,5 +4024,6 @@ Parameterize calculation of current new card limit
 Change button colours to highlight default action
 Update dependencies
 
-### 4.4.7 - WIP
+### 4.5.0 - 20230918
 Add option to sort due cards by due instead of interval.
+Simplify regulation of new cards
