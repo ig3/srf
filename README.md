@@ -397,7 +397,7 @@ Edit the templateset the card is generated from.
 
 Replay any audio for the back of the card.
 
-##### Break
+##### Stop
 
 Stop studying without completing review of the card: return to the home
 page.
@@ -4149,3 +4149,4 @@ Simplify regulation of new cards
 ### 4.5.1 - WIP
 README changes.
 Update the help file.
+Change Break button to Stop on the back of cards.
