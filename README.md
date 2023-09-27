@@ -285,6 +285,124 @@ Browse to [http://localhost:8000/](http://localhost:8000/)
 
 Click the Study button or press the space bar to study a card.
 
+#### Front
+
+When you study a card, the front of the card is displayed. The content of
+the front of the card depends on the template and the fieldset.
+
+When you are ready, you flip the card to see the back of the card. See
+below for details of the back of the card.
+
+##### Flip
+
+Keyboard shortcut: space-bar
+
+Flip the card over, to show the back of the card. This is the usual action
+when reviewing a card: view the front, then flip it to review the back and
+rate the card.
+
+##### Help
+
+Show the help file.
+
+##### edit
+
+Edit the card. This opens a new window with fields to edit the fieldset
+from which the card is derived. It is a bit crude but allows simple edits.
+
+##### Play
+
+keyboard shortcut: p
+
+If the card has audio, play it again.
+
+##### Stop
+
+Return to the home page without completing review of the card.
+
+#### Back
+
+After you view the front of the card and flip it over, the back is
+displayed. The content of the back is determined by the template and the
+fieldset.
+
+The back of the card has buttons for rating how well you remember the card:
+Again, Hard, Good and Easy.
+
+The button you click determines when the card will be scheduled for review.
+Each button displays the new interval: the time until the card will be due
+for review.
+
+
+##### Again
+
+keyboard shortcut: j
+
+If you didn't remember the card and want to review it again soon, click
+Again. This reduces the interval for reviewing the card. The new interval
+(the time until the card is due for review) is half the previous interval
+with a maximum interval of 1 day.
+
+##### Hard
+
+keyboard shortcut: k
+
+If you did remember the card but it was difficult to remember, click Hard.
+This reduces the interval for rewviewing the card but not as much as Again.
+The new interval is 80% of the previous inerval with a maximum interval of
+1 week.
+
+##### Good
+
+keyboard shortcut: l
+
+If you remembered the card well, click Good. This will, hopefully, be the
+button you click most often. This increases the interval for reviewing the
+card. 
+
+Calculation of the new interval is more complicated for Good. The minimum
+new interval is 5 minutes and the maximum new interval is 1 year. Between
+these limits, the new interval depends on the ease factor of the card. The
+ease factor is the exponentially weighted moving average of your previous
+ratings. The weights are 0, 1, 1.5 and 2 for Again, Hard, Good and Easy
+respectively. Thus the factor ranges from 0 to 2 and it will change a bit
+each time you review the card.
+
+If you rate the card Good several times, the ease factor will tend towards
+1.5 and the new interval will tend towards 150% of the previous interval.
+
+On the other hand, if you have rated the card Again many times, the ease
+factor might be quite low and even if you rate the card Good, the new
+interval might be less than the previous interval. However, even in this
+case, the ease factor will increase so that after a few Good reviews the
+interval will be increasing.
+
+##### Easy
+
+keyboard shortcut: ;
+
+If it was too easy to remember the card and you don't want to waste your
+time reviewing again too soon, click Easy. The new interval will be 150% of
+what it would be for Good. 
+
+##### Help
+
+Show the help file.
+
+##### Edit
+
+Edit the templateset the card is generated from.
+
+##### Play
+
+Replay any audio for the back of the card.
+
+##### Break
+
+Stop studying without completing review of the card: return to the home
+page.
+
+
 ## Background
 I used [Anki](https://github.com/ankitects/anki) for a couple of years but
 wanted to change the scheduler. An Anki addon to add a new scheduler
@@ -4027,3 +4145,6 @@ Update dependencies
 ### 4.5.0 - 20230918
 Add option to sort due cards by due instead of interval.
 Simplify regulation of new cards
+
+### 4.5.1 - WIP
+README changes.
