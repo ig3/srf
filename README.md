@@ -4150,3 +4150,4 @@ Simplify regulation of new cards
 README changes.
 Update the help file.
 Change Break button to Stop on the back of cards.
+Simplify calculation of new card interval.
