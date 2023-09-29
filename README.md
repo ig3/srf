@@ -17,7 +17,7 @@ $ npm install -g @ig3/srf
  4. Browse srf: http://localhost:8000
  5. Click the Study button (shortcut: space bar)
  6. Review the card then click Flip (shortcut: space bar)
- 7. Rate the card: Click Fail, Hard, Good or Eash (shortcuts: j, k, l, ;)
+ 7. Rate the card: Click Fail, Hard, Good or Easy (shortcuts: j, k, l, ;)
  8. Repeat: review, flip then rate each card
 
 You study cards. Each card has a front and a back. First you view the front
@@ -25,30 +25,12 @@ and try to remember what is on the back. Then you flip the card over to see
 the back: to see if you remembered correctly. Finally, you rate how well
 you remembered the card: 'Fail', 'Hard', 'Good' or 'Easy'.
 
-The card is scheduled for review according to how you rate it. Each card
-has an interval between reviews. If you rate the card Fail, the interval is
-reduced by half. If you rate it Hard, it is reduced by 20%. If you rate it
-Good, the interval is increased by an amount that depends on how you have
-rated the card in the past. The details are described below. If you rate it
-Easy, the interval is set 50% longer than for Good.
-
-The scheduler adjusts the intervals of the cards so that you recall
-correctly (i.e. not Fail) 90% of the time. The principle is that the
-interval should be as long as possible so that you don't waste your time
-reviewing the cards too often, but not so long that you can't remember
-them.
-
-The scheduler presents new cards (cards you haven't seen before) to keep
-total study time between 30 and 60 minutes in a 24 hour period, up to a
-limit of 20 new cards per day.
+The scheduler presents a few new cards each day. The number of new cards is
+adjusted automatically, to keep total study time between 30 and 60 minutes.
 
 When you have studied all the cards due for review and reached the limit on
 new cards, you will return to the Home page, until there are more cards to
 study.
-
-All the parameters of the scheduler are configurable. You can tune it
-according to your ability and objectives: study more or less each day and
-progress the intervals more or less aggressively.
 
 ### Home page
 
@@ -58,19 +40,20 @@ The home page shows statistics of your study:
  * cards due and predicted minutes to study in the next 24 hours
  * average study time per day
  * average number of new cards per day
- * percent of cards that you got correct (i.e. not Fail)
+ * percent of cards that you got correct (i.e. not rated Fail)
  * number of cards due and overdue for review
  * chart of study time per hour: past 24 hours and next 24 hours
 
-To study a card, click the Study button of press the space bar. The study
-button will always present a card for study, ignoring the limits of the
-scheduler. The space bar will present a card for study or reload the home
-page, according to the determination of the scheduler. 
+To study a card, click the Study button or press the space bar.
+
+The study button will always present a card for study, ignoring the limits
+of the scheduler.
+
+The space bar will present a card for study or reload the home page,
+according to the determination of the scheduler. 
 
 The buttons at the bottom of the page are:
 
- * New Card: to study a new card, regardless of limits or cards due for
-   review
  * Admin: to access the admin page
  * Stats: to review various statistics of your study history
  * Help: to review the help file - mostly a link to this README
@@ -152,35 +135,19 @@ Each fieldset is related to a templateset and one card is produced for each
 template in the templateset.
 
 You study the cards. The cards are produced automatically when you add or
-edit fieldsets or templates. They are presented for review at intervals
-determined by the scheduling algoriithm, accoring to how you rate your
-ability to recall them: Fail, Hard, Good or Easy.
+edit fieldsets or templates.
 
-Each day, if your study workload isn't excessive, some new cards will be
-presented for study. The number of new cards is regulated automatically. If
-you have a large backlog: if you don't review all cards scheduled for
-review in a timely manner or your study time exceeds your configured limits
-(default: 1 hour), then no new cards will be presented. Otherwise, new
-cards will be presented, up to the daily limit you configure (default: 20
-new cards per day). But you can always choose to see new cards, regardless
-of the algorithm: just click `New Card` on the home page.
-
-Cards start as unseen cards. Then they are presented as new cards with a
-short interval. Each time you review a card, its interval is adjusted
-according to how you rate it: Fail, Hard, Good or Easy. As you learn the
-card the interval becomes longer until it becomes a mature card with a
-maximal interval: review once a year, by default.
-
-The order that unseen cards are presented as new cards is determined by
-their ordinal (ord), which is copied from the fieldset.
-
-It's all about the cards.
+The order that cards are presented as new cards is determined by their
+ordinal (ord), which is copied from the fieldset.
 
 #### Create Cards by importing an Anki .apkg or .colpkg file
 
-The easiest way to get started with srf is by importing an Anki
+The easiest way to create cards is to import an Anki
 [Packaged Deck](https://docs.ankiweb.net/exporting.html). This will import
-the Anki cards, notes and note types into srf.
+the Anki cards, notes and note types into srf. However, srf does not
+support all the features of Anki so not all Anki decks will work in srf.
+For example, srf does not support cloze deletion so any deck that includes
+cloze deletion notes will not work.
 
 If you have been using Anki, you can export your own decks. Be sure ti
 include media when you export your decks. If you include scheduling
@@ -190,16 +157,16 @@ Anki collection packages and shared decks can include review logs. These
 will be imported and merged with existing logs. Daily stats will be cleared
 and recalculated to including the new revlog entries.
 
-Otherwise, you can download a shared Anki deck from
+You can download a shared Anki deck from
 [AnkiWeb](https://ankiweb.net/shared/decks/) or use various tools to
 produce Anki Packaged Deck files from other sources.
 
 Srf doesn't distinguish decks. If you import multiple decks or a deck
-collection, all the cards will appear in a single pool in srf. If you want
-to keep decks separate, you can import each deck into a separate srf
-database.
+collection, all the cards will appear in a single pool of cards in srf. If
+you want to keep decks separate, you can import each deck into a separate
+srf database.
 
-Note that srf only supports simple cards. In particular, closures are not
+Note that srf only supports simple cards. In particular, Cloze notes are not
 supported. See below for what is/isn't supported. Start with something
 basic.
 
@@ -238,7 +205,7 @@ The fields for a template are:
  * name - the name of the template
  * front - the mustache template code for the front of the card
  * back - the mustache template code for the back of the card
- * css - the CSS for rendering the card
+ * css - the CSS for rendering the card, common to front and back
 
 Make a CSV file with these headings and appropriate data.
 
@@ -293,16 +260,16 @@ For example, a field might include an image with something like:
 
 #### Create Cards Manually
 
-You can create templates and fieldsets manually in the browser. I don't
-recommend it. The UI is crude. But it's an option.
+You can create templates and fieldsets manually in the browser. The
+interface is crude, but it's an option.
 
-On the home page, click the Templates or Fieldsets buttons at the bottom of
-the page to view, edit or add templates or fieldsets. Click an item in the
-list to edit it or click the Add button at the top of the list to add a new
-item.
+On the home page, click Admin to view the admin page.
 
-Click Templatesets to view a summary of template sets, their fields and the
-templates in them.
+On the admin page, click Templates, Template Sets or Field sets to see a
+list of the corresponding items.
+
+Click on an item in the list to edit it, or click the New button to add a
+new item to the list.
 
 When you edit a fieldset, the fields you can set are determined from the
 templates in the selected templateset: every field included in any template
@@ -312,9 +279,12 @@ the templates.
 
 #### Create Cards by direct database update
 
-You can write your own application to add cards to the srf database.
+The database structure is simple. You can write your own application to add
+cards to the srf database.
 
-By default, the srf database is ~/.local/share/srf/srf.db and media files
+The database is [sqlite3](https://www.sqlite.org/index.html).
+
+By default, the database is at ~/.local/share/srf/srf.db and media files
 are in ~/.local/share/srf/media.
 
 Add templates by adding records to the template table.
@@ -516,7 +486,7 @@ to work.
 [Spaced Repetition for Efficient Learning](https://gwern.net/spaced-repetition)
 provides an overview and links to research on spaced repetition.
 
-## Comparison to Anki
+### Comparison to Anki
 
 srf provides only a small subset of the features of Anki: enough for my
 purposes: studying language on a single device, but without support for
@@ -560,7 +530,13 @@ are cards for review.
 
 If total study time the past 24 hours is more than config.minStudyTime then
 no more new cards will be presented but review cards will be presented
-until total study time the past 24 hours is config.maxStudyTime.
+until total study time the past 24 hours exceeds config.maxStudyTime.
+
+If total stud time exceeds config.maxStudyTime you can still study by
+clicking the Study button. This button overrides the scheduler limits. But
+the space bar shortcut does not. The shortcut will just reload the home
+page until total study time in the past 24 hours falls below
+config.maxStudyTime.
 
 ## Getting Started
 
@@ -1649,22 +1625,23 @@ next. There are two possiblities:
  1. a new card: a card that has not been studied previously
  2. a card that has been studied previously and is now due for review
 
-The scheduler presents new cards if total study time during the past 24
-hours is less than config.minStudyTime. They are interleaved with due
-cards, if there are cards due for review.
-
 ### New Cards
 
 Cards that have never been studied are 'unseen' cards. But eventually they
 are selected to be presented for study: they become a 'new' card.
 
-New cards are interleaved with review cards at approximately equal
-intervals.
+The scheduler presents new cards to keep daily total study time
+approximately at the average of config.minStudytime and
+config.maxStudyTime: the target study time.
 
-New cards are not presented if total study time in the past 24 hours is
-more than config.minStudyTime, if there is a backlog of overdue cards
-(cards due more than 24 hours ago) or if the total number of new cards
-presented in the past 24 hours is more than config.maxNewCardsPerDay.
+The new cards are presented at intervals, mixed in with review cards.
+
+New cards are not presented if:
+ * total study time in the past 24 hours is more than the target
+ * estimated study time to review all cards due in the next 24 hours is
+   more than the target
+ * there are overdue cards
+ * config.maxNewCardsPerDay new cards have been seen in the past 24 hours
 
 New cards start with a minimal interval. If they remain hard, the interval
 will continue minimal, until you have reviewed the card enough times to
@@ -1678,9 +1655,9 @@ increases going forward.
 
 ### Review Backlog
 
-It is normal to have a small backlog: a set of cards due to be studied. The
-only way to avoid it is to be studying all day: studying each card as soon
-as it is due. But this is impractical.
+It is normal to have a small backlog: a set of cards past due to be
+studied. The only way to avoid it is to be studying all day: studying each
+card as soon as it is due. But this is impractical.
 
 If you have one study period each day (a perfectly reasonably schedule)
 then you will start each day with a small backlog: cards that came due
@@ -1712,6 +1689,10 @@ You can return to learning new cards after you clear your backlog.
 
 You can override the scheduler and study a new card at any time by clicking
 the New Card button on the home page.
+
+#### Overdue cards
+If a card is more than 24 hours past its due time, it is deemed to be
+`overdue`. When there are overdue cards, no new cards will be presented.
 
 ## Templates
 
@@ -1835,6 +1816,16 @@ local to Anki, since about Anki version 2.1.28.
 
 ## srf database
 
+The database is [sqlite3](https://www.sqlite.org/index.html).
+
+There are six tables:
+ * card
+ * config
+ * dailystats
+ * fieldset
+ * revlog
+ * template
+
 ### card
 A card is the unit of study.
 
@@ -1911,6 +1902,22 @@ This table is a set of name/value pairs with their modification times
 
 There are only two parameters: the database schema version and the 'correct
 factor' used in scheduling.
+
+### dailystats
+
+This is used to keep daily statistics, derived from revlog (see below). 
+
+The fields / statistics are:
+ * date
+ * cardviews - total number of reviews
+ * studytime - total minutes of study
+ * newcards - the number of new cards reviewed
+ * matured - the number of cards that became mature
+ * lapsed - the number of cards that lapsed from mature (i.e. you forgot)
+ * mature - the number of mature cards
+ * percentcorrect - the percent of 'correct' reviews
+
+This table is updated daily by scanning revlog. 
 
 ### fieldset
 A fieldset associates a set of field values with a templateset.
@@ -4238,5 +4245,11 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Change Break button to Stop on the back of cards.
  * Further simplify regulation of new cards
 
-### 5.0.0 - WIP
- * Change 'Again' to 'Fail'
+### 5.0.0 - 20230930
+ * Change 'Again' button to 'Fail'
+ * Remove the New Card button from the home page
+ * Improve calculation of average study time
+ * Change the scheduler to present new cards until study time is the
+   average of config.minStudyTime and config.maxStudyTime.
+ * Add getAveragePercentCorrect based on dailystats
+ * Update the README.
