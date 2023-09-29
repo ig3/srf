@@ -4065,89 +4065,86 @@ Add chart of percent correct
 Update dependencies
 
 ### 4.1.0 - 20230413
-
-Add Admin page
-Move links to templates, template sets and field sets to the admin page
-Add config page - read only view of configuration
-Add link to config page to the admin page
+ * Add Admin page
+ * Move links to templates, template sets and field sets to the admin page
+ * Add config page - read only view of configuration
+ * Add link to config page to the admin page
 
 ### 4.1.1 - 20230417
-Review calculation of percent correct: upper bound to config.maxInterval
-
-Fix fixRevlogInterval to get card interval from card.lastinterval (the
+ * Review calculation of percent correct: upper bound to config.maxInterval
+ * Fix fixRevlogInterval to get card interval from card.lastinterval (the
 unadjusted interval) rather than card.interval (the adjusted interval).
-
-Add a plot of unadjusted interval to Cards per interval.
+ * Add a plot of unadjusted interval to Cards per interval.
 
 ### 4.1.2 - 20230424
-Fix adjustCards to complete before next due is determined
-Fix logging reviews of new cards
+ * Fix adjustCards to complete before next due is determined
+ * Fix logging reviews of new cards
 
 ### 4.2.0 - 20230425
-Add options --port
-Fix update of daily stats new card count
+ * Add options --port
+ * Fix update of daily stats new card count
 
 ### 4.2.1 - 20230425
-Minimum interval of 1 second
+ * Minimum interval of 1 second
 
 ### 4.2.2 - 20230427
-Change dailystats.studyminutes to dailystats.studytime
-Improve calculation of average study time per day
-Fix calculation of estimated study time
+ * Change dailystats.studyminutes to dailystats.studytime
+ * Improve calculation of average study time per day
+ * Fix calculation of estimated study time
 
 ### 4.3.0 - 20230506
-Provide feedback on why new cards are not presented
-Fix getAverageStudyTime
+ * Provide feedback on why new cards are not presented
+ * Fix getAverageStudyTime
 
 ### 4.4.0 - 20230511
-Update dependencies
-Fix new card time limit
-Make minimum interval between new cards = studyTimeLimit / newCardLimit
-Simplify regulation of new cards
-Revise home and stats pages
+ * Update dependencies
+ * Fix new card time limit
+ * Make minimum interval between new cards = studyTimeLimit / newCardLimit
+ * Simplify regulation of new cards
+ * Revise home and stats pages
 
 ### 4.4.1 - 20230514
-Add new cards remaining below traffic lights
-Fix legend position on Cards per interval
-Add title to signal stats
+ * Add new cards remaining below traffic lights
+ * Fix legend position on Cards per interval
+ * Add title to signal stats
 
 ### 4.4.2 - 20230601
-Show new card limit instead of new cards remaining on home and stats pages
+ * Show new card limit instead of new cards remaining on home and stats pages
 Decrease sensitivity to average study time to range 90% to 110%
-Eliminate quantization and dispersion of due
-Change estimation of upcoming study time
-Change estimate of average study time
+ * Eliminate quantization and dispersion of due
+ * Change estimation of upcoming study time
+ * Change estimate of average study time
 
 ### 4.4.3 - 20230610
-Fix interval between new cards
-Fix selection of new cards - ignore card.due
-Enhance selection of new cards - avoid cards from recently viewed fieldsets
+ * Fix interval between new cards
+ * Fix selection of new cards - ignore card.due
+ * Enhance selection of new cards - avoid cards from recently viewed fieldsets
 
 ### 4.4.4 - 20230613
-Don't show new cards if there is a backlog
-Don't show new cards if study time past 24 hours > config.studyTimeLimit
+ * Don't show new cards if there is a backlog
+ * Don't show new cards if study time past 24 hours > config.studyTimeLimit
 
 ### 4.4.5 - 20230529
-Change default minimum time between related cards to 1 hour
-Don't show new cards if study time next 24 hours > config.studyTimeLimit
+ * Change default minimum time between related cards to 1 hour
+ * Don't show new cards if study time next 24 hours > config.studyTimeLimit
 
 ### 4.4.6 - 20230815
-Avoid showing a card too soon after another of the same fieldset
-Update dependencies
-Fix intervals between new cards
-Change determination of mode
-Change default action on home and back pages, per mode
-Change home Study button to get a new card if nothing due.
-Parameterize calculation of current new card limit
-Change button colours to highlight default action
-Update dependencies
+ * Avoid showing a card too soon after another of the same fieldset
+ * Update dependencies
+ * Fix intervals between new cards
+ * Change determination of mode
+ * Change default action on home and back pages, per mode
+ * Change home Study button to get a new card if nothing due.
+ * Parameterize calculation of current new card limit
+ * Change button colours to highlight default action
+ * Update dependencies
 
 ### 4.5.0 - 20230918
-Add option to sort due cards by due instead of interval.
-Simplify regulation of new cards
+ * Add option to sort due cards by due instead of interval.
+ * Simplify regulation of new cards
 
-### 4.5.1 - WIP
-README changes.
-Update the help file.
-Change Break button to Stop on the back of cards.
-Simplify calculation of new card interval.
+### 4.5.1 - 20230929
+ * README changes.
+ * Update the help file.
+ * Change Break button to Stop on the back of cards.
+ * Further simplify regulation of new cars
