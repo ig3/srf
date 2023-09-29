@@ -4147,4 +4147,6 @@ Decrease sensitivity to average study time to range 90% to 110%
  * README changes.
  * Update the help file.
  * Change Break button to Stop on the back of cards.
- * Further simplify regulation of new cars
+ * Further simplify regulation of new cards
+
+### 4.5.2 - WIP
