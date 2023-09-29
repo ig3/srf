@@ -11,15 +11,104 @@ $ npm install -g @ig3/srf
 
 ## Operation
 
- 1. Create some cards (see below)
- 2. Run the server: `srf`
- 3. Study: http://localhost:8000
+ 1. Download an Anki deck from [AnkiWeb](https://ankiweb.net/shared/decks/)
+ 2. Import the Anki deck into srf: `srf import anki_deck.apkg`
+ 3. Run the srf server: `srf`
+ 4. Browse srf: http://localhost:8000
+ 5. Click the Study button (shortcut: space bar)
+ 6. Review the card then click Flip (shortcut: space bar)
+ 7. Rate the card: Click Fail, Hard, Good or Eash (shortcuts: j, k, l, ;)
+ 8. Repeat: review, flip then rate each card
 
-The server listens on http://localhost:8000 by default.
+You study cards. Each card has a front and a back. First you view the front
+and try to remember what is on the back. Then you flip the card over to see
+the back: to see if you remembered correctly. Finally, you rate how well
+you remembered the card: 'Fail', 'Hard', 'Good' or 'Easy'.
 
-### Create some cards
+The card is scheduled for review according to how you rate it. Each card
+has an interval between reviews. If you rate the card Fail, the interval is
+reduced by half. If you rate it Hard, it is reduced by 20%. If you rate it
+Good, the interval is increased by an amount that depends on how you have
+rated the card in the past. The details are described below. If you rate it
+Easy, the interval is set 50% longer than for Good.
 
-There are various ways to create cards:
+The scheduler adjusts the intervals of the cards so that you recall
+correctly (i.e. not Fail) 90% of the time. The principle is that the
+interval should be as long as possible so that you don't waste your time
+reviewing the cards too often, but not so long that you can't remember
+them.
+
+The scheduler presents new cards (cards you haven't seen before) to keep
+total study time between 30 and 60 minutes in a 24 hour period, up to a
+limit of 20 new cards per day.
+
+When you have studied all the cards due for review and reached the limit on
+new cards, you will return to the Home page, until there are more cards to
+study.
+
+All the parameters of the scheduler are configurable. You can tune it
+according to your ability and objectives: study more or less each day and
+progress the intervals more or less aggressively.
+
+### Home page
+
+The home page shows statistics of your study:
+
+ * cards reviewed and minutes studied in the past 24 hours
+ * cards due and predicted minutes to study in the next 24 hours
+ * average study time per day
+ * average number of new cards per day
+ * percent of cards that you got correct (i.e. not Fail)
+ * number of cards due and overdue for review
+ * chart of study time per hour: past 24 hours and next 24 hours
+
+To study a card, click the Study button of press the space bar. The study
+button will always present a card for study, ignoring the limits of the
+scheduler. The space bar will present a card for study or reload the home
+page, according to the determination of the scheduler. 
+
+The buttons at the bottom of the page are:
+
+ * New Card: to study a new card, regardless of limits or cards due for
+   review
+ * Admin: to access the admin page
+ * Stats: to review various statistics of your study history
+ * Help: to review the help file - mostly a link to this README
+
+### Card Front
+
+The content of the card front is variable.
+
+At the bottom of the page are a set of buttons:
+
+ * Flip: to flip the card over to the back (shortcut: space bar)
+ * Help: to review the help file
+ * Edit: to edit the card content
+ * Play: to replay audio, if the card has audio
+ * Stop: to stop studying and return to the home page
+
+### Card Back
+
+The content of the card back is also variable.
+
+At the bottom of the page are a set of buttons:
+
+ * Fail: if you couldn't remember the card (shorcut: j)
+ * Hard: if you could remember the card but it was hard (shortcut: k)
+ * Good: if you could remember the card reasonably well (shortcut: l)
+ * Easy: if you could remember the card very easily (shortcut: ;)
+ * Help: to view the help file
+ * Edit: to edit the card content
+ * Play: to replay audio, if the card has audio
+ * Stop: to stop studying and return to the home page
+
+After you rate the card (Fail, Hard, Good or Easy) the front of the next
+card will be presented, you you will be returned to the home page if there
+are no more cards to study.
+
+### Creating Cards
+
+There are several ways to create cards:
  * Import Anki .apkg or .colpkg file
  * Import CSV files
  * Add them one at a time via the browser
@@ -65,7 +154,7 @@ template in the templateset.
 You study the cards. The cards are produced automatically when you add or
 edit fieldsets or templates. They are presented for review at intervals
 determined by the scheduling algoriithm, accoring to how you rate your
-ability to recall them: Again, Hard, Good or Easy.
+ability to recall them: Fail, Hard, Good or Easy.
 
 Each day, if your study workload isn't excessive, some new cards will be
 presented for study. The number of new cards is regulated automatically. If
@@ -78,7 +167,7 @@ of the algorithm: just click `New Card` on the home page.
 
 Cards start as unseen cards. Then they are presented as new cards with a
 short interval. Each time you review a card, its interval is adjusted
-according to how you rate it: Again, Hard, Good or Easy. As you learn the
+according to how you rate it: Fail, Hard, Good or Easy. As you learn the
 card the interval becomes longer until it becomes a mature card with a
 maximal interval: review once a year, by default.
 
@@ -327,19 +416,19 @@ displayed. The content of the back is determined by the template and the
 fieldset.
 
 The back of the card has buttons for rating how well you remember the card:
-Again, Hard, Good and Easy.
+Fail, Hard, Good and Easy.
 
 The button you click determines when the card will be scheduled for review.
 Each button displays the new interval: the time until the card will be due
 for review.
 
 
-##### Again
+##### Fail
 
 keyboard shortcut: j
 
 If you didn't remember the card and want to review it again soon, click
-Again. This reduces the interval for reviewing the card. The new interval
+Fail. This reduces the interval for reviewing the card. The new interval
 (the time until the card is due for review) is half the previous interval
 with a maximum interval of 1 day.
 
@@ -348,7 +437,7 @@ with a maximum interval of 1 day.
 keyboard shortcut: k
 
 If you did remember the card but it was difficult to remember, click Hard.
-This reduces the interval for rewviewing the card but not as much as Again.
+This reduces the interval for rewviewing the card but not as much as Fail.
 The new interval is 80% of the previous inerval with a maximum interval of
 1 week.
 
@@ -364,14 +453,14 @@ Calculation of the new interval is more complicated for Good. The minimum
 new interval is 5 minutes and the maximum new interval is 1 year. Between
 these limits, the new interval depends on the ease factor of the card. The
 ease factor is the exponentially weighted moving average of your previous
-ratings. The weights are 0, 1, 1.5 and 2 for Again, Hard, Good and Easy
+ratings. The weights are 0, 1, 1.5 and 2 for Fail, Hard, Good and Easy
 respectively. Thus the factor ranges from 0 to 2 and it will change a bit
 each time you review the card.
 
 If you rate the card Good several times, the ease factor will tend towards
 1.5 and the new interval will tend towards 150% of the previous interval.
 
-On the other hand, if you have rated the card Again many times, the ease
+On the other hand, if you have rated the card Fail many times, the ease
 factor might be quite low and even if you rate the card Good, the new
 interval might be less than the previous interval. However, even in this
 case, the ease factor will increase so that after a few Good reviews the
@@ -441,7 +530,7 @@ The srf scheduler has an equivalent to Anki ease factor for each card
 but it is simpler: it is the
 [exponentially weighted moving average](https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average)
 of the weighted answers. The default answer weights are 0, 1, 1.5 and 2 for
-Again, Hard, Good and Easy and the default decay factor is 0.95, but these
+Fail, Hard, Good and Easy and the default decay factor is 0.95, but these
 are all configurable. By default, the range of the ease factor is 0.0
 through 4.0: somewhat equivalent to Anki ease factors 0% to 200%. With srf
 the ease factor never gets 'stuck' at an unreasonably low setting. It
@@ -498,7 +587,7 @@ The home page presents some basic study statistics:
  * Average study time per day
  * Average new cards per day, averaged over the past week
  * New cards during the past 24 hours
- * The percentage of correct (not 'Again') responses to mature cards in the
+ * The percentage of correct (not 'Fail') responses to mature cards in the
    past 14 days
  * The number of cards due and overdue (due more than 24 hours ago)
  * The time until the next card is due
@@ -638,7 +727,7 @@ learning, mature and mastered.
 
 #### Percent Correct
 
-This is the percentage of 'correct' responses (a.k.a. not Again) for cards
+This is the percentage of 'correct' responses (a.k.a. not Fail) for cards
 with intervals between config.matureThreshold and config.maxInterval,
 reviewed in the window config.percentCorrectWindow.
 
@@ -994,7 +1083,7 @@ For example, a json file might be:
   "easyFactor": 1.5,
 
   // Answer weights
-  "weightAgain": 0,
+  "weightFail": 0,
   "weightHard": 1,
   "weightGood": 1.5,
   "weightEasy": 2,
@@ -1095,7 +1184,7 @@ interval is greater than matureThreshold.
 
 default: 1 month
 
-The percentage of 'correct' responses (not 'Again') is a factor in
+The percentage of 'correct' responses (not 'Fail') is a factor in
 determining the intervals of cards. All responses within this window are
 considered in determining the percentage. Results of reviews longer ago
 than percentCorrectWindow are ignored.
@@ -1118,7 +1207,7 @@ percent correct is calculated.
 
 default: 90
 
-The percentage of 'correct' responses (not 'Again') is a factor in
+The percentage of 'correct' responses (not 'Fail') is a factor in
 determining the intervals of cards. The percentCorrectTarget is the target
 percentage of 'correct' responses.
 
@@ -1179,7 +1268,7 @@ rather than the one with the shortest interval.
 
 default: 1 day
 
-The maximum interval for cards after response 'Again'.
+The maximum interval for cards after response 'Fail'.
 
 #### hardMaxInterval (seconds)
 
@@ -1209,7 +1298,7 @@ This is the minimum interval after responding 'Easy' to a review.
 
 default: 0.5
 
-After responding 'Again' to a review, the new interval is the previous
+After responding 'Fail' to a review, the new interval is the previous
 interval multiplied by this factor, but with a maximum of againMaxInterval
 which, by default, is 1 day.
 
@@ -1236,11 +1325,11 @@ default: 1.5
 After responding 'Easy' to a review, the new interval is the interval for a
 'Good' response multiplied by this factor.
 
-#### weightAgain
+#### weightFail
 
 default: 0
 
-The weight of an answer of Again when calculating the exponentially
+The weight of an answer of Fail when calculating the exponentially
 weighted moving average of review replies: the card ease factor.
 
 #### weightHard
@@ -1309,7 +1398,7 @@ for Flip).
 The back side of the card will be displayed, with buttons to indicate how
 well you remembered the card:
 
- * Again: you didn't remember the card - you need to see it again soon
+ * Fail: you didn't remember the card - you need to see it again soon
  * Hard: you remembered the card but it was a bit hard to recall
  * Good: you remembered the card 
  * Easy: you remembered the card but it was too easy
@@ -1439,7 +1528,7 @@ often wastes time that could be used to learn other cards.
 
 Each time a card is studied, whether it is its initial viewing or a later
 review, the ease with which it was remembered is rated by clicking one of
-four buttons: Again, Hard, Good or Easy. The card is then scheduled for
+four buttons: Fail, Hard, Good or Easy. The card is then scheduled for
 review, sooner or later, according to the ease with which it was
 remembered.
 
@@ -1449,7 +1538,7 @@ current and past reviews.
 (Almost) All the scheduling parameters are configurable. The following sections
 describe the default configuration.
 
-#### Again
+#### Fail
 
 This is for cards that you could not remember: that you want to see again
 sooner rather than later. The card is scheduled to be reviewed in 30% of
@@ -1507,16 +1596,16 @@ response values.
 
 The card ease factor is an exponentially weighted moving average of the
 weighted response values for the card. The weights are 0, 1, 2 and 4 for
-Again, Hard, Good and Easy respectivley. The decay factor is 0.9.
+Fail, Hard, Good and Easy respectivley. The decay factor is 0.9.
 
 The card ease factor is dominated by performance on recent reviews. Older
 reviews quickly become insignificant. But there is some 'history': the
 factor is larger for cards that have consistently been Good or Easy and
-smaller for cards that have consistently been Again or Hard. A mix of
+smaller for cards that have consistently been Fail or Hard. A mix of
 replies will result in an intermediate ease factor.
 
 The range of the card ease factor is 0 to 4. It is a simple multiplier for the
-interval. If you keep choosing Again, the factor will drop to 0. If you
+interval. If you keep choosing Fail, the factor will drop to 0. If you
 consistently click Good, the factor will rise to 2: the interval will
 double after each review. A mix of Good and Hard will result in a factor
 between 1 and 2, resulting in a slower increase in the interval.
@@ -2403,7 +2492,7 @@ Something to do with syncing. -1 by default.
 ##### ease
 integer
 
-The button that was clicked on review 1, 2, 3 or 4 for Again, Hard, Good or
+The button that was clicked on review 1, 2, 3 or 4 for Fail, Hard, Good or
 Easy.
 
 ##### ivl
@@ -3995,7 +4084,7 @@ Update dependencies
 
 ### 3.0.0 - 20230109
 
-Changed the scheduling algorith again. Changed Again and Hard to have
+Changed the scheduling algorith again. Changed Fail and Hard to have
 maximum intervals instead of minimum intervals and changed the default
 again factor to 0.3.
 
@@ -4149,4 +4238,5 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Change Break button to Stop on the back of cards.
  * Further simplify regulation of new cards
 
-### 4.5.2 - WIP
+### 5.0.0 - WIP
+ * Change 'Again' to 'Fail'

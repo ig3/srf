@@ -205,7 +205,7 @@ function runServer (opts, args) {
     const overdue = srf.getCountCardsOverdue();
     const averageStudyTime = srf.getAverageStudyTime(7);
 
-    const averageNewCards = srf.getCountNewCards(60 * 60 * 24 * 7) / 7;
+    const averageNewCards = srf.getAverageNewCardsPerDay();
     const chart1Data = srf.getChartStudyTime();
     const newCardsSeen = srf.getCountNewCardsPast24Hours();
     const mode = getMode(statsPast24Hours, statsNext24Hours);
@@ -380,7 +380,7 @@ function runServer (opts, args) {
       statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
       statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
       const intervals = srf.getIntervals(card);
-      intervals.again = srf.formatSeconds(intervals.again);
+      intervals.fail = srf.formatSeconds(intervals.fail);
       intervals.hard = srf.formatSeconds(intervals.hard);
       intervals.good = srf.formatSeconds(intervals.good);
       intervals.easy = srf.formatSeconds(intervals.easy);
