@@ -4253,3 +4253,7 @@ Decrease sensitivity to average study time to range 90% to 110%
    average of config.minStudyTime and config.maxStudyTime.
  * Add getAveragePercentCorrect based on dailystats
  * Update the README.
+
+### 5.0.1 - 20231001
+ * Fix revlog for change of ease from Again to Fail
+ * Fix date range for calculation of percent correct
