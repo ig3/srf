@@ -524,19 +524,11 @@ when clearing a backlog. It allows the cards with the shortest intervals to
 be studied on time, despite the backlog. At the same time, it allows the
 most overdue cards to be studied, gradually clearing the backlog.
 
-New cards are presented if total study time the past 24 hours is less than
-config.minStudyTime. They will be interleaved with review cards if there
-are cards for review.
+New cards are presented before due cards if total study time the past 24
+hours is less than config.minStudyTime.
 
-If total study time the past 24 hours is more than config.minStudyTime then
-no more new cards will be presented but review cards will be presented
-until total study time the past 24 hours exceeds config.maxStudyTime.
-
-If total stud time exceeds config.maxStudyTime you can still study by
-clicking the Study button. This button overrides the scheduler limits. But
-the space bar shortcut does not. The shortcut will just reload the home
-page until total study time in the past 24 hours falls below
-config.maxStudyTime.
+New cards are presented at intervals, interleaved with due cards, if total
+study time the past 24 hours is less than config.targetStudytime.
 
 ## Getting Started
 
@@ -595,7 +587,7 @@ are in ~/.local/share/srf/media.
 
 At the top right of the home page and front and back pages, there is a
 status indicator. Green, yellow or red depending on study time Vs
-config.minStudyTime and config.maxStudyTime.
+config.minStudyTime and config.targetStudyTime..
 Below this are counts of cards due, minutes of study the past 24 hours and
 minutes of study the next 24 hours (estimated). 
 
@@ -1038,9 +1030,11 @@ For example, a json file might be:
   // The maximum number of new cards in 24 hours.
   "maxNewCardsPerDay": 20,
 
-  // The minimum and maximum study time (seconds) per day
-  "minStudyTime": "30 minutes",
-  "maxStudyTime": "1 hour",
+  // Minimum study time (seconds) per day
+  "minStudyTime": "20 minutes",
+
+  // Target study time (seconds) per day
+  "targetStudyTime": "30 minutes",
 
   // The probability of sorting due cards by due instead of inteval
   "probabilityOldestDue": 0.2,
@@ -1220,18 +1214,19 @@ The maximum number of new cards to be presented within 24 hours.
 
 #### minStudyTime
 
-default: 30 minutes
+default: 20 minutes
 
 Minimum daily study time. New cards will be presented until study time in
 the past 24 hours is more than this.
 
-#### maxStudyTime
+#### targetStudyTime
 
-default: 1 hour
+default: 30 minutes
 
-Maximum daily study time. If total study time for the past 24 hours exceeds
-this, no cards will be presented for study, even if there are cards due or
-overdue. This is the upper bound on study time.
+If total study time for the past 24 hours and predicted study time to study
+all cards due in the next 24 hours are both less than this, then new cards
+will be presented, interleaved with due cards. If either exceeds this, then
+only due cards will be presented.
 
 #### probabilityOldestDue
 
@@ -1631,8 +1626,7 @@ Cards that have never been studied are 'unseen' cards. But eventually they
 are selected to be presented for study: they become a 'new' card.
 
 The scheduler presents new cards to keep daily total study time
-approximately at the average of config.minStudytime and
-config.maxStudyTime: the target study time.
+approximately at config.targetStudyTime.
 
 The new cards are presented at intervals, mixed in with review cards.
 
@@ -4027,6 +4021,49 @@ work with.
 * Only simple text fields and media
 * No synchronization between devices / databases
 
+## Alternatives
+
+### to Again
+
+Anki uses Again as worst case ease name. 
+
+I changed it to Fail which seems more consistent with Hard, Good and Easy,
+gramatically, but it is quite negative. Is there a better term?
+
+I went through a list of four letter words and here are some possible
+alternatives: Fail, Miss, Skip, Grim, Cold, Nope, Next, Pass, Loss, Wash,
+Gone, Balk, Bane, Blur, Dire, Lost
+
+Of these, I like Fail and Pass most. There are games / contests where Pass
+is used to indicate that you are failing so badly that you don't want to
+waste time - just move on to the next item. 
+
+Hard, Good and Easy are adjectives. Neither Fail nor Pass are. They are
+both intrasitive verbs.
+
+What is the adjective that means harder than hard?
+
+We have Good, so maybe Bad, but that's also very negative.
+
+Bad, Worse, Worst.
+
+Harder? Hardest?
+
+Maybe Lost is good. It is an adjective. Lapsed has similar meaning and is
+used to describe a card that was known but is now forgotten. 
+
+Gone has similar sense as Lapsed. Gone from memory / recollection. 
+
+Elusive? 
+
+I want something like Fleeting, Elusive, Lost, Gone.
+
+Maybe Gone is good. Gone from memory. It is an adjective.
+
+Forgotten, but a shorter word.
+
+Lost?
+
 ## Changes
 
 ### 1.1.0 - 20220916
@@ -4257,3 +4294,10 @@ Decrease sensitivity to average study time to range 90% to 110%
 ### 5.0.1 - 20231001
  * Fix revlog for change of ease from Again to Fail
  * Fix date range for calculation of percent correct
+
+### 5.1.0 - 20231005
+ * Introduce config.targetStudyTime
+ * Remove config.maxStudyTime
+ * Change the scheduler to present new cards until study time is
+   config.targetStudyTime
+ * Change the scheduler to remove the upper limit on study time

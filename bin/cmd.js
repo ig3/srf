@@ -209,7 +209,7 @@ function runServer (opts, args) {
     const chart1Data = srf.getChartStudyTime();
     const newCardsSeen = srf.getCountNewCardsPast24Hours();
     const mode = getMode(statsPast24Hours, statsNext24Hours);
-    const studyNow = !!nextCard && mode !== 'stop';
+    const studyNow = !!nextCard;
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     res.render('home', {
@@ -217,7 +217,7 @@ function runServer (opts, args) {
       statsNext24Hours: statsNext24Hours,
       averageStudyTime: (averageStudyTime / 60).toFixed(0),
       averageNewCards: averageNewCards.toFixed(2),
-      targetStudyTime: (config.maxStudyTime / 60).toFixed(0),
+      targetStudyTime: (config.targetStudyTime / 60).toFixed(0),
       percentCorrect: srf.getAveragePercentCorrect().toFixed(2),
       dueNow: dueNow,
       overdue: overdue,
@@ -415,10 +415,8 @@ function runServer (opts, args) {
     lastReviewTime = now;
     const ease = req.body.ease;
     srf.reviewCard(card, viewTime, studyTime, ease);
-    const statsPast24Hours = srf.getStatsPast24Hours();
-    const statsNext24Hours = srf.getStatsNext24Hours();
-    const mode = getMode(statsPast24Hours, statsNext24Hours);
-    res.json({ mode: mode });
+    const nextCard = srf.getNextCard();
+    res.json({ cardAvailable: !!nextCard });
   });
 
   app.get('/fieldsets', (req, res) => {
@@ -625,7 +623,7 @@ function runServer (opts, args) {
     return (
       statsPast24Hours.time < config.minStudyTime
         ? 'go'
-        : statsPast24Hours.time < config.maxStudyTime
+        : statsPast24Hours.time < config.targetStudyTime
           ? 'slow'
           : 'stop'
     );

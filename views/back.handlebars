@@ -34,7 +34,7 @@
       }
       response.json()
       .then((data) => {
-        if (data.mode !== 'stop') window.location = '/next';
+        if (data.cardAvailable) window.location = '/next';
         else window.location = '/';
       });
     })
