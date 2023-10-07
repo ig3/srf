@@ -1472,6 +1472,10 @@ By default, the interval limit is 1 year (config.maxInterval).
 
 ## Scheduler
 
+The scheduler is provided by a separate package: @ig3/srf-scheduler. There
+is not yet any provision for loading an alternate scheduler, but it would
+not be difficult to support this.
+
 There are two aspects to the scheduler:
 
  1. Determining when a card is due for review
@@ -4301,3 +4305,6 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Change the scheduler to present new cards until study time is
    config.targetStudyTime
  * Change the scheduler to remove the upper limit on study time
+
+### 6.0.0 - 20231007
+ * Remove the scheduler code to a separate package: @ig3/srf-scheduler

@@ -621,9 +621,9 @@ function runServer (opts, args) {
 
   function getMode (statsPast24Hours, statsNext24Hours) {
     return (
-      statsPast24Hours.time < config.minStudyTime
+      statsPast24Hours.time < config.targetStudyTime
         ? 'go'
-        : statsPast24Hours.time < config.targetStudyTime
+        : statsPast24Hours.time < config.targetStudyTime * 1.5
           ? 'slow'
           : 'stop'
     );
