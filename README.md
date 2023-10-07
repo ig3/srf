@@ -1863,6 +1863,11 @@ answers and the target for percent correct. It is a factor in calculation
 of the next interval for the card.
 
 #### lastinterval
+This field is badly named. It is the interval set when the card was
+reviewed, not adjusted in response to 'percent correct'. Better names would
+be unmodifiedinterval or originalinterval. Don't confuse this with
+lastinterval in revlog which is the interval from the last review.
+
 When a card is reviewed, lastinterval is set to interval but interval might
 be adjusted before the card is reviewed again while lastinterval is not. It
 is always the interval when the card was last reviewed.
@@ -4308,3 +4313,5 @@ Decrease sensitivity to average study time to range 90% to 110%
 
 ### 6.0.0 - 20231007
  * Remove the scheduler code to a separate package: @ig3/srf-scheduler
+ * Improve calculation of average time per card for Study Time per Hour
+   chart
