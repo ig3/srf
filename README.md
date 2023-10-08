@@ -44,6 +44,15 @@ The home page shows statistics of your study:
  * number of cards due and overdue for review
  * chart of study time per hour: past 24 hours and next 24 hours
 
+The status at the top right includes:
+ * Traffic lights for new cards:
+   * Green: present new cards if there are no due cards
+   * Yellow: present new cards between due cards
+   * Red: do not present new cards
+ * Cards due
+ * Minutes studied in the past 24 hours
+ * Predicted minutes to study in the next 24 hours
+
 To study a card, click the Study button or press the space bar.
 
 The study button will always present a card for study, ignoring the limits
@@ -62,6 +71,8 @@ The buttons at the bottom of the page are:
 
 The content of the card front is variable.
 
+Status at top right is the same as the home page.
+
 At the bottom of the page are a set of buttons:
 
  * Flip: to flip the card over to the back (shortcut: space bar)
@@ -73,6 +84,8 @@ At the bottom of the page are a set of buttons:
 ### Card Back
 
 The content of the card back is also variable.
+
+Status at top right is the same as the home page.
 
 At the bottom of the page are a set of buttons:
 
@@ -586,8 +599,10 @@ and media files. The database is ~/.local/share/srf/srf.db. Media files
 are in ~/.local/share/srf/media.
 
 At the top right of the home page and front and back pages, there is a
-status indicator. Green, yellow or red depending on study time Vs
-config.minStudyTime and config.targetStudyTime..
+status indicator. Green, yellow or red depending on new card mode: Green if
+new cards will be presented if there are no cards due; Yellow if new cards
+will be presented interleaved with due cards; and Red if no new cards will
+be presented.
 Below this are counts of cards due, minutes of study the past 24 hours and
 minutes of study the next 24 hours (estimated). 
 
@@ -4315,3 +4330,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Remove the scheduler code to a separate package: @ig3/srf-scheduler
  * Improve calculation of average time per card for Study Time per Hour
    chart
+ * set traffic lights based on scheduler getNewCardMode
