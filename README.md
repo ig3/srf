@@ -4331,3 +4331,6 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Improve calculation of average time per card for Study Time per Hour
    chart
  * set traffic lights based on scheduler getNewCardMode
+
+### 6.0.1 - WIP
+ * Reimplement calculation of average new cards per day
