@@ -4334,3 +4334,4 @@ Decrease sensitivity to average study time to range 90% to 110%
 
 ### 6.0.1 - WIP
  * Reimplement calculation of average new cards per day
+ * Update dependencies
