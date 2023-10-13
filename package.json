@@ -27,8 +27,8 @@
   "license": "ISC",
   "dependencies": {
     "@ig3/config": "^0.2.2",
-    "@ig3/srf-scheduler": "^1.1.0",
-    "better-sqlite3": "^8.7.0",
+    "@ig3/srf-scheduler": "^1.1.1",
+    "better-sqlite3": "^9.0.0",
     "csv-parse": "^5.5.2",
     "express": "^4.18.2",
     "express-handlebars": "^7.1.2",
@@ -47,7 +47,7 @@
     "@ig3/eslint-config-entrain": "^3.0.1",
     "c8": "^8.0.1",
     "multi-tape": "^1.7.0",
-    "tape": "^5.7.0",
+    "tape": "^5.7.1",
     "tmp": "^0.2.1"
   },
   "eslintConfig": {
