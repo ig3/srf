@@ -4332,8 +4332,11 @@ Decrease sensitivity to average study time to range 90% to 110%
    chart
  * set traffic lights based on scheduler getNewCardMode
 
-### 6.0.1 - 20231013
+### 6.0.1 - 20231010
  * Reimplement calculation of average new cards per day
+ * Update dependencies
+
+### 6.0.2 - 20231013
  * Update dependencies
  * Average study time over 14 days for home page
  * Get average study time from revlog instead of dailystats
