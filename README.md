@@ -4335,3 +4335,5 @@ Decrease sensitivity to average study time to range 90% to 110%
 ### 6.0.1 - WIP
  * Reimplement calculation of average new cards per day
  * Update dependencies
+ * Average study time over 14 days for home page
+ * Get average study time from revlog instead of dailystats

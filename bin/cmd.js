@@ -203,7 +203,7 @@ function runServer (opts, args) {
     const statsPast24Hours = srf.getStatsPast24Hours();
     const statsNext24Hours = srf.getStatsNext24Hours();
     const overdue = srf.getCountCardsOverdue();
-    const averageStudyTime = srf.getAverageStudyTime(7);
+    const averageStudyTime = srf.getAverageStudyTime();
 
     const averageNewCards = srf.getAverageNewCardsPerDay();
     const chart1Data = srf.getChartStudyTime();
@@ -266,7 +266,7 @@ function runServer (opts, args) {
     const days = srf.getCountDaysStudied();
     const newCardsPerDay = (cardsSeen && days) ? cardsSeen / days : 0;
     const config = srf.getConfig();
-    const averageStudyTime = srf.getAverageStudyTime(7);
+    const averageStudyTime = srf.getAverageStudyTime();
 
     res.render('stats', {
       newCardsPerDay: newCardsPerDay.toFixed(2),
