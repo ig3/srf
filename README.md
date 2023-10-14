@@ -4342,4 +4342,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Get average study time from revlog instead of dailystats
 
 ### 6.0.3 - 20231014
- * Update dependencies
+ * Update dependencies - @ig3/srf-scheduler
