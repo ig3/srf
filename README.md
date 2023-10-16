@@ -4344,5 +4344,6 @@ Decrease sensitivity to average study time to range 90% to 110%
 ### 6.0.3 - 20231014
  * Update dependencies - @ig3/srf-scheduler
 
-### 6.0.4 - WIP
+### 6.0.4 - 20231017
  * Add new card stats to stats page
+ * Update dependencies - @ig3/srf-scheduler
