@@ -267,6 +267,7 @@ function runServer (opts, args) {
     const newCardsPerDay = (cardsSeen && days) ? cardsSeen / days : 0;
     const config = srf.getConfig();
     const averageStudyTime = srf.getAverageStudyTime();
+    const statsNext24Hours = srf.getStatsNext24Hours();
 
     res.render('stats', {
       newCardsPerDay: newCardsPerDay.toFixed(2),
@@ -285,7 +286,8 @@ function runServer (opts, args) {
       timeToNextDue: tc.seconds(nextDue - now).toFullString().slice(0, -4),
       newCardsSeen: newCardsSeen,
       charts: charts,
-      theme: config.theme
+      theme: config.theme,
+      statsNext24Hours: statsNext24Hours
     });
   });
 
