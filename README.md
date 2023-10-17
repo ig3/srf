@@ -1487,9 +1487,13 @@ By default, the interval limit is 1 year (config.maxInterval).
 
 ## Scheduler
 
-The scheduler is provided by a separate package: @ig3/srf-scheduler. There
-is not yet any provision for loading an alternate scheduler, but it would
-not be difficult to support this.
+The scheduler is provided by a separate package:
+[@ig3/srf-scheduler](https://www.npmjs.com/package/@ig3/srf-scheduler).
+
+There is not yet any provision for loading an alternate scheduler, but it
+would not be difficult to support this.
+
+### @ig3/srf-scheduler
 
 There are two aspects to the scheduler:
 
@@ -1706,6 +1710,89 @@ the New Card button on the home page.
 #### Overdue cards
 If a card is more than 24 hours past its due time, it is deemed to be
 `overdue`. When there are overdue cards, no new cards will be presented.
+
+### Scheduler API
+
+The scheduler must provide the following methods:
+
+ * getCountCardsDueToday
+ * getIntervals
+ * getNewCardMode
+ * getNextCard
+ * getNextDue
+ * getNextNew
+ * getStatsNext24Hours
+ * getTimeNextDue
+ * review
+
+#### getCountCardsDueToday
+
+Returns the number of cards that are due before the end of the day in local
+timezone.
+
+#### getIntervals(card)
+
+Takes a card object as argument.
+
+Returns an object with attributes for each ease: fail, hard, good and easy,
+the values being the new interval for the given card if that ease is
+selected.
+
+#### getNewCardMode
+
+Returns the mode: 'go', 'slow' or 'stop', for presenting new cards. Mode
+`go` is the most aggressive: new cards are presented if there is no due
+card, or at intervals if there are due cards. Mode 'slow' presents new
+cards only at intervals between due cards. Mode 'stop' indicates that new
+cards will not be presented. See the scheduler documentation for details of
+when these modes pertain.
+
+#### getNextCard
+
+Returns a card object or undefined if there is no card that should be
+presented. The card may be a due card or a new card. See the scheduler
+documentation for details of when new or due cards are presented.
+
+#### getNextDue(override)
+
+Takes a boolean which can be set to true to override limits on presenting
+due cards.
+
+Returns a card object or undefined if there is no due card that should be
+presented.
+
+See the scheduler documentation of details of when cards are due and how
+the card to be presented is selected, if there are multiple cards due.
+
+#### getNextNew()
+
+Returns a card object of undefined if there are no more new cards.
+
+See the scheduler documentation for details of how the unseen cards are
+sorted to select the next new card to be presented.
+
+#### getStatsNext24Hours
+
+Returns an objects with properties:
+ 
+ * count: the number of cards due in the next 24 hours
+ * time: extimated time to review these cards, based on recent performance
+ * minReviews: minimum reviews between new cards in 'slow' mode
+ * reviews: number of reviews since the last new card
+
+#### getTimeNextDue()
+
+Returns the due time (seconds since the epoch) of the card with the
+earliest due time.
+
+#### review(card, viewTime, studyTime, ease)
+
+Updates the given card and produces a revlog record according to viewTime
+(the time the card was presented to the user), studyTime (the time to be
+counted towards total study time) and the ease of the card.
+
+This is the functional bit of the scheduler: this is where cards are
+scheduled for review.
 
 ## Templates
 
