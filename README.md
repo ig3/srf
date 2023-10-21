@@ -50,6 +50,7 @@ The status at the top right includes:
    * Yellow: present new cards between due cards
    * Red: do not present new cards
  * Cards due
+ * New cards in the past 24 hours
  * Minutes studied in the past 24 hours
  * Predicted minutes to study in the next 24 hours
 
@@ -4434,3 +4435,6 @@ Decrease sensitivity to average study time to range 90% to 110%
 ### 6.0.4 - 20231017
  * Add new card stats to stats page
  * Update dependencies - @ig3/srf-scheduler
+
+### 6.0.5 - WIP
+ * Add new cards to top right of home, front and back pages
