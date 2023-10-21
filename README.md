@@ -4439,3 +4439,4 @@ Decrease sensitivity to average study time to range 90% to 110%
 ### 6.0.5 - WIP
  * Add new cards to top right of home, front and back pages
  * Exclude current day from calculation of average new cards per day
+ * Set revdate from id and timezone when fixing database
