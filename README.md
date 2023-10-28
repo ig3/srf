@@ -38,7 +38,7 @@ The home page shows statistics of your study:
 
  * cards reviewed and minutes studied in the past 24 hours
  * cards due and predicted minutes to study in the next 24 hours
- * average study time per day
+ * average study time per day (short term and long term average)
  * average number of new cards per day
  * percent of cards that you got correct (i.e. not rated Fail)
  * number of cards due and overdue for review
@@ -4440,3 +4440,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add new cards to top right of home, front and back pages
  * Exclude current day from calculation of average new cards per day
  * Set revdate from id and timezone when fixing database
+ * Show short term average study time

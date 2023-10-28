@@ -210,9 +210,13 @@ function runServer (opts, args) {
     const newCardsSeen = srf.getCountNewCardsPast24Hours();
     const mode = getMode(statsPast24Hours, statsNext24Hours);
     const studyNow = !!nextCard;
+    const studyTime = Math.floor(
+      (statsPast24Hours.time + statsNext24Hours.time) / 2 / 60
+    );
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
     res.render('home', {
+      studyTime: studyTime,
       statsPast24Hours: statsPast24Hours,
       statsNext24Hours: statsNext24Hours,
       averageStudyTime: (averageStudyTime / 60).toFixed(0),
