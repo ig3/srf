@@ -4436,7 +4436,7 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add new card stats to stats page
  * Update dependencies - @ig3/srf-scheduler
 
-### 6.0.5 - WIP
+### 6.0.5 - 20231030
  * Add new cards to top right of home, front and back pages
  * Exclude current day from calculation of average new cards per day
  * Set revdate from id and timezone when fixing database
