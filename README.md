@@ -11,7 +11,7 @@ $ npm install -g @ig3/srf
 
 ## Operation
 
- 1. Download an Anki deck from [AnkiWeb](https://ankiweb.net/shared/decks/)
+ 1. Get an Anki deck (e.g. from [AnkiWeb](https://ankiweb.net/shared/decks/))
  2. Import the Anki deck into srf: `srf import anki_deck.apkg`
  3. Run the srf server: `srf`
  4. Browse srf: http://localhost:8000
@@ -31,6 +31,9 @@ adjusted automatically, to keep total study time between 30 and 60 minutes.
 When you have studied all the cards due for review and reached the limit on
 new cards, you will return to the Home page, until there are more cards to
 study.
+
+### Get an Anki Deck
+There are many places to download shared Anki decks and many tools for generating them. [AnkiWeb](https://ankiweb.net/shared/decks/) is one source. Search for 'shared Anki decks' or 'generate Anki decks'
 
 ### Home page
 
