@@ -4444,3 +4444,6 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Exclude current day from calculation of average new cards per day
  * Set revdate from id and timezone when fixing database
  * Show short term average study time
+
+### 6.0.6 - WIP
+ * Remove fieldset ID from front and back views
