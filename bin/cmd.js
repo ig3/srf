@@ -215,12 +215,17 @@ function runServer (opts, args) {
     );
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
+    const reviewsToNextNew = Math.max(
+      0,
+      statsNext24Hours.minReviews - statsNext24Hours.reviews
+    );
     res.render('home', {
       studyTime: studyTime,
       statsPast24Hours: statsPast24Hours,
       statsNext24Hours: statsNext24Hours,
       averageStudyTime: (averageStudyTime / 60).toFixed(0),
       averageNewCards: averageNewCards.toFixed(2),
+      reviewsToNextNew: reviewsToNextNew,
       targetStudyTime: (config.targetStudyTime / 60).toFixed(0),
       percentCorrect: srf.getAveragePercentCorrect().toFixed(2),
       dueNow: dueNow,
@@ -349,6 +354,10 @@ function runServer (opts, args) {
       const mode = getMode(statsPast24Hours, statsNext24Hours);
       statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
       statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
+      const reviewsToNextNew = Math.max(
+        0,
+        statsNext24Hours.minReviews - statsNext24Hours.reviews
+      );
       res.render('front', {
         card: card,
         interval: srf.formatSeconds(card.interval),
@@ -359,6 +368,7 @@ function runServer (opts, args) {
         theme: config.theme,
         statsPast24Hours: statsPast24Hours,
         statsNext24Hours: statsNext24Hours,
+        reviewsToNextNew: reviewsToNextNew,
         maxViewTime: config.maxViewTime,
         dueNow: dueNow
       });
@@ -390,6 +400,10 @@ function runServer (opts, args) {
       intervals.hard = srf.formatSeconds(intervals.hard);
       intervals.good = srf.formatSeconds(intervals.good);
       intervals.easy = srf.formatSeconds(intervals.easy);
+      const reviewsToNextNew = Math.max(
+        0,
+        statsNext24Hours.minReviews - statsNext24Hours.reviews
+      );
       res.render('back', {
         card: card,
         interval: srf.formatSeconds(card.interval),
@@ -400,6 +414,7 @@ function runServer (opts, args) {
         theme: config.theme,
         statsPast24Hours: statsPast24Hours,
         statsNext24Hours: statsNext24Hours,
+        reviewsToNextNew: reviewsToNextNew,
         maxViewTime: config.maxViewTime,
         intervals: intervals,
         dueNow: dueNow

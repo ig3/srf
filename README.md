@@ -4447,3 +4447,4 @@ Decrease sensitivity to average study time to range 90% to 110%
 
 ### 6.0.6 - WIP
  * Remove fieldset ID from front and back views
+ * Add countdown to next new card to home, front and back pages
