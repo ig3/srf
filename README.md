@@ -9,9 +9,11 @@ based loosely on [Anki](https://github.com/ankitects/anki).
 $ npm install -g @ig3/srf
 ```
 
+This provides the command `srf`.
+
 ## Operation
 
- 1. Get an Anki deck (e.g. from [AnkiWeb](https://ankiweb.net/shared/decks/))
+ 1. Get an Anki deck (e.g. from [AnkiWeb](https://ankiweb.net/shared/decks/), or wherever)
  2. Import the Anki deck into srf: `srf import anki_deck.apkg`
  3. Run the srf server: `srf`
  4. Browse srf: http://localhost:8000
@@ -31,6 +33,16 @@ adjusted automatically, to keep total study time between 30 and 60 minutes.
 When you have studied all the cards due for review and reached the limit on
 new cards, you will return to the Home page, until there are more cards to
 study.
+
+The scheduler is configurable: all the limits and parameters can be
+adjusted to your preferences and ability. Do you want to study more or less
+each day? Change targetStudytime. Want a different limit on new cards?
+Change maxNewCardsPerDay. And many more. There are very few hard coded
+parameters, and even those are easy to change: just checkout the repository
+and change them. It's all JavaScript, HTML, CSS and a few handlebars
+templates. And if you want something more fundamentally different, you can
+replace the scheduler. It was ease of tinkering with the scheduler that
+motivated me to write this.
 
 ### Get an Anki Deck
 There are many places to download shared Anki decks and many tools for generating them. [AnkiWeb](https://ankiweb.net/shared/decks/) is one source. Search for 'shared Anki decks' or 'generate Anki decks'
