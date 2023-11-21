@@ -211,7 +211,10 @@ function runServer (opts, args) {
     const mode = getMode(statsPast24Hours, statsNext24Hours);
     const studyNow = !!nextCard;
     const studyTime = Math.floor(
-      (statsPast24Hours.time + statsNext24Hours.time) / 2 / 60
+      (
+        (statsPast24Hours.time + statsNext24Hours.time) / 2 +
+        averageStudyTime
+      ) / 2 / 60
     );
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
