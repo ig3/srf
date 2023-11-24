@@ -280,6 +280,10 @@ function runServer (opts, args) {
     const config = srf.getConfig();
     const averageStudyTime = srf.getAverageStudyTime();
     const statsNext24Hours = srf.getStatsNext24Hours();
+    const reviewsToNextNew = Math.max(
+      0,
+      statsNext24Hours.minReviews - statsNext24Hours.reviews
+    );
 
     res.render('stats', {
       newCardsPerDay: newCardsPerDay.toFixed(2),
@@ -299,7 +303,8 @@ function runServer (opts, args) {
       newCardsSeen: newCardsSeen,
       charts: charts,
       theme: config.theme,
-      statsNext24Hours: statsNext24Hours
+      statsNext24Hours: statsNext24Hours,
+      reviewsToNextNew: reviewsToNextNew
     });
   });
 
