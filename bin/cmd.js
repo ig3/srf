@@ -149,6 +149,17 @@ function runServer (opts, args) {
   });
   const config = srf.getConfig();
 
+  process.on('SIGTERM', () => {
+    console.log('caught SIGTERM');
+    Promise.resolve()
+    .then(() => {
+      return srf.shutdown();
+    })
+    .then(() => {
+      process.exit();
+    });
+  });
+
   srf.backupDatabase();
   setInterval(srf.backupDatabase, 1000 * 60 * 60 * 24);
 
@@ -218,17 +229,12 @@ function runServer (opts, args) {
     );
     statsPast24Hours.time = Math.floor(statsPast24Hours.time / 60);
     statsNext24Hours.time = Math.floor(statsNext24Hours.time / 60);
-    const reviewsToNextNew = Math.max(
-      0,
-      statsNext24Hours.minReviews - statsNext24Hours.reviews
-    );
     res.render('home', {
       studyTime: studyTime,
       statsPast24Hours: statsPast24Hours,
       statsNext24Hours: statsNext24Hours,
       averageStudyTime: (averageStudyTime / 60).toFixed(0),
       averageNewCards: averageNewCards.toFixed(2),
-      reviewsToNextNew: reviewsToNextNew,
       targetStudyTime: (config.targetStudyTime / 60).toFixed(0),
       percentCorrect: srf.getAveragePercentCorrect().toFixed(2),
       dueNow: dueNow,
@@ -280,10 +286,6 @@ function runServer (opts, args) {
     const config = srf.getConfig();
     const averageStudyTime = srf.getAverageStudyTime();
     const statsNext24Hours = srf.getStatsNext24Hours();
-    const reviewsToNextNew = Math.max(
-      0,
-      statsNext24Hours.minReviews - statsNext24Hours.reviews
-    );
 
     res.render('stats', {
       newCardsPerDay: newCardsPerDay.toFixed(2),
@@ -303,8 +305,7 @@ function runServer (opts, args) {
       newCardsSeen: newCardsSeen,
       charts: charts,
       theme: config.theme,
-      statsNext24Hours: statsNext24Hours,
-      reviewsToNextNew: reviewsToNextNew
+      statsNext24Hours: statsNext24Hours
     });
   });
 
