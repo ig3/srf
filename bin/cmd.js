@@ -149,25 +149,26 @@ function runServer (opts, args) {
   });
   const config = srf.getConfig();
 
-  process.on('SIGTERM', () => {
-    console.log('caught SIGTERM');
-    Promise.resolve()
-    .then(() => {
-      return srf.shutdown();
-    })
-    .then(() => {
-      process.exit();
+  ['SIGTERM', 'SIGINT']
+  .forEach(signal => {
+    process.on(signal, () => {
+      console.log('caught ' + signal);
+      Promise.resolve()
+      .then(() => {
+        return srf.shutdown();
+      })
+      .then(() => {
+        console.log('closing database connection');
+        srf.close();
+      })
+      .then(() => {
+        process.exit();
+      });
     });
   });
 
   srf.backupDatabase();
   setInterval(srf.backupDatabase, 1000 * 60 * 60 * 24);
-
-  process.on('SIGINT', () => {
-    console.log('closing database connection');
-    srf.close();
-    process.exit();
-  });
 
   let lastReviewTime = 0;
 

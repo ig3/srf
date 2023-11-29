@@ -4462,4 +4462,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add countdown to next new card to home, front and back pages
  * Average study time over a longer period
  * Show reviews to next new card
- * persist reviews to next new card through restarts
+ * Catch signals for orderly shutdown
