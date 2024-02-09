@@ -4457,7 +4457,7 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Set revdate from id and timezone when fixing database
  * Show short term average study time
 
-### 6.0.6 - WIP
+### 6.0.6 - 20240210
  * Remove fieldset ID from front and back views
  * Add countdown to next new card to home, front and back pages
  * Average study time over a longer period
