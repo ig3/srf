@@ -4463,3 +4463,6 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Average study time over a longer period
  * Show reviews to next new card
  * Catch signals for orderly shutdown
+
+### 6.0.7 - WIP
+ * Update dependencies
