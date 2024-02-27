@@ -4464,5 +4464,8 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Show reviews to next new card
  * Catch signals for orderly shutdown
 
-### 6.0.7 - WIP
+### 6.0.7 - 20240210
+ * Update dependencies
+
+### 6.0.8 - 20240228
  * Update dependencies
