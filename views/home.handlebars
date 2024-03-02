@@ -20,7 +20,6 @@ title="reviews before next new card">{{statsNext24Hours.reviewsToNextNew}}</span
 <tbody>
 <tr><th>Past 24 Hours:</th><td>{{statsPast24Hours.count}}</td><td>{{statsPast24Hours.time}}</tr>
 <tr><th>Next 24 Hours:</th><td>{{statsNext24Hours.count}}</td><td>{{statsNext24Hours.time}}</tr>
-<tr><td>&nbsp;</td></tr>
 <tr><th>Average Study Time per day:</th><td><span title="Short term average for calculation of new card mode">{{studyTime}}</span>/<span title="longer term historic average">{{averageStudyTime}}</span></td></tr>
 <tr><th>Average New Cards per day:</th><td>{{averageNewCards}}</td></tr>
 <tr><th>New Cards Past 24 Hours:</th><td>{{newCardsSeen}}</td></tr>
@@ -47,12 +46,18 @@ title="reviews before next new card">{{statsNext24Hours.reviewsToNextNew}}</span
 </div>
 </div>
 
-<script src="/js/plotly-latest.min.js" charset="utf-8"></script>
+<script src="/js/plotly-2.29.1.min.js" charset="utf-8"></script>
 <script>
   let chart1 = document.getElementById('chart1');
   Plotly.newPlot(chart1,
     [ {{{chart1Data}}} ], {
-      margin: {t: 0},
+      autosize: true,
+      margin: {
+        t: 20,
+        b: 35,
+        l: 40,
+        r: 10
+      },
       yaxis: { title: 'minutes' },
       xaxis: { title: 'hour' }
     }

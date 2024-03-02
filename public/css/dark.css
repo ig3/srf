@@ -61,7 +61,7 @@ audio {
   height: 24px;
 }
 .chart {
-  height: 250px;
+  height: 220px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -76,6 +76,10 @@ a:visited {
 
 button {
   background-color: darkgray;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 a.default_action button {

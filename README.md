@@ -4477,3 +4477,7 @@ Decrease sensitivity to average study time to range 90% to 110%
 
 ### 6.0.8 - 20240228
  * Update dependencies
+
+### 6.0.9 - WIP
+ * Update plotly
+ * Revise plot layouts

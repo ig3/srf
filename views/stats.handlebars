@@ -47,9 +47,15 @@
   if (cardViewsPerDay) {
     Plotly.newPlot(cardViewsPerDay,
       [ {{{json charts.chartCardViewsPerDay}}} ], {
-        margin: {t: 0},
-        yaxis: { title: 'reviews' },
-        xaxis: { title: 'date' }
+        autosize: true,
+        margin: {
+          t: 10,
+          b: 10,
+          l: 10,
+          r: 10
+        },
+        yaxis: { title: 'reviews', automargin: true },
+        xaxis: { title: 'date', automargin: true }
       }
     );
   }
@@ -58,9 +64,15 @@
   if (minutesStudiedPerDay) {
     Plotly.newPlot(minutesStudiedPerDay,
       [ {{{json charts.chartMinutesStudiedPerDay}}} ], {
-        margin: {t: 0},
-        yaxis: { title: 'min' },
-        xaxis: { title: 'date' }
+        autosize: true,
+        margin: {
+          t: 10,
+          b: 10,
+          l: 10,
+          r: 10
+        },
+        yaxis: { title: 'min', automargin: true },
+        xaxis: { title: 'date', automargin: true }
       }
     );
   }
@@ -69,9 +81,15 @@
   if (percentCorrect) {
     Plotly.newPlot(percentCorrect,
       [ {{{json charts.chartPercentCorrect}}} ], {
-        margin: {t: 0},
-        yaxis: { title: 'percent' },
-        xaxis: { title: 'date' }
+        autosize: true,
+        margin: {
+          t: 10,
+          b: 10,
+          l: 10,
+          r: 10
+        },
+        yaxis: { title: 'percent', automargin: true },
+        xaxis: { title: 'date', automargin: true }
       }
     );
   }
@@ -80,9 +98,15 @@
   if (newCardsPerDay) {
     Plotly.newPlot(newCardsPerDay ,
       [ {{{json charts.chartNewCardsPerDay}}} ], {
-        margin: {t: 0},
-        yaxis: { title: 'cards' },
-        xaxis: { title: 'date' }
+        autosize: true,
+        margin: {
+          t: 10,
+          b: 10,
+          l: 10,
+          r: 10
+        },
+        yaxis: { title: 'cards', automargin: true },
+        xaxis: { title: 'date', automargin: true }
       }
     );
   }
@@ -91,9 +115,15 @@
   if (cardsDuePerDay) {
     Plotly.newPlot(cardsDuePerDay,
       [ {{{json charts.chartCardsDuePerDay}}} ], {
-        margin: {t: 0},
-        yaxis: { title: 'cards' },
-        xaxis: { title: 'day' }
+        autosize: true,
+        margin: {
+          t: 10,
+          b: 10,
+          l: 10,
+          r: 10
+        },
+        yaxis: { title: 'cards', automargin: true },
+        xaxis: { title: 'day', automargin: true }
       }
     );
   }
@@ -112,9 +142,15 @@
   if (cardsPerInterval) {
     Plotly.newPlot(cardsPerInterval,
       intervalData, {
-        margin: {t: 0},
-        yaxis: { title: 'cards' },
-        xaxis: { title: 'days' },
+        autosize: true,
+        margin: {
+          t: 10,
+          b: 10,
+          l: 10,
+          r: 10
+        },
+        yaxis: { title: 'cards', automargin: true },
+        xaxis: { title: 'days', automargin: true },
         legend: {
           orientation: 'h',
           x: 0.2,
@@ -162,17 +198,25 @@
   if (matured) {
     Plotly.newPlot(matured,
       chart6Data, {
-        margin: {t: 0},
-        xaxis: { title: 'date' },
+        autosize: true,
+        margin: {
+          t: 10,
+          b: 10,
+          l: 10,
+          r: 10
+        },
+        xaxis: { title: 'date', automargin: true },
         yaxis: {
           title: 'matured, lapsed, net (cards)',
-          range: [ r1min, r1max ]
+          range: [ r1min, r1max ],
+          automargin: true
         },
         yaxis2: {
           title: 'cumulative (cards)',
           overlaying: 'y',
           side: 'right',
-          range: [ r2min, r2max ]
+          range: [ r2min, r2max ],
+          automargin: true
         },
         legend: {
           orientation: 'h',
