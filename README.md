@@ -1,10 +1,18 @@
 # srf
-Web server providing
-[Spaced Repetition](https://en.wikipedia.org/wiki/Spaced_repetition) Flashcards,
+`srf` is a web server providing
+[Spaced Repetition](https://en.wikipedia.org/wiki/Spaced_repetition)
+[Flashcards](https://en.wikipedia.org/wiki/Flashcard),
 based loosely on [Anki](https://github.com/ankitects/anki).
 
-## Installation
+It runs on
+[node](https://duckduckgo.com/?t=ftsa&q=nodejs&ia=web)
+with a local
+[sqlite](https://www.sqlite.org/index.html)
+database.
+All resources being local, it can run while offline.
 
+
+## Installation
 ```
 $ npm install -g @ig3/srf
 ```
