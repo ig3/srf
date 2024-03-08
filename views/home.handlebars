@@ -49,8 +49,10 @@ title="reviews before next new card">{{statsNext24Hours.reviewsToNextNew}}</span
 <script src="/js/plotly-2.29.1.min.js" charset="utf-8"></script>
 <script>
   let chart1 = document.getElementById('chart1');
+  const chart1Data = {{{chart1Data}}};
+  chart1Data.hovertemplate = '%{y}<extra></extra>';
   Plotly.newPlot(chart1,
-    [ {{{chart1Data}}} ], {
+    [ chart1Data ], {
       autosize: true,
       margin: {
         t: 20,
