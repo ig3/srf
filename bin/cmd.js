@@ -350,7 +350,10 @@ function runServer (opts, args) {
     const cardid = parseInt(req.params.id);
     const card = srf.getCard(cardid);
     if (card) {
-      const cardStartTime = Math.floor(Date.now() / 1000);
+      const now = Math.floor(Date.now() / 1000);
+      const cardStartTime = now;
+      const timeCardLastSeen = srf.getTimeCardLastSeen(cardid);
+      const timeSinceLastReview = timeCardLastSeen ? now - timeCardLastSeen : 0;
       const fields = srf.getFields(card.fieldsetid);
       const template = srf.getTemplate(card.templateid);
       card.template = template;
@@ -370,6 +373,7 @@ function runServer (opts, args) {
       );
       res.render('front', {
         card: card,
+        timeSinceLastReview: srf.formatSeconds(timeSinceLastReview),
         interval: srf.formatSeconds(card.interval),
         front: card.front,
         template: template,
@@ -392,6 +396,9 @@ function runServer (opts, args) {
     const cardid = parseInt(req.params.id);
     const card = srf.getCard(cardid);
     if (card) {
+      const now = Math.floor(Date.now() / 1000);
+      const timeCardLastSeen = srf.getTimeCardLastSeen(cardid);
+      const timeSinceLastReview = timeCardLastSeen ? now - timeCardLastSeen : 0;
       const fields = srf.getFields(card.fieldsetid);
       const template = srf.getTemplate(card.templateid);
       card.template = template;
@@ -416,6 +423,7 @@ function runServer (opts, args) {
       );
       res.render('back', {
         card: card,
+        timeSinceLastReview: srf.formatSeconds(timeSinceLastReview),
         interval: srf.formatSeconds(card.interval),
         back: card.back,
         template: card.template,

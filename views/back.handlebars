@@ -4,7 +4,9 @@
 {{{back}}}
 </div>
 <div class="buttons">
-<span style="font-size: 15px">({{card.factor}} {{interval}})</span>
+<span style="font-size: 15px">(<span title="card factor">{{card.factor}}</span>
+<span title="time since last review">{{timeSinceLastReview}}</span>
+<span title="card interval">{{interval}}</span>)</span>
 <button onclick="review('fail')" class="shortcut_j">Fail ({{intervals.fail}})</button>
 <button onclick="review('hard')" class="shortcut_k">Hard ({{intervals.hard}})</button>
 <button onclick="review('good')" class="shortcut_l">Good ({{intervals.good}})</button>
