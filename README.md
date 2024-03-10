@@ -4483,3 +4483,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Revise plot layouts
  * Fix hover text on home page plot
  * Add time since last review to front and back
+ * Update dependencies

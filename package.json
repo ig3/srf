@@ -29,8 +29,8 @@
     "@ig3/config": "^0.2.2",
     "@ig3/srf-scheduler": "^2.0.2",
     "better-sqlite3": "^9.4.3",
-    "csv-parse": "^5.5.4",
-    "express": "^4.18.2",
+    "csv-parse": "^5.5.5",
+    "express": "^4.18.3",
     "express-handlebars": "^7.1.2",
     "getopts": "^2.3.0",
     "handlebars-form-helper": "^1.0.4",
@@ -41,14 +41,14 @@
     "timezonecomplete": "^5.12.4",
     "tzdata": "^1.0.40",
     "uuid": "^9.0.1",
-    "yauzl": "^3.1.1"
+    "yauzl": "^3.1.2"
   },
   "devDependencies": {
     "@ig3/eslint-config-entrain": "^3.0.1",
     "c8": "^9.1.0",
     "multi-tape": "^1.7.0",
     "tape": "^5.7.5",
-    "tmp": "^0.2.1"
+    "tmp": "^0.2.3"
   },
   "eslintConfig": {
     "extends": "@ig3/eslint-config-entrain",
