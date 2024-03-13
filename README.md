@@ -1332,8 +1332,9 @@ factor. See 'scheduler' below for details.
 
 default: 1.5
 
-After responding 'Easy' to a review, the new interval is the interval for a
-'Good' response multiplied by this factor.
+After responding 'Easy' to a review, the new interval is the actual
+interval since last review (i.e. time since last review, which may be more
+than the scheduled interval) multiplied by this factor and the card factor.
 
 #### weightFail
 
@@ -1650,14 +1651,14 @@ quickly (ease factors closer to 2 or more).
 For cards that you remember very well: the time since the last review was
 too short and you don't want to see the card again so soon.
 
-The interval is changed by a factor that is 1.5 times the factor that would
-have been used if the answer had been Good, with a minimum interval of 1
-day and maximum of 1 year.
+The new interval is the time since last review multiplied by
+config.easyFactor (default: 1.5)  and the card factor (variable depending
+on review history), with a minimum interval of 1 day and maximum of 1
+year..
 
-For example, if the interval since the last review was 1 day and for Good
-the factor would have been 2, resulting in a new interval of 2 days, the
-factor for Easy would be 3 (2 * 1.5), resulting in a new interval of 3
-days.
+For example, if the time since the last review was 1 day and the card
+factor was 1 then the new interval would be 1.5 days. This would be true
+even if the previously scheduled interval was less than 1 day.
 
 ### Determining which card is to be studied next
 
