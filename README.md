@@ -4484,3 +4484,6 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Fix hover text on home page plot
  * Add time since last review to front and back
  * Update dependencies
+
+### 6.0.10 - WIP
+ * Update dependencies
