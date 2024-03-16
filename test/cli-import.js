@@ -42,7 +42,7 @@ t.test('cli import', t => {
       console.log('stdout: ' + stdout);
       console.log('stderr: ' + stderr);
       if (err) {
-        t.equal(stderr, 'nosuchfile: File not found.\n', 'check stderr');
+        t.equal(stderr, 'File not found: nosuchfile\n', 'check stderr');
         return t.end();
       }
       t.fail('should not succeed');
