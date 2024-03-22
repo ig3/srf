@@ -4486,7 +4486,7 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add time since last review to front and back
  * Update dependencies
 
-### 6.0.10 - WIP
+### 6.0.10 - 20240323
  * Update dependencies
  * Move various functions from bin/cmd.js to the library
  * Allow scheduler to be provided as an option
