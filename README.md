@@ -4490,3 +4490,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Update dependencies
  * Move various functions from bin/cmd.js to the library
  * Allow scheduler to be provided as an option
+ * Make scheduler an instance variable
