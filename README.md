@@ -729,8 +729,8 @@ once since the start of study.
 
 #### Cards by Stage
 
-The stage is determined by card interval. The stages are: unseen, new,
-learning, mature and mastered.
+The stage is determined by card interval. The stages are: Unseen, New,
+Learning, Mature and Mastered.
 
 #### Percent Correct
 
@@ -760,11 +760,18 @@ This is the average time for each review of a card. It includes small gaps
 between reviews. It is the total study time for the day divided by the
 number of reviews.
 
-#### Cards reviewed today
+#### Cards today
 
-This is the total number of distinct cards viewed today. This is a count of
-cards not reviews. A card might be reviewed multiple times in a day but
-this counts the cards, not the reviews.
+This is the total number of distinct cards viewed today and the number of
+cards due later in the same day. The day is the calendar day in local time.
+
+The total number of cards viewed today is a count of cards not reviews. A
+card might be reviewed multiple times in a day but this counts the cards,
+not the reviews.
+
+The cards due later in the same day are those cards scheduled for review
+before the end of the day in local time. This includes cards that are
+currently due or overdue.
 
 #### Cards due later today
 
@@ -4491,3 +4498,6 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Move various functions from bin/cmd.js to the library
  * Allow scheduler to be provided as an option
  * Make scheduler an instance variable
+
+### 6.0.11 - WIP
+ * Revise stats page
