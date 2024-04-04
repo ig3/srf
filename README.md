@@ -69,9 +69,9 @@ The home page shows statistics of your study:
 
 The status at the top right includes:
  * Traffic lights for new cards:
-   * Green: present new cards if there are no due cards
-   * Yellow: present new cards between due cards
-   * Red: do not present new cards
+   * Green (go): new cards between due cards and if there are no due cards
+   * Yellow (slow): new cards between due cards
+   * Red (stop): no new cards
  * Cards due
  * New cards in the past 24 hours
  * Minutes studied in the past 24 hours
@@ -720,7 +720,9 @@ button. It shows some basic statistics about study performance.
 
 #### New cards per day
 
-This is the average number of new cards per day since the start of study.
+This is the number of new cards viewed in the current day,
+short term (past 7 days) average of new cards per day and
+long term (since the beginning of study) average of new cards per day.
 
 #### Cards seen
 
@@ -771,21 +773,20 @@ not the reviews.
 
 The cards due later in the same day are those cards scheduled for review
 before the end of the day in local time. This includes cards that are
-currently due or overdue.
+currently due or overdue. This does not included cards that will be
+rescheduled to be viewed again later in the same day.
 
-#### Cards due later today
+#### Reviews per new card
 
-This is the number of cards due to be reviewed in the remainder of the day.
-
-#### New cards today
-
-The number of new cards seen in the past 24 hours.
+This is the number of reviews to be completed before the next new card will
+be presented, counting down at each review, and the current minimum number
+of cards to be reviewed between each new card.
 
 #### Study time today
 
 This is the total time spent studying today.
 
-#### Average time per day
+#### Average study time per day
 
 This is average daily study time, averaged over the past week (actual study
 time) and coming week (estimated based on cards due and recent
