@@ -4502,3 +4502,4 @@ Decrease sensitivity to average study time to range 90% to 110%
 
 ### 6.0.11 - WIP
  * Revise stats page
+ * Reorder the card metrics before the buttons on front and back of cards

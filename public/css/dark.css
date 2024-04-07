@@ -39,6 +39,9 @@ br {
 #content .status {
   padding: 20px;
 }
+#card-metrics {
+  font-size: 15px;
+}
 .buttons {
   padding-top: 5px;
   padding-bottom: 10px;
