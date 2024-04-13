@@ -20,12 +20,15 @@ title="reviews before next new card">{{statsNext24Hours.reviewsToNextNew}}</span
 <tbody>
 <tr><th>Past 24 Hours:</th><td>{{statsPast24Hours.count}}</td><td>{{statsPast24Hours.time}}</tr>
 <tr><th>Next 24 Hours:</th><td>{{statsNext24Hours.count}}</td><td>{{statsNext24Hours.time}}</tr>
-<tr><th>Average Study Time per day:</th><td><span title="Short term average for calculation of new card mode">{{studyTime}}</span>/<span title="longer term historic average">{{averageStudyTime}}</span></td></tr>
-<tr><th>Average New Cards per day:</th><td>{{averageNewCards}}</td></tr>
-<tr><th>New Cards Past 24 Hours:</th><td>{{newCardsSeen}}</td></tr>
-<tr><th>Percent correct:</th><td>{{percentCorrect}}%</td></tr>
-<tr><th>Cards due/overdue:</th><td>{{dueNow}}/{{overdue}}</td></tr>
-<tr><th>Time to earliest due card:</th><td>{{timeToNextDue}}</td></tr>
+<tr><th>Study Time per day:</th><td colspan=2><span
+title="forward looking average for new card mode">{{studyTime}}</span> / <span
+title="short term historic average">{{averageStudyTime}}</span></td></tr>
+<tr><th>New Cards Per Day</th><td colspan=2><span
+title="past 24 hours">{{newCardsSeen}}</span> / <span
+title="short term historic average">{{averageNewCards}}</span></td></tr>
+<tr><th>Percent correct:</th><td colspan=2>{{percentCorrect}}%</td></tr>
+<tr><th>Cards due:</th><td colspan=2><span title="due">{{dueNow}}</span> / <span title="overdue">{{overdue}}</span></td></tr>
+<tr><th>Time to earliest due card:</th><td colspan=2>{{timeToNextDue}}</td></tr>
 </tbody>
 </table>
 {{#if studyNow}}
