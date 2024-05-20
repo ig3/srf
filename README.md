@@ -4503,7 +4503,7 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Allow scheduler to be provided as an option
  * Make scheduler an instance variable
 
-### 6.0.11 - WIP
+### 6.0.11 - 20240521
  * Revise stats page
  * Reorder the card metrics before the buttons on front and back of cards
  * Revise home page layout
