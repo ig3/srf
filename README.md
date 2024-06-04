@@ -2058,7 +2058,21 @@ The fields / statistics are:
  * mature - the number of mature cards
  * percentcorrect - the percent of 'correct' reviews
 
-This table is updated daily by scanning revlog. 
+This table is updated after each review.
+
+Missing historic data is added (e.g. after several days without study or if
+the dailystats table has been cleared) but there may be errors in the data
+produced for historic dates because the record of past data and changes is
+incomplete. In particular, there is no record of when cards are reset (i.e.
+interval reset to 0) or deleted (e.g. when fieldsets or templatesets are
+edited). Therefore, it is not possible to determine what cards existed or
+were in progress of being studied on a given day. All that is known is:
+what cards exist and have an interval > 0 currently and what cards were
+studied on a given day. This will not be problematic unless the dailystats
+table is cleared and all data is generated again from the revlog. In this
+case, counts of mature cards will tend to be a bit lower than actual for
+historic dates, due to subsequent card deletions and resets. Therefore, it
+is best not to clear the dailystats table.
 
 ### fieldset
 A fieldset associates a set of field values with a templateset.
@@ -4508,3 +4522,6 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Reorder the card metrics before the buttons on front and back of cards
  * Revise home page layout
  * Update dependencies
+
+### 6.0.12 - WIP
+ * Change calculation of mature cards for daily stats
