@@ -4525,3 +4525,4 @@ Decrease sensitivity to average study time to range 90% to 110%
 
 ### 6.0.12 - WIP
  * Change calculation of mature cards for daily stats
+ * Fix getCountCardsStage4 to count cards with interval > maxInterval
