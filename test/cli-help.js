@@ -16,7 +16,7 @@ t.test('cli --help', t => {
       }
       // eslint-disable-next-line
       console.log('stdout: ', stdout);
-      t.ok(stdout.startsWith('usage:'), 'produces usage message');
+      t.ok(stdout.startsWith('Usage:'), 'produces usage message');
       t.end();
     });
   });

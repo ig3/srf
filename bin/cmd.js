@@ -102,7 +102,7 @@ if (options.db) {
 }
 
 function usage (optionsConfig) {
-  let name = path.basename(process.argv[1]);
+  const name = path.basename(process.argv[1]);
   let usage = 'Usage: ' + name + ' [OPTIONS]\n';
   let maxOptionLength = 0;
   Object.keys(optionsConfig)
