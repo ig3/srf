@@ -32,7 +32,6 @@
     "csv-parse": "^5.5.6",
     "express": "^4.19.2",
     "express-handlebars": "^7.1.2",
-    "getopts": "^2.3.0",
     "handlebars-form-helper": "^1.0.4",
     "json5": "^2.2.3",
     "md5": "^2.3.0",

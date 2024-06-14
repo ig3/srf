@@ -3,51 +3,150 @@
 
 const fs = require('fs');
 const path = require('path');
-const getopts = require('getopts');
 
-const options = getopts(process.argv.slice(2), {
-  string: ['port', 'directory', 'database', 'htdocs', 'views', 'media', 'config'],
-  alias: {
-    help: ['h'],
-    port: ['p'],
-    directory: ['dir'],
-    database: ['db'],
-    config: ['c'],
-    verbose: ['v']
+const optionsConfig = {
+  help: {
+    type: 'boolean',
+    short: 'h',
+    description: 'print usage'
   },
-  default: {
-    directory: path.join(process.env.HOME, '.local', 'share', 'srf'),
-    port: '8000',
-    database: 'srf.db',
-    media: 'media',
-    htdocs: 'htdocs',
-    views: 'views',
-    config: 'config.json'
+  port: {
+    type: 'string',
+    short: 'p',
+    default: '8000',
+    description: 'The port the server will listen on'
   },
-  stopEarly: true
-});
+  dir: {
+    type: 'string',
+    description: 'Alias for directory'
+  },
+  directory: {
+    type: 'string',
+    short: 'd',
+    default: path.join(process.env.HOME, '.local', 'share', 'srf'),
+    description: 'The directory containing the srf data'
+  },
+  db: {
+    type: 'string',
+    description: 'The name of the srf database file'
+  },
+  database: {
+    type: 'string',
+    short: 'D',
+    default: 'srf.db',
+    description: 'The name of the srf database file'
+  },
+  config: {
+    type: 'string',
+    short: 'c',
+    default: 'config.json',
+    description: 'The name of the configuraiton file'
+  },
+  verbose: {
+    type: 'boolean',
+    short: 'v',
+    description: 'Produce verbose output'
+  },
+  media: {
+    type: 'string',
+    default: 'media',
+    description: 'The name of the sub-directory containing media files'
+  },
+  htdocs: {
+    type: 'string',
+    default: 'htdocs',
+    description: 'The name of the sub-directory containing static content overrides'
+  },
+  views: {
+    type: 'string',
+    default: 'views',
+    description: 'The name of the sub-directory containing view overrides'
+  }
+};
+
+const { values: options, positionals } = ((optionsConfig) => {
+  try {
+    const parseArgs = require('node:util').parseArgs;
+    return parseArgs({
+      options: optionsConfig,
+      allowPositionals: true
+    });
+  } catch (e) {
+    console.log('failed with error:');
+    console.log('    ' + e.code);
+    console.log('    ' + e.message);
+    console.log(usage(optionsConfig));
+    showUsage();
+    process.exit(1);
+  }
+})(optionsConfig);
+
+if (options.dir) {
+  console.warning('Option dir is deprecated');
+  if (options.directory === optionsConfig.directory.default) {
+    options.directory = options.dir;
+  } else if (options.dir !== options.directory) {
+    console.error('Use one of option dir or directory, not both');
+    process.exit(1);
+  }
+}
+
+if (options.db) {
+  console.warning('Option db is deprecated');
+  if (options.database === optionsConfig.database.default) {
+    options.database = options.db;
+  } else if (options.db !== options.database) {
+    console.error('Use one of option db or database, not both');
+    process.exit(1);
+  }
+}
+
+function usage (optionsConfig) {
+  let name = path.basename(process.argv[1]);
+  let usage = 'Usage: ' + name + ' [OPTIONS]\n';
+  let maxOptionLength = 0;
+  Object.keys(optionsConfig)
+  .forEach(key => {
+    if (key.length > maxOptionLength) maxOptionLength = key.length;
+  });
+  Object.keys(optionsConfig)
+  .forEach(key => {
+    const opt = optionsConfig[key];
+    let option = '  --' + key + (opt.type === 'string' ? '=ARG' : '[=BOOL]') +
+      (opt.multiple ? '*' : '');
+    if (opt.shart) {
+      option += ',';
+      option = option.padEnd(maxOptionLength + 12, ' ');
+      option += '-' + opt.short;
+    }
+    if (opt.default) {
+      option = option.padEnd(maxOptionLength + 16, ' ');
+      option += '(default: ' +
+        (opt.multiple ? opt.default.join(',') : opt.default) + ')';
+    }
+    if (opt.description) {
+      option += '\n      ' + opt.description;
+    }
+    usage += option + '\n\n';
+  });
+  return usage;
+}
 
 if (options.verbose) console.log('opts: ', options);
 
 if (options.help) {
   showUsage();
 } else {
-  const [command, subargv] = options._;
-
-  // Clean up the opts object
-  delete options.directory;
-  delete options.db;
-  delete options.m;
-  delete options.c;
+  const [command, subargv] = positionals;
 
   // Make paths absolute
   const root = path.join(process.env.HOME, '.local', 'share', 'srf');
-  options.dir = resolveFullPath(root, options.dir);
-  options.config = resolveFullPath(options.dir, options.config);
-  options.database = resolveFullPath(options.dir, options.database);
-  options.media = resolveFullPath(options.dir, options.media);
-  options.htdocs = resolveFullPath(options.dir, options.htdocs);
-  options.views = resolveFullPath(options.dir, options.views);
+  options.directory = resolveFullPath(root, options.directory);
+  options.config = resolveFullPath(options.directory, options.config);
+  options.database = resolveFullPath(options.directory, options.database);
+  options.media = resolveFullPath(options.directory, options.media);
+  options.htdocs = resolveFullPath(options.directory, options.htdocs);
+  options.views = resolveFullPath(options.directory, options.views);
 
   // Make sure directories for media and database exist
   const databaseDir = path.dirname(options.database);
@@ -59,7 +158,7 @@ if (options.help) {
   });
 
   const srf = require('../lib/srf')({
-    dir: options.dir,
+    directory: options.directory,
     database: options.database,
     media: options.media,
     config: options.config
@@ -99,7 +198,7 @@ if (options.help) {
 }
 
 function showUsage () {
-  console.log('usage:');
+  console.log('Usage:');
   console.log('  ' +
     path.basename(process.argv[1]) +
     ' --help');
