@@ -4529,3 +4529,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Fix getCountCardsStage0 to count cards with interval < 0
  * Reduce goodMinInterval to 2 minutes
  * Remove dependency getopts in favour of node utils.parseArgs
+ * Update dependencies
