@@ -956,6 +956,14 @@ This directory contains overrides for the static content of the srf server.
  * js/plotly-latest.min.js
  * js/sorttable.js
 
+#### --scheduler
+
+Specify the schedulre plugin to load. The argument will be passed to
+require() to load the plugin, so it must be something that can be required.
+Details will depend on how srf and the plugin are installed but the name of
+a globally installed package or the full path to the scheduler module
+should both work.
+
 #### --views
 Set the path of the views directory.
 
@@ -1523,11 +1531,13 @@ By default, the interval limit is 1 year (config.maxInterval).
 
 ## Scheduler
 
-The scheduler is provided by a separate package:
+The scheduler is provided by a separate package.
+
+The default scheduler is
 [@ig3/srf-scheduler](https://www.npmjs.com/package/@ig3/srf-scheduler).
 
-There is not yet any provision for loading an alternate scheduler, but it
-would not be difficult to support this.
+The scheduler can be specified by command line argument `--scheduler`, the
+value of which is the ID or full path of the scheduler module to be loaded.
 
 ### @ig3/srf-scheduler
 
@@ -4530,3 +4540,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Reduce goodMinInterval to 2 minutes
  * Remove dependency getopts in favour of node utils.parseArgs
  * Update dependencies
+ * Add command line argument to specify the scheduler plugin

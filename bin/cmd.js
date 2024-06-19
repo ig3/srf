@@ -42,6 +42,12 @@ const optionsConfig = {
     default: 'config.json',
     description: 'The name of the configuraiton file'
   },
+  scheduler: {
+    type: 'string',
+    short: 's',
+    default: '@ig3/srf-scheduler',
+    description: 'The scheduler plugin to load'
+  },
   verbose: {
     type: 'boolean',
     short: 'v',
@@ -161,7 +167,8 @@ if (options.help) {
     directory: options.directory,
     database: options.database,
     media: options.media,
-    config: options.config
+    config: options.config,
+    scheduler: options.scheduler
   });
 
   ['SIGTERM', 'SIGINT']
