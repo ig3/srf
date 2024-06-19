@@ -8,66 +8,66 @@ const optionsConfig = {
   help: {
     type: 'boolean',
     short: 'h',
-    description: 'print usage'
+    description: 'print usage',
   },
   port: {
     type: 'string',
     short: 'p',
     default: '8000',
-    description: 'The port the server will listen on'
+    description: 'The port the server will listen on',
   },
   dir: {
     type: 'string',
-    description: 'Alias for directory'
+    description: 'Alias for directory',
   },
   directory: {
     type: 'string',
     short: 'd',
     default: path.join(process.env.HOME, '.local', 'share', 'srf'),
-    description: 'The directory containing the srf data'
+    description: 'The directory containing the srf data',
   },
   db: {
     type: 'string',
-    description: 'The name of the srf database file'
+    description: 'The name of the srf database file',
   },
   database: {
     type: 'string',
     short: 'D',
     default: 'srf.db',
-    description: 'The name of the srf database file'
+    description: 'The name of the srf database file',
   },
   config: {
     type: 'string',
     short: 'c',
     default: 'config.json',
-    description: 'The name of the configuraiton file'
+    description: 'The name of the configuraiton file',
   },
   scheduler: {
     type: 'string',
     short: 's',
     default: '@ig3/srf-scheduler',
-    description: 'The scheduler plugin to load'
+    description: 'The scheduler plugin to load',
   },
   verbose: {
     type: 'boolean',
     short: 'v',
-    description: 'Produce verbose output'
+    description: 'Produce verbose output',
   },
   media: {
     type: 'string',
     default: 'media',
-    description: 'The name of the sub-directory containing media files'
+    description: 'The name of the sub-directory containing media files',
   },
   htdocs: {
     type: 'string',
     default: 'htdocs',
-    description: 'The name of the sub-directory containing static content overrides'
+    description: 'The name of the sub-directory containing static content overrides',
   },
   views: {
     type: 'string',
     default: 'views',
-    description: 'The name of the sub-directory containing view overrides'
-  }
+    description: 'The name of the sub-directory containing view overrides',
+  },
 };
 
 const { values: options, positionals } = ((optionsConfig) => {
@@ -75,7 +75,7 @@ const { values: options, positionals } = ((optionsConfig) => {
     const parseArgs = require('node:util').parseArgs;
     return parseArgs({
       options: optionsConfig,
-      allowPositionals: true
+      allowPositionals: true,
     });
   } catch (e) {
     console.log('failed with error:');
@@ -168,7 +168,7 @@ if (options.help) {
     database: options.database,
     media: options.media,
     config: options.config,
-    scheduler: options.scheduler
+    scheduler: options.scheduler,
   });
 
   ['SIGTERM', 'SIGINT']

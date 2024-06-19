@@ -37,23 +37,17 @@
     "md5": "^2.3.0",
     "mustache": "^4.2.0",
     "serve-favicon": "^2.5.0",
-    "timezonecomplete": "^5.13.0",
+    "timezonecomplete": "^5.13.1",
     "tzdata": "^1.0.40",
     "uuid": "^10.0.0",
     "yauzl": "^3.1.3"
   },
   "devDependencies": {
-    "@ig3/eslint-config-entrain": "^3.0.1",
+    "@ig3/eslint-config-entrain": "^4.0.1",
     "c8": "^10.1.2",
     "multi-tape": "^1.7.0",
     "tape": "^5.8.1",
     "tmp": "^0.2.3"
-  },
-  "eslintConfig": {
-    "extends": "@ig3/eslint-config-entrain",
-    "ignorePatterns": [
-      "public/js/**"
-    ]
   },
   "files": [
     "sql/*.sql",

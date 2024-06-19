@@ -14,7 +14,6 @@ t.test('cli --help', t => {
         t.fail('should not fail');
         return t.end();
       }
-      // eslint-disable-next-line
       console.log('stdout: ', stdout);
       t.ok(stdout.startsWith('Usage:'), 'produces usage message');
       t.end();

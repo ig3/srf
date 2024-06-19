@@ -88,7 +88,7 @@ t.test('cli import', t => {
           name: 'Card 1',
           front: '{{Front}}',
           back: '{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}',
-          css: '.card {\n font-familiy: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}'
+          css: '.card {\n font-familiy: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}',
         },
         {
           id: 2,
@@ -96,7 +96,7 @@ t.test('cli import', t => {
           name: 'Card 2',
           front: '{{#Add Reverse}}{{Back}}{{/Add Reverse}}',
           back: '{{FrontSide}}\n\n<hr id=answer>\n\n{{Front}}',
-          css: '.card {\n font-familiy: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}'
+          css: '.card {\n font-familiy: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}',
         },
         {
           id: 3,
@@ -104,7 +104,7 @@ t.test('cli import', t => {
           name: 'Card 1',
           front: '{{Front}}',
           back: '{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}',
-          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n'
+          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n',
         },
         {
           id: 4,
@@ -112,7 +112,7 @@ t.test('cli import', t => {
           name: 'Cloze',
           front: '{{cloze:Text}}',
           back: '{{cloze:Text}}<br>\n{{Back Extra}}',
-          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n\n.cloze {\n font-weight: bold;\n color: blue;\n}\n.nightMode .cloze {\n color: lightblue;\n}\n'
+          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n\n.cloze {\n font-weight: bold;\n color: blue;\n}\n.nightMode .cloze {\n color: lightblue;\n}\n',
         },
         {
           id: 5,
@@ -120,7 +120,7 @@ t.test('cli import', t => {
           name: 'Card 1',
           front: '{{Front}}',
           back: '{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}',
-          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n'
+          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n',
         },
         {
           id: 6,
@@ -128,7 +128,7 @@ t.test('cli import', t => {
           name: 'Card 2',
           front: '{{Back}}',
           back: '{{FrontSide}}\n\n<hr id=answer>\n\n{{Front}}',
-          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n'
+          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n',
         },
         {
           id: 7,
@@ -136,7 +136,7 @@ t.test('cli import', t => {
           name: 'Card 1',
           front: '{{Front}}\n\n{{type:Back}}',
           back: '{{Front}}\n\n<hr id=answer>\n\n{{type:Back}}',
-          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n'
+          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n',
         },
         {
           id: 8,
@@ -144,7 +144,7 @@ t.test('cli import', t => {
           name: 'Card 1',
           front: '{{Front}}',
           back: '{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}',
-          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n'
+          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n',
         },
         {
           id: 9,
@@ -152,8 +152,8 @@ t.test('cli import', t => {
           name: 'Card 2',
           front: '{{#Add Reverse}}{{Back}}{{/Add Reverse}}',
           back: '{{FrontSide}}\n\n<hr id=answer>\n\n{{Front}}',
-          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n'
-        }
+          css: '.card {\n  font-family: arial;\n  font-size: 20px;\n  text-align: center;\n  color: black;\n  background-color: white;\n}\n',
+        },
       ], 'templates load correctly');
 
       const fieldsets = db.prepare('select * from fieldset').all();
@@ -168,120 +168,120 @@ t.test('cli import', t => {
           guid: 'fn~V>3Sf~@',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Nǐ hǎo!","Back":"Hello!","Add Reverse":"y"}',
-          ord: 0
+          ord: 0,
         },
         {
           id: 2,
           guid: 'dvs.e^4_pj',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: "{\"Front\":\"Nǐ jiào shénme míngzi?\",\"Back\":\"What's your name?\",\"Add Reverse\":\"y\"}",
-          ord: 10
+          ord: 10,
         },
         {
           id: 3,
           guid: 'P}<jcJ@M|t',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Wǒ jiào ...","Back":"My name is ...","Add Reverse":"y"}',
-          ord: 20
+          ord: 20,
         },
         {
           id: 4,
           guid: 'b+]Q/7@KJJ',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Xièxie.","Back":"Thank you.","Add Reverse":"y"}',
-          ord: 30
+          ord: 30,
         },
         {
           id: 5,
           guid: 'euPxiY=>{l',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Zàijiàn.","Back":"See you.","Add Reverse":"y"}',
-          ord: 40
+          ord: 40,
         },
         {
           id: 6,
           guid: 'nT<kzW!~88',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Tongue twister:<div>Māmɑ qí mǎ. Mǎ màn. Māmɑ mà mǎ.</div>","Back":"Mum is riding a horse. The horse goes slowly. Mum scolds the horse.<div>[sound:audio1-1exercise2.mp3]</div>","Add Reverse":""}',
-          ord: 50
+          ord: 50,
         },
         {
           id: 7,
           guid: 'QhWp1Kw-4N',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Nǐ shì nǎ guó rén?","Back":"Where are you from?","Add Reverse":"y"}',
-          ord: 60
+          ord: 60,
         },
         {
           id: 8,
           guid: 'dUWn&1<s-i',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Wǒ shì Yīngguórén.","Back":"I am from UK.","Add Reverse":"y"}',
-          ord: 70
+          ord: 70,
         },
         {
           id: 9,
           guid: 'B5n6le}E39',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Wǒ shì Déguórén.","Back":"I am from Germany.","Add Reverse":"y"}',
-          ord: 80
+          ord: 80,
         },
         {
           id: 10,
           guid: 'mB?16(U*0,',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Wǒ shì Fǎguórén.","Back":"I am from France.","Add Reverse":"y"}',
-          ord: 90
+          ord: 90,
         },
         {
           id: 11,
           guid: 'nWTV3g#k8/',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Wǒ shì Měiguórén.","Back":"I am from USA.","Add Reverse":"y"}',
-          ord: 100
+          ord: 100,
         },
         {
           id: 12,
           guid: 'Llc?-8r,+!',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Wǒ shì Rìběnrén.","Back":"I am from Japan.","Add Reverse":"y"}',
-          ord: 110
+          ord: 110,
         },
         {
           id: 13,
           guid: 'y;~-~%:%&g',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Wǒ shì Xìbānyá rén.&nbsp;(?)","Back":"I am from Spain.","Add Reverse":"y"}',
-          ord: 120
+          ord: 120,
         },
         {
           id: 14,
           guid: 'kXQnc=:[0h',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Wǒ shì Yìndù rén.&nbsp;(?)","Back":"I am from India.","Add Reverse":"y"}',
-          ord: 130
+          ord: 130,
         },
         {
           id: 15,
           guid: 'I7O}+SRo9C',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Wǒ shì Zhōngguórén.","Back":"I am from China.","Add Reverse":"y"}',
-          ord: 140
+          ord: 140,
         },
         {
           id: 16,
           guid: 'G5@tMso$X',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"<div>Read aloud: qìchē(car)<span class=\\"Apple-tab-span\\" style=\\"white-space:pre\\"> </span>zìjǐ(self)<span class=\\"Apple-tab-span\\" style=\\"white-space:pre\\"> </span>rìjì(diary)<span class=\\"Apple-tab-span\\" style=\\"white-space:pre\\"> </span>sījī(driver)&nbsp;jìzhě(journalist)<span class=\\"Apple-tab-span\\" style=\\"white-space:pre\\"> </span>chūzūchē(taxi)<span class=\\"Apple-tab-span\\" style=\\"white-space:pre\\"> </span>zìxíngchē(bike)<span class=\\"Apple-tab-span\\" style=\\"white-space:pre\\"> </span>zìzhùcān(buffet)</div>","Back":"[sound:audio1-2exercise3.mp3]","Add Reverse":""}',
-          ord: 150
+          ord: 150,
         },
         {
           id: 17,
           guid: 'r`,)cxjZO>',
           templateset: 'Basic (optional reversed card)-62f40',
           fields: '{"Front":"Tongue twister:&nbsp;Sì shì sì，shí shì shí. Shísì shì shísì，sìshí shì sìshí.","Back":"4 is 4, 10 is 10, 14 is 14, 40 is 40.<div>[sound:audio1-2exercise4.mp3]</div>","Add Reverse":""}',
-          ord: 160
-        }
+          ord: 160,
+        },
       ], 'templates loads correctly');
       const cards = db.prepare('select * from card').all();
       let modifiedOK = true;
@@ -305,7 +305,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 1,
           lapses: 0,
-          ord: 0
+          ord: 0,
         },
         {
           id: 2,
@@ -317,7 +317,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9384
+          ord: 9384,
         },
         {
           id: 3,
@@ -329,7 +329,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 1,
           lapses: 0,
-          ord: 10
+          ord: 10,
         },
         {
           id: 4,
@@ -341,7 +341,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9385
+          ord: 9385,
         },
         {
           id: 5,
@@ -353,7 +353,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 1,
           lapses: 0,
-          ord: 20
+          ord: 20,
         },
         {
           id: 6,
@@ -365,7 +365,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9386
+          ord: 9386,
         },
         {
           id: 7,
@@ -377,7 +377,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 1,
           lapses: 0,
-          ord: 30
+          ord: 30,
         },
         {
           id: 8,
@@ -389,7 +389,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9387
+          ord: 9387,
         },
         {
           id: 9,
@@ -401,7 +401,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 1,
           lapses: 0,
-          ord: 40
+          ord: 40,
         },
         {
           id: 10,
@@ -413,7 +413,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9388
+          ord: 9388,
         },
         {
           id: 11,
@@ -425,7 +425,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9389
+          ord: 9389,
         },
         {
           id: 12,
@@ -437,7 +437,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9390
+          ord: 9390,
         },
         {
           id: 13,
@@ -449,7 +449,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9390
+          ord: 9390,
         },
         {
           id: 14,
@@ -461,7 +461,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9391
+          ord: 9391,
         },
         {
           id: 15,
@@ -473,7 +473,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9391
+          ord: 9391,
         },
         {
           id: 16,
@@ -485,7 +485,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9392
+          ord: 9392,
         },
         {
           id: 17,
@@ -497,7 +497,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9392
+          ord: 9392,
         },
         {
           id: 18,
@@ -509,7 +509,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9393
+          ord: 9393,
         },
         {
           id: 19,
@@ -521,7 +521,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9393
+          ord: 9393,
         },
         {
           id: 20,
@@ -533,7 +533,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9394
+          ord: 9394,
         },
         {
           id: 21,
@@ -545,7 +545,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9394
+          ord: 9394,
         },
         {
           id: 22,
@@ -557,7 +557,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9395
+          ord: 9395,
         },
         {
           id: 23,
@@ -569,7 +569,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9395
+          ord: 9395,
         },
         {
           id: 24,
@@ -581,7 +581,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9396
+          ord: 9396,
         },
         {
           id: 25,
@@ -593,7 +593,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9396
+          ord: 9396,
         },
         {
           id: 26,
@@ -605,7 +605,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9397
+          ord: 9397,
         },
         {
           id: 27,
@@ -617,7 +617,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9397
+          ord: 9397,
         },
         {
           id: 28,
@@ -629,7 +629,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9398
+          ord: 9398,
         },
         {
           id: 29,
@@ -641,7 +641,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9398
+          ord: 9398,
         },
         {
           id: 30,
@@ -653,7 +653,7 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9399
+          ord: 9399,
         },
         {
           id: 31,
@@ -665,8 +665,8 @@ t.test('cli import', t => {
           factor: 2,
           views: 0,
           lapses: 0,
-          ord: 9400
-        }
+          ord: 9400,
+        },
       ], 'cards load correctly');
 
       const revlogs = db.prepare('select * from revlog').all();
@@ -681,7 +681,7 @@ t.test('cli import', t => {
           factor: 2.5,
           viewtime: 12,
           studytime: 12,
-          lapses: 0
+          lapses: 0,
         },
         {
           id: 1629059013936,
@@ -693,7 +693,7 @@ t.test('cli import', t => {
           factor: 2.5,
           viewtime: 7,
           studytime: 7,
-          lapses: 0
+          lapses: 0,
         },
         {
           id: 1629059023099,
@@ -705,7 +705,7 @@ t.test('cli import', t => {
           factor: 0,
           viewtime: 9,
           studytime: 9,
-          lapses: 0
+          lapses: 0,
         },
         {
           id: 1629059027405,
@@ -717,7 +717,7 @@ t.test('cli import', t => {
           factor: 0,
           viewtime: 4,
           studytime: 4,
-          lapses: 0
+          lapses: 0,
         },
         {
           id: 1629059039045,
@@ -729,8 +729,8 @@ t.test('cli import', t => {
           factor: 0,
           viewtime: 11,
           studytime: 11,
-          lapses: 0
-        }
+          lapses: 0,
+        },
       ], 'revlog loads correctly');
 
       db.close();
@@ -828,7 +828,7 @@ t.test('cli import', t => {
           name: 'Card 1',
           front: '{{Front}}',
           back: '{{Back}}',
-          css: '.card {\n  Background-color: red;\n}'
+          css: '.card {\n  Background-color: red;\n}',
         },
         {
           id: 2,
@@ -836,8 +836,8 @@ t.test('cli import', t => {
           name: 'Card 2',
           front: '{{Back}}',
           back: '{{Front}}',
-          css: '.card {\n  Background-color: red;\n}'
-        }
+          css: '.card {\n  Background-color: red;\n}',
+        },
       ], 'templates loaded successfully');
       db.close();
       const cmd =
@@ -862,7 +862,7 @@ t.test('cli import', t => {
             name: 'Card 1',
             front: '{{Front}}',
             back: '{{Back}}',
-            css: '.card {\n  Background-color: red;\n}'
+            css: '.card {\n  Background-color: red;\n}',
           },
           {
             id: 2,
@@ -870,8 +870,8 @@ t.test('cli import', t => {
             name: 'Card 2',
             front: '{{Back}}',
             back: '{{Front}}',
-            css: '.card {\n  Background-color: red;\n}'
-          }
+            css: '.card {\n  Background-color: red;\n}',
+          },
         ], 'templates loaded successfully');
         const fieldsets = db.prepare('select * from fieldset').all();
         t.deepEqual(fieldsets, [
@@ -880,15 +880,15 @@ t.test('cli import', t => {
             guid: 'asdf',
             templateset: 'Test1',
             fields: '{"Front": "test front", "Back": "test back"}',
-            ord: 1
+            ord: 1,
           },
           {
             id: 2,
             guid: 'qwer',
             templateset: 'Test1',
             fields: '{"Front": "test front 2", "Back": "test back 2"}',
-            ord: 2
-          }
+            ord: 2,
+          },
         ], 'fieldsets loaded successfully');
         const cards = db.prepare('select id, fieldsetid, templateid, interval, due, factor, views, lapses, ord from card').all();
         t.ok(cards.length === 4, '4 cards created');
@@ -902,7 +902,7 @@ t.test('cli import', t => {
             factor: 2,
             views: 0,
             lapses: 0,
-            ord: 1
+            ord: 1,
           }, {
             id: 2,
             fieldsetid: 1,
@@ -912,7 +912,7 @@ t.test('cli import', t => {
             factor: 2,
             views: 0,
             lapses: 0,
-            ord: 1
+            ord: 1,
           }, {
             id: 3,
             fieldsetid: 2,
@@ -922,7 +922,7 @@ t.test('cli import', t => {
             factor: 2,
             views: 0,
             lapses: 0,
-            ord: 2
+            ord: 2,
           }, {
             id: 4,
             fieldsetid: 2,
@@ -932,8 +932,8 @@ t.test('cli import', t => {
             factor: 2,
             views: 0,
             lapses: 0,
-            ord: 2
-          }
+            ord: 2,
+          },
         ], 'cards created correctly');
         db.close();
         t.end();
