@@ -71,8 +71,8 @@ The home page shows statistics of your study:
 
 The status at the top right includes:
  * Traffic lights for new cards:
-   * Green (go): new cards between due cards and if there are no due cards
-   * Yellow (slow): new cards between due cards
+   * Green (go): new cards at intervals and if there are no due cards
+   * Yellow (slow): new cards at intervals
    * Red (stop): no new cards
  * Cards due
  * New cards in the past 24 hours
@@ -627,11 +627,11 @@ are in ~/.local/share/srf/media.
 
 At the top right of the home page and front and back pages, there is a
 status indicator. Green, yellow or red depending on new card mode: Green if
-new cards will be presented if there are no cards due; Yellow if new cards
-will be presented interleaved with due cards; and Red if no new cards will
-be presented.
-Below this are counts of cards due, minutes of study the past 24 hours and
-minutes of study the next 24 hours (estimated). 
+new cards will be presented interleaved with due cards and if there are no
+cards due; Yellow if new cards will be presented interleaved with due
+cards; and Red if no new cards will be presented. Below this are counts of
+cards due, minutes of study the past 24 hours and minutes of study the next
+24 hours (estimated). 
 
 #### Buttons
 
