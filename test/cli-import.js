@@ -1,7 +1,8 @@
 'use stcript';
 
 const dbSchema = '13';
-const t = require('tape');
+const t = require('node:test');
+const assert = require('node:assert/strict');
 
 const exec = require('child_process').exec;
 // const execSync = require('child_process').execSync;
@@ -9,28 +10,28 @@ const path = require('path');
 const tmp = require('tmp');
 const fs = require('fs');
 
-t.test('cli import', t => {
-  t.test('should fail with no file to import', t => {
-    t.teardown(() => {
+t.test('cli import', async t => {
+  const tmpDir = tmp.dirSync({ unsafeCleanup: true });
+  await t.test('should fail with no file to import', (t, done) => {
+    t.after(() => {
       tmpDir.removeCallback();
     });
-    const tmpDir = tmp.dirSync({ unsafeCleanup: true });
     const cmd =
       path.join(__dirname, '..', 'bin', 'cmd.js') +
       ' --directory ' + tmpDir.name +
       ' import';
     exec(cmd, (err, stdout, stderr) => {
       if (err) {
-        t.equal(stderr, 'Missing file to import\n', 'check stderr');
-        return t.end();
+        assert.equal(stderr, 'Missing file to import\n', 'check stderr');
+        return done();
       }
       t.fail('should not succeed');
-      t.end();
+      done(true);
     });
   });
 
-  t.test('should fail with missing file to import', t => {
-    t.teardown(() => {
+  await t.test('should fail with missing file to import', (t, done) => {
+    t.after(() => {
       tmpDir.removeCallback();
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
@@ -39,19 +40,17 @@ t.test('cli import', t => {
       ' --directory ' + tmpDir.name +
       ' import nosuchfile';
     exec(cmd, (err, stdout, stderr) => {
-      console.log('stdout: ' + stdout);
-      console.log('stderr: ' + stderr);
       if (err) {
-        t.equal(stderr, 'File not found: nosuchfile\n', 'check stderr');
-        return t.end();
+        assert.equal(stderr, 'File not found: nosuchfile\n', 'check stderr');
+        return done();
       }
       t.fail('should not succeed');
-      t.end();
+      done(true);
     });
   });
 
-  t.test('import from an Anki 2.1 export file', t => {
-    t.teardown(() => {
+  await t.test('import from an Anki 2.1 export file', (t, done) => {
+    t.after(() => {
       tmpDir.removeCallback();
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
@@ -60,28 +59,26 @@ t.test('cli import', t => {
       ' --directory ' + tmpDir.name +
       ' import ' + path.join(__dirname, 'data', 'collection-2021-08-16@08-24-34.colpkg');
     exec(cmd, (err, stdout, stderr) => {
-      console.log('import stdout:\n' + stdout);
-      console.log('import stderr:\n' + stderr);
       if (err) {
         console.log('err: ', err);
         t.fail('should not fail');
-        return t.end();
+        return done(true);
       }
-      t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
+      assert(fs.existsSync(tmpDir.name), 'check for data directory');
       const dbpath = path.join(tmpDir.name, 'srf.db');
-      t.ok(fs.existsSync(dbpath), 'check for database "' + dbpath + '"');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
+      assert(fs.existsSync(dbpath), 'check for database "' + dbpath + '"');
+      assert(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
       const p = path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3');
-      t.ok(fs.existsSync(p), 'check for media file');
+      assert(fs.existsSync(p), 'check for media file');
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
-      t.ok(db, 'get a database handle');
-      t.equals(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
+      assert(db, 'get a database handle');
+      assert.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
       const templates = db.prepare('select * from template').all();
       const templatesCopy = templates.map(template => {
         template.templateset = template.templateset.slice(0, -37);
         return template;
       });
-      t.deepEqual(templatesCopy, [
+      assert.deepEqual(templatesCopy, [
         {
           id: 1,
           templateset: 'Basic (optional reversed card)-62f40',
@@ -162,7 +159,7 @@ t.test('cli import', t => {
         fieldset.templateset = fieldset.templateset.slice(0, -37);
         return fieldset;
       });
-      t.deepEqual(fieldsetsCopy, [
+      assert.deepEqual(fieldsetsCopy, [
         {
           id: 1,
           guid: 'fn~V>3Sf~@',
@@ -293,8 +290,8 @@ t.test('cli import', t => {
         delete card.modified; // the time import ran
         return card;
       });
-      t.ok(modifiedOK, 'modified is set correctly');
-      t.deepEqual(cardsCopy, [
+      assert(modifiedOK, 'modified is set correctly');
+      assert.deepEqual(cardsCopy, [
         {
           id: 1,
           fieldsetid: 1,
@@ -670,7 +667,7 @@ t.test('cli import', t => {
       ], 'cards load correctly');
 
       const revlogs = db.prepare('select * from revlog').all();
-      t.deepEqual(revlogs, [
+      assert.deepEqual(revlogs, [
         {
           id: 1629059006719,
           revdate: '2021-08-16',
@@ -734,12 +731,12 @@ t.test('cli import', t => {
       ], 'revlog loads correctly');
 
       db.close();
-      t.end();
+      done();
     });
   });
 
-  t.test('import from an Anki 2 shared deck', t => {
-    t.teardown(() => {
+  await t.test('import from an Anki 2 shared deck', (t, done) => {
+    t.after(() => {
       tmpDir.removeCallback();
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
@@ -748,30 +745,28 @@ t.test('cli import', t => {
       ' --directory ' + tmpDir.name +
       ' import ' + path.join(__dirname, 'data', 'Coursera_-Chinese_for_Beginners.apkg');
     exec(cmd, (err, stdout, stderr) => {
-      console.log('import stdout:\n' + stdout);
-      console.log('import stderr:\n' + stderr);
       if (err) {
         console.log('err: ', err);
         t.fail('should not fail');
-        return t.end();
+        return done(true);
       }
 
-      t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
+      assert(fs.existsSync(tmpDir.name), 'check for data directory');
+      assert(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
+      assert(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
+      assert(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
-      t.ok(db, 'get a database handle');
-      t.equals(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
-      t.equals(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
-      t.equals(db.prepare('select count() from revlog').get()['count()'], 0, 'check count of revlog');
+      assert(db, 'get a database handle');
+      assert.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
+      assert.equal(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
+      assert.equal(db.prepare('select count() from revlog').get()['count()'], 0, 'check count of revlog');
       db.close();
-      t.end();
+      done();
     });
   });
 
-  t.test('import from an Anki 2 shared deck with revlog', t => {
-    t.teardown(() => {
+  await t.test('import from an Anki 2 shared deck with revlog', (t, done) => {
+    t.after(() => {
       tmpDir.removeCallback();
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
@@ -780,29 +775,27 @@ t.test('cli import', t => {
       ' --directory ' + tmpDir.name +
       ' import ' + path.join(__dirname, 'data', 'Coursera_-Chinese_for_Beginners_modified.apkg');
     exec(cmd, (err, stdout, stderr) => {
-      console.log('import stdout:\n' + stdout);
-      console.log('import stderr:\n' + stderr);
       if (err) {
         console.log('err: ', err);
         t.fail('should not fail');
-        return t.end();
+        return done(true);
       }
-      t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
+      assert(fs.existsSync(tmpDir.name), 'check for data directory');
+      assert(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
+      assert(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
+      assert(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
-      t.ok(db, 'get a database handle');
-      t.equals(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
-      t.equals(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
-      t.equals(db.prepare('select count() from revlog').get()['count()'], 3, 'check count of revlog');
+      assert(db, 'get a database handle');
+      assert.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
+      assert.equal(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
+      assert.equal(db.prepare('select count() from revlog').get()['count()'], 3, 'check count of revlog');
       db.close();
-      t.end();
+      done();
     });
   });
 
-  t.test('import templates CSV file', t => {
-    t.teardown(() => {
+  await t.test('import templates CSV file', (t, done) => {
+    t.after(() => {
       tmpDir.removeCallback();
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
@@ -811,17 +804,15 @@ t.test('cli import', t => {
       ' --directory ' + tmpDir.name +
       ' import ' + path.join(__dirname, 'data', 'templates.csv');
     exec(cmd, (err, stdout, stderr) => {
-      console.log('import stdout:\n' + stdout);
-      console.log('import stderr:\n' + stderr);
       if (err) {
         console.log('err: ', err);
         t.fail('should not fail');
-        return t.end();
+        return done(true);
       }
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
-      t.ok(db, 'get a database handle');
+      assert(db, 'get a database handle');
       const templates = db.prepare('select * from template').all();
-      t.deepEqual(templates, [
+      assert.deepEqual(templates, [
         {
           id: 1,
           templateset: 'Test1',
@@ -845,17 +836,15 @@ t.test('cli import', t => {
         ' --directory ' + tmpDir.name +
         ' import ' + path.join(__dirname, 'data', 'fieldsets.csv');
       exec(cmd, (err, stdout, stderr) => {
-        console.log('import stdout:\n' + stdout);
-        console.log('import stderr:\n' + stderr);
         if (err) {
           console.log('err: ', err);
           t.fail('should not fail');
           return t.end();
         }
         const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
-        t.ok(db, 'get a database handle');
+        assert(db, 'get a database handle');
         const templates = db.prepare('select * from template').all();
-        t.deepEqual(templates, [
+        assert.deepEqual(templates, [
           {
             id: 1,
             templateset: 'Test1',
@@ -874,7 +863,7 @@ t.test('cli import', t => {
           },
         ], 'templates loaded successfully');
         const fieldsets = db.prepare('select * from fieldset').all();
-        t.deepEqual(fieldsets, [
+        assert.deepEqual(fieldsets, [
           {
             id: 1,
             guid: 'asdf',
@@ -891,8 +880,8 @@ t.test('cli import', t => {
           },
         ], 'fieldsets loaded successfully');
         const cards = db.prepare('select id, fieldsetid, templateid, interval, due, factor, views, lapses, ord from card').all();
-        t.ok(cards.length === 4, '4 cards created');
-        t.deepEqual(cards, [
+        assert(cards.length === 4, '4 cards created');
+        assert.deepEqual(cards, [
           {
             id: 1,
             fieldsetid: 1,
@@ -936,7 +925,7 @@ t.test('cli import', t => {
           },
         ], 'cards created correctly');
         db.close();
-        t.end();
+        done();
       });
     });
   });
