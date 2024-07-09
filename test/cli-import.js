@@ -1,8 +1,7 @@
 'use stcript';
 
 const dbSchema = '13';
-const t = require('node:test');
-const assert = require('node:assert/strict');
+const t = require('tape');
 
 const exec = require('child_process').exec;
 // const execSync = require('child_process').execSync;
@@ -10,10 +9,10 @@ const path = require('path');
 const tmp = require('tmp');
 const fs = require('fs');
 
-t.test('cli import', async t => {
+t.test('cli import', t => {
   const tmpDir = tmp.dirSync({ unsafeCleanup: true });
-  await t.test('should fail with no file to import', (t, done) => {
-    t.after(() => {
+  t.test('should fail with no file to import', t => {
+    t.teardown(() => {
       tmpDir.removeCallback();
     });
     const cmd =
@@ -22,16 +21,16 @@ t.test('cli import', async t => {
       ' import';
     exec(cmd, (err, stdout, stderr) => {
       if (err) {
-        assert.equal(stderr, 'Missing file to import\n', 'check stderr');
-        return done();
+        t.equal(stderr, 'Missing file to import\n', 'check stderr');
+        return t.end();
       }
       t.fail('should not succeed');
-      done(true);
+      t.end(true);
     });
   });
 
-  await t.test('should fail with missing file to import', (t, done) => {
-    t.after(() => {
+  t.test('should fail with missing file to import', t => {
+    t.teardown(() => {
       tmpDir.removeCallback();
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
@@ -41,16 +40,16 @@ t.test('cli import', async t => {
       ' import nosuchfile';
     exec(cmd, (err, stdout, stderr) => {
       if (err) {
-        assert.equal(stderr, 'File not found: nosuchfile\n', 'check stderr');
-        return done();
+        t.equal(stderr, 'File not found: nosuchfile\n', 'check stderr');
+        return t.end();
       }
       t.fail('should not succeed');
-      done(true);
+      t.end(true);
     });
   });
 
-  await t.test('import from an Anki 2.1 export file', (t, done) => {
-    t.after(() => {
+  t.test('import from an Anki 2.1 export file', t => {
+    t.teardown(() => {
       tmpDir.removeCallback();
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
@@ -62,23 +61,23 @@ t.test('cli import', async t => {
       if (err) {
         console.log('err: ', err);
         t.fail('should not fail');
-        return done(true);
+        return t.end(true);
       }
-      assert(fs.existsSync(tmpDir.name), 'check for data directory');
+      t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
       const dbpath = path.join(tmpDir.name, 'srf.db');
-      assert(fs.existsSync(dbpath), 'check for database "' + dbpath + '"');
-      assert(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
+      t.ok(fs.existsSync(dbpath), 'check for database "' + dbpath + '"');
+      t.ok(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
       const p = path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3');
-      assert(fs.existsSync(p), 'check for media file');
+      t.ok(fs.existsSync(p), 'check for media file');
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
-      assert(db, 'get a database handle');
-      assert.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
+      t.ok(db, 'get a database handle');
+      t.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
       const templates = db.prepare('select * from template').all();
       const templatesCopy = templates.map(template => {
         template.templateset = template.templateset.slice(0, -37);
         return template;
       });
-      assert.deepEqual(templatesCopy, [
+      t.deepEqual(templatesCopy, [
         {
           id: 1,
           templateset: 'Basic (optional reversed card)-62f40',
@@ -159,7 +158,7 @@ t.test('cli import', async t => {
         fieldset.templateset = fieldset.templateset.slice(0, -37);
         return fieldset;
       });
-      assert.deepEqual(fieldsetsCopy, [
+      t.deepEqual(fieldsetsCopy, [
         {
           id: 1,
           guid: 'fn~V>3Sf~@',
@@ -290,8 +289,8 @@ t.test('cli import', async t => {
         delete card.modified; // the time import ran
         return card;
       });
-      assert(modifiedOK, 'modified is set correctly');
-      assert.deepEqual(cardsCopy, [
+      t.ok(modifiedOK, 'modified is set correctly');
+      t.deepEqual(cardsCopy, [
         {
           id: 1,
           fieldsetid: 1,
@@ -667,7 +666,7 @@ t.test('cli import', async t => {
       ], 'cards load correctly');
 
       const revlogs = db.prepare('select * from revlog').all();
-      assert.deepEqual(revlogs, [
+      t.deepEqual(revlogs, [
         {
           id: 1629059006719,
           revdate: '2021-08-16',
@@ -731,12 +730,12 @@ t.test('cli import', async t => {
       ], 'revlog loads correctly');
 
       db.close();
-      done();
+      t.end();
     });
   });
 
-  await t.test('import from an Anki 2 shared deck', (t, done) => {
-    t.after(() => {
+  t.test('import from an Anki 2 shared deck', t => {
+    t.teardown(() => {
       tmpDir.removeCallback();
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
@@ -748,25 +747,25 @@ t.test('cli import', async t => {
       if (err) {
         console.log('err: ', err);
         t.fail('should not fail');
-        return done(true);
+        return t.end(true);
       }
 
-      assert(fs.existsSync(tmpDir.name), 'check for data directory');
-      assert(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
-      assert(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
-      assert(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
+      t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
+      t.ok(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
+      t.ok(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
+      t.ok(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
-      assert(db, 'get a database handle');
-      assert.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
-      assert.equal(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
-      assert.equal(db.prepare('select count() from revlog').get()['count()'], 0, 'check count of revlog');
+      t.ok(db, 'get a database handle');
+      t.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
+      t.equal(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
+      t.equal(db.prepare('select count() from revlog').get()['count()'], 0, 'check count of revlog');
       db.close();
-      done();
+      t.end();
     });
   });
 
-  await t.test('import from an Anki 2 shared deck with revlog', (t, done) => {
-    t.after(() => {
+  t.test('import from an Anki 2 shared deck with revlog', t => {
+    t.teardown(() => {
       tmpDir.removeCallback();
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
@@ -778,24 +777,24 @@ t.test('cli import', async t => {
       if (err) {
         console.log('err: ', err);
         t.fail('should not fail');
-        return done(true);
+        return t.end(true);
       }
-      assert(fs.existsSync(tmpDir.name), 'check for data directory');
-      assert(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
-      assert(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
-      assert(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
+      t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
+      t.ok(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
+      t.ok(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
+      t.ok(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
-      assert(db, 'get a database handle');
-      assert.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
-      assert.equal(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
-      assert.equal(db.prepare('select count() from revlog').get()['count()'], 3, 'check count of revlog');
+      t.ok(db, 'get a database handle');
+      t.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
+      t.equal(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
+      t.equal(db.prepare('select count() from revlog').get()['count()'], 3, 'check count of revlog');
       db.close();
-      done();
+      t.end();
     });
   });
 
-  await t.test('import templates CSV file', (t, done) => {
-    t.after(() => {
+  t.test('import templates CSV file', t => {
+    t.teardown(() => {
       tmpDir.removeCallback();
     });
     const tmpDir = tmp.dirSync({ unsafeCleanup: true });
@@ -807,12 +806,12 @@ t.test('cli import', async t => {
       if (err) {
         console.log('err: ', err);
         t.fail('should not fail');
-        return done(true);
+        return t.end(true);
       }
       const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
-      assert(db, 'get a database handle');
+      t.ok(db, 'get a database handle');
       const templates = db.prepare('select * from template').all();
-      assert.deepEqual(templates, [
+      t.deepEqual(templates, [
         {
           id: 1,
           templateset: 'Test1',
@@ -842,9 +841,9 @@ t.test('cli import', async t => {
           return t.end();
         }
         const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
-        assert(db, 'get a database handle');
+        t.ok(db, 'get a database handle');
         const templates = db.prepare('select * from template').all();
-        assert.deepEqual(templates, [
+        t.deepEqual(templates, [
           {
             id: 1,
             templateset: 'Test1',
@@ -863,7 +862,7 @@ t.test('cli import', async t => {
           },
         ], 'templates loaded successfully');
         const fieldsets = db.prepare('select * from fieldset').all();
-        assert.deepEqual(fieldsets, [
+        t.deepEqual(fieldsets, [
           {
             id: 1,
             guid: 'asdf',
@@ -880,8 +879,8 @@ t.test('cli import', async t => {
           },
         ], 'fieldsets loaded successfully');
         const cards = db.prepare('select id, fieldsetid, templateid, interval, due, factor, views, lapses, ord from card').all();
-        assert(cards.length === 4, '4 cards created');
-        assert.deepEqual(cards, [
+        t.ok(cards.length === 4, '4 cards created');
+        t.deepEqual(cards, [
           {
             id: 1,
             fieldsetid: 1,
@@ -925,7 +924,7 @@ t.test('cli import', async t => {
           },
         ], 'cards created correctly');
         db.close();
-        done();
+        t.end();
       });
     });
   });

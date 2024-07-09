@@ -16,7 +16,7 @@
     "srf": "./bin/cmd.js"
   },
   "scripts": {
-    "test": "eslint . && c8 node --test",
+    "test": "eslint . && c8 multi-tape test/*.js",
     "quicktest": "multi-tape test/*.js"
   },
   "repository": {
@@ -45,6 +45,8 @@
   "devDependencies": {
     "@ig3/eslint-config-entrain": "^4.0.1",
     "c8": "^10.1.2",
+    "multi-tape": "^1.7.1",
+    "tape": "^5.8.1",
     "tmp": "^0.2.3"
   },
   "files": [

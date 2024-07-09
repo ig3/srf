@@ -4541,4 +4541,3 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Remove dependency getopts in favour of node utils.parseArgs
  * Update dependencies
  * Add command line argument to specify the scheduler plugin
- * Remove dev dependencies tape and multi-tape
