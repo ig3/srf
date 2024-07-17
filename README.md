@@ -4541,3 +4541,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Remove dependency getopts in favour of node utils.parseArgs
  * Update dependencies
  * Add command line argument to specify the scheduler plugin
+ * Change test package to @ig3/test

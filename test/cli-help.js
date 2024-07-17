@@ -1,6 +1,6 @@
 'use stcript';
 
-const t = require('tape');
+const t = require('@ig3/test');
 
 const exec = require('child_process').exec;
 const path = require('path');
@@ -18,4 +18,5 @@ t.test('cli --help', async t => {
       t.end();
     });
   });
+  t.end();
 });

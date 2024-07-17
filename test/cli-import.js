@@ -1,7 +1,7 @@
 'use stcript';
 
 const dbSchema = '13';
-const t = require('tape');
+const t = require('@ig3/test');
 
 const exec = require('child_process').exec;
 // const execSync = require('child_process').execSync;
@@ -928,4 +928,5 @@ t.test('cli import', t => {
       });
     });
   });
+  t.end();
 });
