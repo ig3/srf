@@ -9,6 +9,8 @@ t.test('srf server', t => {
     });
     t.ok(srf, 'srf is set');
     srf.runServer();
+    srf.shutdown();
+    t.pass('survived!!');
     t.end();
   });
   t.end();
