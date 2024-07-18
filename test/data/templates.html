@@ -18,59 +18,52 @@
   td {
     text-align: right;
   }
-  textarea {
-    height: 200px;
-    width: 500px;
-  }
 </style>
-<h1>Spaced Repetition Flashcards</h1>
-<h2>Template</h2>
-<table>
-<tr><th>ID</th><td>0</td></tr>
-<tr><th>Templateset</th><td><select id="field-templateset" name="templateset"><option value="undefined" id="field-templateset-undefined">ts1</option></select></td></tr>
-<tr><th>Name</th><td><input type="text" id="name" value=""/></td></tr>
-<tr><th>Front</th><td><textarea id="front"></textarea></td></tr>
-<tr><th>Back</th><td><textarea id="back"></textarea></td></tr>
-<tr><th>CSS</th><td><textarea id="css"></textarea></td></tr>
+<h1><a href="/">Spaced Repetition Flashcards</a></h1>
+<h2>Templates</h2>
+<a href="/fieldset" onclick="return add()"><button>Add</button></a>
+<table border="1" class="sortable">
+<thead>
+  <tr>
+      <th>id</th>
+      <th>templateset</th>
+      <th>name</th>
+      <th>front</th>
+      <th>back</th>
+      <th>css</th>
+  </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>1</td>
+        <td>ts1</td>
+        <td>Card2</td>
+        <td>{{Audio}}</td>
+        <td>{{Audio}}&lt;br&gt;{{Hanzi}}&lt;br&gt;{{Pinyin}}&lt;br&gt;{{English}}</td>
+        <td>.card { font-size: 35px; }</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>ts1</td>
+        <td>Card2</td>
+        <td>{{Hanzi}}</td>
+        <td>{{Audio}}&lt;br&gt;{{Hanzi}}&lt;br&gt;{{Pinyin}}&lt;br&gt;{{English}}</td>
+        <td>.card { font-size: 35px; }</td>
+    </tr>
+</tbody>
 </table>
-<button onclick="save()">Save</button>
-<button onclick="cancel()">Cancel</button>
+<script src="js/sorttable.js"></script>
 <script>
-  // When the Save button is clicked
-  function save() {
-    const data = {
-      templateid: 0,
-      templateset: document.getElementById('field-templateset').value,
-      name: document.getElementById('name').value,
-      front: document.getElementById('front').value,
-      back: document.getElementById('back').value,
-      css: document.getElementById('css').value
-    };
-    console.log('save data ', data);
-    fetch('/template/0', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-    .then( response => {
-      if (!response.ok) {
-        throw new Error(response.url + ': ' + response.status + ': ' +
-          response.statusText);
-      }
-      console.log('response ', response);
-      window.close();
-    })
-    .catch( err => {
-      alert('failed');
-      console.log('err ', err);
-    });
+  function add () {
+    window.open('/template', 'Edit Template', 'height=800,width=650');
+    return false;
   }
-
-  // When the Cancel button is clicked
-  function cancel() {
-    window.close();
-  }
-
+  document.querySelectorAll('table tr')
+  .forEach(e => e.addEventListener('click', (event) => {
+    const cells = event.currentTarget.getElementsByTagName('td');
+    window.open('/template/' + cells[0].innerText, 'Edit Template',
+      'height=800,width=600');
+  }));
 </script>
   </div>
   <script>

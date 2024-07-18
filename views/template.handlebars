@@ -14,8 +14,8 @@
 <h2>Template</h2>
 <table>
 <tr><th>ID</th><td>{{template.id}}</td></tr>
-<tr><th>Templateset</th><td>{{form-select 'templatesetid'
-templatesets template.templatesetid}}</td></tr>
+<tr><th>Templateset</th><td>{{form-select 'templateset'
+templatesets template.templateset}}</td></tr>
 <tr><th>Name</th><td><input type="text" id="name" value="{{template.name}}"/></td></tr>
 <tr><th>Front</th><td><textarea id="front">{{template.front}}</textarea></td></tr>
 <tr><th>Back</th><td><textarea id="back">{{template.back}}</textarea></td></tr>
@@ -28,7 +28,7 @@ templatesets template.templatesetid}}</td></tr>
   function save() {
     const data = {
       templateid: {{template.id}},
-      templatesetid: document.getElementById('field-templatesetid').value,
+      templateset: document.getElementById('field-templateset').value,
       name: document.getElementById('name').value,
       front: document.getElementById('front').value,
       back: document.getElementById('back').value,

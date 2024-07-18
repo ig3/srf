@@ -24,53 +24,19 @@
   }
 </style>
 <h1>Spaced Repetition Flashcards</h1>
-<h2>Template</h2>
+<h2>Template Set</h2>
 <table>
-<tr><th>ID</th><td>0</td></tr>
-<tr><th>Templateset</th><td><select id="field-templateset" name="templateset"><option value="undefined" id="field-templateset-undefined">ts1</option></select></td></tr>
-<tr><th>Name</th><td><input type="text" id="name" value=""/></td></tr>
-<tr><th>Front</th><td><textarea id="front"></textarea></td></tr>
-<tr><th>Back</th><td><textarea id="back"></textarea></td></tr>
-<tr><th>CSS</th><td><textarea id="css"></textarea></td></tr>
+<tr><th>ID</th><td></td></tr>
+<tr><th>Name</th><td>ts1</td></tr>
+<tr><th>Fields</th><td>Audio</br>Hanzi</br>Pinyin</br>English</br></td></tr>
+<tr><th>Templates</th><td>Card2</br>Card2</br></td></tr>
 </table>
-<button onclick="save()">Save</button>
 <button onclick="cancel()">Cancel</button>
 <script>
-  // When the Save button is clicked
-  function save() {
-    const data = {
-      templateid: 0,
-      templateset: document.getElementById('field-templateset').value,
-      name: document.getElementById('name').value,
-      front: document.getElementById('front').value,
-      back: document.getElementById('back').value,
-      css: document.getElementById('css').value
-    };
-    console.log('save data ', data);
-    fetch('/template/0', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-    .then( response => {
-      if (!response.ok) {
-        throw new Error(response.url + ': ' + response.status + ': ' +
-          response.statusText);
-      }
-      console.log('response ', response);
-      window.close();
-    })
-    .catch( err => {
-      alert('failed');
-      console.log('err ', err);
-    });
-  }
-
   // When the Cancel button is clicked
   function cancel() {
     window.close();
   }
-
 </script>
   </div>
   <script>
