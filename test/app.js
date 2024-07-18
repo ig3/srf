@@ -1,6 +1,7 @@
 'use strict';
 
 const t = require('@ig3/test');
+const fs = require('fs');
 const path = require('path');
 
 t.test('express app', t => {
@@ -120,6 +121,32 @@ t.test('express app', t => {
     })
     .then(data => {
       t.ok(data, 'got response data');
+      listener.close();
+      t.end();
+    });
+  });
+
+  t.test('get /template', t => {
+    const srf = require('../lib/srf.js')({
+      directory: path.join(__dirname, '/data/app'),
+    });
+    t.ok(srf, 'got an srf instance');
+    const app = require('../lib/app.js')(srf);
+    t.ok(app, 'got an app instance');
+    const listener = app.listen();
+    const port = listener.address().port;
+    t.ok(port, 'got a port');
+    return fetch('http://localhost:' + port + '/template')
+    .then(response => {
+      t.equal(response.status, 200, 'Response status is 200');
+      return response.text();
+    })
+    .then(data => {
+      t.ok(data, 'got response data');
+      console.log('data: ', data);
+      // express-handlebars trims templates
+      const expect = fs.readFileSync('test/data/template.html', 'utf-8').trim();
+      t.equal(data, expect, 'template page rendered as expected');
       listener.close();
       t.end();
     });

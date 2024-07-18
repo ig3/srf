@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>srf</title>
+  <link rel="icon" type="image/png" href="/img/logo.png">
+  <link rel="stylesheet" href="/css/.css">
+  <style>
+    
+  </style>
+</head>
+<body>
+  <div id="content">
+    <style>
+  th {
+    text-align: left;
+  }
+  td {
+    text-align: right;
+  }
+  textarea {
+    height: 200px;
+    width: 500px;
+  }
+</style>
+<h1>Spaced Repetition Flashcards</h1>
+<h2>Template</h2>
+<table>
+<tr><th>ID</th><td>0</td></tr>
+<tr><th>Templateset</th><td><select id="field-templatesetid" name="templatesetid"></select></td></tr>
+<tr><th>Name</th><td><input type="text" id="name" value=""/></td></tr>
+<tr><th>Front</th><td><textarea id="front"></textarea></td></tr>
+<tr><th>Back</th><td><textarea id="back"></textarea></td></tr>
+<tr><th>CSS</th><td><textarea id="css"></textarea></td></tr>
+</table>
+<button onclick="save()">Save</button>
+<button onclick="cancel()">Cancel</button>
+<script>
+  // When the Save button is clicked
+  function save() {
+    const data = {
+      templateid: 0,
+      templatesetid: document.getElementById('field-templatesetid').value,
+      name: document.getElementById('name').value,
+      front: document.getElementById('front').value,
+      back: document.getElementById('back').value,
+      css: document.getElementById('css').value
+    };
+    console.log('save data ', data);
+    fetch('/template/0', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    .then( response => {
+      if (!response.ok) {
+        throw new Error(response.url + ': ' + response.status + ': ' +
+          response.statusText);
+      }
+      console.log('response ', response);
+      window.close();
+    })
+    .catch( err => {
+      alert('failed');
+      console.log('err ', err);
+    });
+  }
+
+  // When the Cancel button is clicked
+  function cancel() {
+    window.close();
+  }
+
+</script>
+  </div>
+  <script>
+    document.addEventListener("keypress", keyCapt, false);
+    function keyCapt (e) {
+          console.log('keyCode: ', e.keyCode);
+      if (e.keyCode === 32) {
+        let el = document.getElementsByClassName('default_action')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 98) { // b
+        let el = document.getElementsByClassName('shortcut_b')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 101) { // j
+        let el = document.getElementsByClassName('shortcut_e')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 106) { // j
+        let el = document.getElementsByClassName('shortcut_j')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 107) { // k
+        let el = document.getElementsByClassName('shortcut_k')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 108) { // l
+        let el = document.getElementsByClassName('shortcut_l')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 112) { // r
+        let el = document.getElementsByClassName('shortcut_p')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 114) { // r
+        let el = document.getElementsByClassName('shortcut_r')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 115) { // s
+        let el = document.getElementsByClassName('shortcut_s')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 59) { // ;
+        let el = document.getElementsByClassName('shortcut_semicolon')[0].click();
+        if (el) el.click();
+      }
+    }
+    // let x = document.getElementById('myaudio');
+    // x.volume = 0.2;
+    // The DOM is stupid: getElementsByTagName doesn't return an array
+    // of elements. Instead, it returns an HTMLCollection, which is an
+    // "array-like object" which is not like an array. So, one has to
+    // do stupid shit like the following to iterate over the elements.
+    let elements = document.getElementsByTagName('audio');
+    for (let element of elements) {
+      element.volume = 0.4;
+      let current = 0;
+      element.src = audioFiles[current];
+      element.addEventListener('ended', function (e) {
+        current++;
+        if (current == audioFiles.length) current = 0;
+        element.src = audioFiles[current];
+        if (current === 0) {
+          element.pause();
+        }
+      });
+    }
+
+    function replay () {
+      let elements = document.getElementsByTagName('audio');
+      for (let element of elements) {
+        element.play();
+      }
+    }
+  </script>
+</body>
+</html>
