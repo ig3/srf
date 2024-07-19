@@ -326,7 +326,6 @@ t.test('express app', async t => {
     .then(data => {
       const expect = fs.readFileSync('test/data/templates.html', 'utf-8').trim();
       t.equal(data, expect, 'templates page rendered as expected');
-      console.log('templates data: ', data);
       listener.close();
       t.end();
     });
@@ -382,6 +381,191 @@ t.test('express app', async t => {
     const listener = app.listen();
     const port = listener.address().port;
     return fetch('http://localhost:' + port + '/templatesets')
+    .then(response => {
+      t.equal(response.status, 200, 'Response status is 200');
+      t.equal(response.statusText, 'OK', 'OK');
+      return response.text();
+    })
+    .then(data => {
+      t.ok(data, 'got response data');
+      listener.close();
+      t.end();
+    });
+  });
+
+  await t.test('POST /fieldset/new', t => {
+    const srf = require('../lib/srf.js')({
+      directory: appdir,
+    });
+    const app = require('../lib/app.js')(srf);
+    const listener = app.listen();
+    const port = listener.address().port;
+    return fetch(
+      'http://localhost:' + port + '/fieldset/new',
+      {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          templateset: 'ts1',
+          ord: 1,
+          fields: {
+            Hanzi: '你好！',
+            Pinyin: 'Nǐ hǎo!',
+            English: 'Hello!',
+          },
+        }),
+      }
+    )
+    .then(response => {
+      t.equal(response.status, 200, 'Response status is 200');
+      return response.text();
+    })
+    .then(data => {
+      t.equal(data, 'ok', 'ok response');
+      listener.close();
+      t.end();
+    });
+  });
+
+  await t.test('POST /fieldset/new', t => {
+    const srf = require('../lib/srf.js')({
+      directory: appdir,
+    });
+    const app = require('../lib/app.js')(srf);
+    const listener = app.listen();
+    const port = listener.address().port;
+    return fetch(
+      'http://localhost:' + port + '/fieldset/new',
+      {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          templateset: 'ts1',
+          ord: 1,
+          fields: {
+            Hanzi: '我会做。',
+            Pinyin: 'Wǒ huì zuò.',
+            English: 'I know how to do it.',
+            Audio: '[sound:audio1.mp3]',
+          },
+          files: [
+            {
+              meta: {
+                name: 'audio1.mp3',
+              },
+              data: 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjQ1LjEwMAAAAAAAAAAAAAAA//tUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AABvZACnGQAADBQgKDRASFBYaHB8hJCcpKy0xMzY4Oz5AQkRISk1PUlVXWVtfYWNmaWxucHJ2eHp9gIOFh4mNj5GUlpmcnqCkpqirrbCztbe7vb/CxMfKzM7S1NbZ297h4+Xp6+3w8vX4+vwAAAAATGF2YzU4LjkxAAAAAAAAAAAAAAAAJAS0AAAAAAApxkDjNiJp//uUZAAAAy4OUJUwwAIq4ViApggAD0CTS7nHgBDdjGVbDmAAAABgAAIA0JjJLBuI5bcowsWLFixYFkyZMmTJk00AAAAAAPDw8PDAAAAAAPDw8PDAAAAAAPDw8PDAAAAAAPDw8PSAAB/h7//X//////gAAIDw8PPwAAAz3h4eHhgAAAAAHh4eHpABevXr16/2BIAmB8Sz9+97vgAAAAhE4IAh8H4Pg+f/BDgmD4f+UM//wx/g+AE0kiSkrI3G4gGAwEABQYAkwY7gIKXJkAbEwkVOX6MQBlQIAApPpNYv0p9lEUaCZZyoeTtIrDiQ5iVNKMYu8IAyCpE9S6kSx5jiPhDXxzK6LNTHsn4ytVTSrXFuZnKDnNrW09wxNYIBoRPO/oER8Jf5ZqoS/9VpaEiwACBoCCCCCHcoEwTAtPQm/e7nhZas13xsvtuQlhyUtn/OBgaARa2Kae5OqzV5MbbR4C6n//UN7Qr+UyadI+6Lc9hJ4xfY0yYFcAAOAgQMFQQD//uUZA0Mw5Qgyxd3AAAvQkkR4pgADyRxIC93IECuhiSEASSigwMAwAbshJgVuUcFQIas6Q8WQoJErxoJQ5Yq9Y8q4a0+0nmM+YX+S6Nx+K2audq525X5+6tmpvHmO//v1hcICYPAA2xYogVCKqS9I…',
+            },
+          ],
+        }),
+      }
+    )
+    .then(response => {
+      t.equal(response.status, 200, 'Response status is 200');
+      return response.text();
+    })
+    .then(data => {
+      t.equal(data, 'ok', 'ok response');
+      listener.close();
+      if (fs.existsSync(path.join(appdir, 'media', 'audio1.mp3'))) {
+        t.pass('audio file audio1.mp3 exists');
+      } else {
+        t.fail('audio file audio1.mp3 does not exist');
+      }
+      t.end();
+    });
+  });
+
+  await t.test('POST /fieldset/2', t => {
+    const srf = require('../lib/srf.js')({
+      directory: appdir,
+    });
+    const app = require('../lib/app.js')(srf);
+    const listener = app.listen();
+    const port = listener.address().port;
+    return fetch(
+      'http://localhost:' + port + '/fieldset/2',
+      {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          templateset: 'ts1',
+          ord: 1,
+          fields: {
+            Hanzi: '我会做。',
+            Pinyin: 'Wǒ huì zuò.',
+            English: 'I can to do it.',
+            Audio: '[sound:audio1.mp3]',
+          },
+          files: [
+          ],
+        }),
+      }
+    )
+    .then(response => {
+      t.equal(response.status, 200, 'Response status is 200');
+      return response.text();
+    })
+    .then(data => {
+      t.equal(data, 'ok', 'ok response');
+      listener.close();
+      t.end();
+    });
+  });
+
+  await t.test('get /fieldset', t => {
+    const srf = require('../lib/srf.js')({
+      directory: appdir,
+    });
+    const app = require('../lib/app.js')(srf);
+    const listener = app.listen();
+    const port = listener.address().port;
+    return fetch('http://localhost:' + port + '/fieldset')
+    .then(response => {
+      t.equal(response.status, 200, 'Response status is 200');
+      t.equal(response.statusText, 'OK', 'OK');
+      return response.text();
+    })
+    .then(data => {
+      t.ok(data, 'got response data');
+      listener.close();
+      t.end();
+    });
+  });
+
+  await t.test('get /fieldset/1', t => {
+    const srf = require('../lib/srf.js')({
+      directory: appdir,
+    });
+    const app = require('../lib/app.js')(srf);
+    const listener = app.listen();
+    const port = listener.address().port;
+    return fetch('http://localhost:' + port + '/fieldset/1')
+    .then(response => {
+      t.equal(response.status, 200, 'Response status is 200');
+      t.equal(response.statusText, 'OK', 'OK');
+      return response.text();
+    })
+    .then(data => {
+      t.ok(data, 'got response data');
+      listener.close();
+      t.end();
+    });
+  });
+
+  await t.test('get /fieldsets', t => {
+    const srf = require('../lib/srf.js')({
+      directory: appdir,
+    });
+    const app = require('../lib/app.js')(srf);
+    const listener = app.listen();
+    const port = listener.address().port;
+    return fetch('http://localhost:' + port + '/fieldsets')
     .then(response => {
       t.equal(response.status, 200, 'Response status is 200');
       t.equal(response.statusText, 'OK', 'OK');
