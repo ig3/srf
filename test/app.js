@@ -349,7 +349,46 @@ t.test('express app', async t => {
       t.ok(data, 'got response data');
       const expect = fs.readFileSync('test/data/templateset-ts1.html', 'utf-8').trim();
       t.equal(data, expect, 'templates page rendered as expected');
-      console.log('templates data: ', data);
+      listener.close();
+      t.end();
+    });
+  });
+
+  await t.test('get /templateset', t => {
+    const srf = require('../lib/srf.js')({
+      directory: appdir,
+    });
+    const app = require('../lib/app.js')(srf);
+    const listener = app.listen();
+    const port = listener.address().port;
+    return fetch('http://localhost:' + port + '/templateset')
+    .then(response => {
+      t.equal(response.status, 200, 'Response status is 200');
+      t.equal(response.statusText, 'OK', 'OK');
+      return response.text();
+    })
+    .then(data => {
+      t.ok(data, 'got response data');
+      listener.close();
+      t.end();
+    });
+  });
+
+  await t.test('get /templatesets', t => {
+    const srf = require('../lib/srf.js')({
+      directory: appdir,
+    });
+    const app = require('../lib/app.js')(srf);
+    const listener = app.listen();
+    const port = listener.address().port;
+    return fetch('http://localhost:' + port + '/templatesets')
+    .then(response => {
+      t.equal(response.status, 200, 'Response status is 200');
+      t.equal(response.statusText, 'OK', 'OK');
+      return response.text();
+    })
+    .then(data => {
+      t.ok(data, 'got response data');
       listener.close();
       t.end();
     });
