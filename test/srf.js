@@ -129,6 +129,91 @@ t.test('srf.js', async t => {
     t.end();
   });
 
+  await t.test('getChartDuePerHour', t => {
+    const data = srf.getChartDuePerHour();
+    t.ok(data, 'returns data');
+    console.log('data: ', data);
+    t.equal(data.x.length, 0, 'no x values');
+    t.equal(data.y.length, 0, 'no y values');
+    t.equal(data.type, 'bar', 'bar chart');
+    t.end();
+  });
+
+  await t.test('createTemplate', t => {
+    srf.createTemplate(
+      'ts1',
+      'card 1',
+      '{{English}}',
+      '{{Hanzi}}<br>{{Pinhin}}<br>{{English}}',
+      ''
+    );
+    srf.createTemplate(
+      'ts1',
+      'card 2',
+      '{{Hanzi}}',
+      '{{Hanzi}}<br>{{Pinhin}}<br>{{English}}',
+      ''
+    );
+    srf.createTemplate(
+      'ts1',
+      'card 2',
+      '{{Pinyin}}',
+      '{{Hanzi}}<br>{{Pinhin}}<br>{{English}}',
+      ''
+    );
+    srf.createTemplate(
+      'ts2',
+      'card 1',
+      '{{English}}',
+      '{{English}}<br>{{French}}<br>{{#person}}{{name}}{{/person}}',
+      ''
+    );
+    srf.createTemplate(
+      'ts2',
+      'card 2',
+      '{{French}}',
+      '{{English}}<br>{{French}}',
+      ''
+    );
+    t.pass('should not throw exception');
+    t.end();
+  });
+
+  await t.test('createFieldset', t => {
+    srf.createFieldset(
+      'a',
+      'ts1',
+      0,
+      JSON.stringify({
+        Hanzi: '你做了什么？',
+        English: 'What did you do?',
+        Pinyin: 'nǐ zuò le shénme ?',
+      })
+    );
+    srf.createFieldset(
+      'b',
+      'ts1',
+      0,
+      JSON.stringify({
+        Hanzi: '我会做。',
+        English: 'I can do it.',
+        Pinyin: 'Wǒ huì zuò.',
+      })
+    );
+    t.pass('should not throw exception');
+    t.end();
+  });
+
+  await t.test('reviewCard', t => {
+    [1, 2, 3, 4, 1, 2, 3]
+    .forEach(id => {
+      const card = srf.getCard(id);
+      srf.reviewCard(card, 15, 20, 'good');
+    });
+    t.pass('should not throw');
+    t.end();
+  });
+
   await t.test('fixDatabase', t => {
     try {
       srf.fixDatabase();
@@ -141,14 +226,69 @@ t.test('srf.js', async t => {
     }
   });
 
-  // TODO: test again after there are cards due
+  await t.test('getChartStudyTimePerHour', t => {
+    const data = srf.getChartStudyTimePerHour();
+    t.ok(data, 'returns data');
+    console.log('data: ', data);
+    t.equal(data.x.length, 24, 'no x values');
+    t.equal(data.y.length, 24, 'no y values');
+    t.equal(data.type, 'bar', 'bar chart');
+    t.end();
+  });
+
   await t.test('getChartDuePerHour', t => {
     const data = srf.getChartDuePerHour();
     t.ok(data, 'returns data');
     console.log('data: ', data);
-    t.equal(data.x.length, 0, 'no x values');
-    t.equal(data.y.length, 0, 'no y values');
+    t.equal(data.x.length, 2, 'one x values');
+    t.equal(data.y.length, 2, 'one y values');
     t.equal(data.type, 'bar', 'bar chart');
+    t.end();
+  });
+
+  await t.test('getChartCardsPerlLastInterval', t => {
+    const data = srf.getChartCardsPerLastInterval();
+    t.ok(data, 'returns data');
+    console.log('data: ', data);
+    t.equal(data.x.length, 1, 'one x values');
+    t.equal(data.y.length, 1, 'one y values');
+    t.end();
+  });
+
+  await t.test('updateFieldset', t => {
+    srf.updateFieldset(
+      2,
+      'ts2',
+      0,
+      JSON.stringify({
+        English: 'I can do it.',
+        French: 'Je peux le faire.',
+      })
+    );
+    t.pass('should not throw exception');
+    t.end();
+  });
+
+  await t.test('getTemplatesets', t => {
+    const templatesets = srf.getTemplatesets();
+    t.pass('should not throw exception');
+    t.equal(templatesets.length, 2, 'two templatesets');
+    console.log('templatesets: ', JSON.stringify(templatesets, null, 2));
+    t.end();
+  });
+
+  await t.test('Attempt to bind a privileged port', t => {
+    // Force a reload of the module to get a new instance
+    delete require.cache[require.resolve('../lib/srf.js')];
+    const srf2 = require('../lib/srf.js')({
+      directory: path.join(tmpdir, 'srf'),
+    });
+    // This will fail and write to console but otherwise silent
+    srf2.runServer({
+      port: 1,
+      verbose: true,
+    }, []);
+    t.pass('does not throw');
     t.end();
   });
 
