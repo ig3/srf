@@ -1,0 +1,7 @@
+name,front,back,css
+Card 1,{{Front}},{{Back}},".card {
+  Background-color: red;
+}"
+Card 2,{{Back}},{{Front}},".card {
+  Background-color: red;
+}"

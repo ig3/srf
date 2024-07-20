@@ -710,7 +710,6 @@ t.test('express app', async t => {
   const db = require('better-sqlite3')(
     path.join(appdir, 'srf.db')
   );
-  console.log('db: ', typeof db);
   db.prepare('update card set due = ?, interval = 10')
   .run(Math.floor(Date.now() / 1000) + 10);
 
