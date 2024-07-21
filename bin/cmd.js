@@ -82,7 +82,6 @@ const { values: options, positionals } = ((optionsConfig) => {
     console.log('    ' + e.code);
     console.log('    ' + e.message);
     console.log(usage(optionsConfig));
-    showUsage();
     process.exit(1);
   }
 })(optionsConfig);
@@ -107,17 +106,17 @@ if (options.db) {
   }
 }
 
-function usage (optionsConfig) {
+function usage (options = optionsConfig) {
   const name = path.basename(process.argv[1]);
   let usage = 'Usage: ' + name + ' [OPTIONS]\n';
   let maxOptionLength = 0;
-  Object.keys(optionsConfig)
+  Object.keys(options)
   .forEach(key => {
     if (key.length > maxOptionLength) maxOptionLength = key.length;
   });
-  Object.keys(optionsConfig)
+  Object.keys(options)
   .forEach(key => {
-    const opt = optionsConfig[key];
+    const opt = options[key];
     let option = '  --' + key + (opt.type === 'string' ? '=ARG' : '[=BOOL]') +
       (opt.multiple ? '*' : '');
     if (opt.shart) {
@@ -141,7 +140,7 @@ function usage (optionsConfig) {
 if (options.verbose) console.log('opts: ', options);
 
 if (options.help) {
-  showUsage();
+  console.log(usage());
 } else {
   const [command, subargv] = positionals;
 
@@ -196,32 +195,9 @@ if (options.help) {
     srf.runServer(options, subargv);
   } else {
     console.error('Unsupported command: ' + command);
-    showUsage();
+    console.log(usage());
     process.exit(1);
   }
-}
-
-function showUsage () {
-  console.log('Usage:');
-  console.log('  ' +
-    path.basename(process.argv[1]) +
-    ' --help');
-  console.log('  ' +
-    path.basename(process.argv[1]) +
-    ' [--port <port>]' +
-    ' [--directory <root-directory>]' +
-    ' [--config <config-file>]' +
-    ' [--htdocs <htdocs-directory>]' +
-    ' [--views <views-directory>]' +
-    ' [--media <media-directory>]' +
-    ' [--database <database-name>]');
-  console.log('  ' +
-    path.basename(process.argv[1]) +
-    ' [--directory <root-directory>]' +
-    ' [--config <config-file>]' +
-    ' [--media <media-directory>]' +
-    ' [--database <database-name>]' +
-    ' import <filename>');
 }
 
 function resolveFullPath (root, p) {
