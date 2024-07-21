@@ -180,9 +180,6 @@ if (options.help) {
         srf.shutdown();
       })
       .then(() => {
-        srf.close();
-      })
-      .then(() => {
         process.exit();
       });
     });
