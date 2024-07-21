@@ -176,7 +176,7 @@ if (options.help) {
       console.log('caught: ' + signal);
       Promise.resolve()
       .then(() => {
-        srf.shutdown();
+        return srf.shutdown();
       })
       .then(() => {
         process.exit();
