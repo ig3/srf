@@ -4,6 +4,7 @@ body,html {
   padding: 0;
   background: #222;
   box-sizing: border-box;
+  font-size: 18px;
 }
 h1,h2,h3 {
   margin: 0;
@@ -83,6 +84,8 @@ button {
   padding-bottom: 0;
   padding-left: 4px;
   padding-right: 4px;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 a.default_action button {
