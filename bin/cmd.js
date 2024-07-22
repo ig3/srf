@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const fs = require('fs');
+const parseArgs = require('node:util').parseArgs;
 const path = require('path');
 
 const optionsConfig = {
@@ -15,10 +15,6 @@ const optionsConfig = {
     short: 'p',
     default: '8000',
     description: 'The port the server will listen on',
-  },
-  dir: {
-    type: 'string',
-    description: 'Alias for directory',
   },
   directory: {
     type: 'string',
@@ -70,42 +66,6 @@ const optionsConfig = {
   },
 };
 
-const { values: options, positionals } = ((optionsConfig) => {
-  try {
-    const parseArgs = require('node:util').parseArgs;
-    return parseArgs({
-      options: optionsConfig,
-      allowPositionals: true,
-    });
-  } catch (e) {
-    console.log('failed with error:');
-    console.log('    ' + e.code);
-    console.log('    ' + e.message);
-    console.log(usage(optionsConfig));
-    process.exit(1);
-  }
-})(optionsConfig);
-
-if (options.dir) {
-  console.warning('Option dir is deprecated');
-  if (options.directory === optionsConfig.directory.default) {
-    options.directory = options.dir;
-  } else if (options.dir !== options.directory) {
-    console.error('Use one of option dir or directory, not both');
-    process.exit(1);
-  }
-}
-
-if (options.db) {
-  console.warning('Option db is deprecated');
-  if (options.database === optionsConfig.database.default) {
-    options.database = options.db;
-  } else if (options.db !== options.database) {
-    console.error('Use one of option db or database, not both');
-    process.exit(1);
-  }
-}
-
 function usage (options = optionsConfig) {
   const name = path.basename(process.argv[1]);
   let usage = 'Usage: ' + name + ' [OPTIONS]\n';
@@ -119,7 +79,7 @@ function usage (options = optionsConfig) {
     const opt = options[key];
     let option = '  --' + key + (opt.type === 'string' ? '=ARG' : '[=BOOL]') +
       (opt.multiple ? '*' : '');
-    if (opt.shart) {
+    if (opt.short) {
       option += ',';
       option = option.padEnd(maxOptionLength + 12, ' ');
       option += '-' + opt.short;
@@ -137,29 +97,40 @@ function usage (options = optionsConfig) {
   return usage;
 }
 
-if (options.verbose) console.log('opts: ', options);
+function resolveFullPath (root, p) {
+  if (p.substr(0, 1) === '/') {
+    return p;
+  }
+  if (p === '~') {
+    return process.env.HOME;
+  }
+  if (p.substr(0, 2) === '~/') {
+    return path.join(process.env.HOME, p.substr(2));
+  }
+  return path.join(root, p);
+}
 
-if (options.help) {
-  console.log(usage());
-} else {
+function main () {
+  const { values: options, positionals } =
+    parseArgs({
+      options: optionsConfig,
+      allowPositionals: true,
+    });
+
+  if (options.verbose) console.log('opts: ', options);
+
+  if (options.help) {
+    return console.log(usage());
+  }
+
   const [command, subargv] = positionals;
 
   // Make paths absolute
   const root = path.join(process.env.HOME, '.local', 'share', 'srf');
   options.directory = resolveFullPath(root, options.directory);
-  options.config = resolveFullPath(options.directory, options.config);
-  options.database = resolveFullPath(options.directory, options.database);
-  options.media = resolveFullPath(options.directory, options.media);
-  options.htdocs = resolveFullPath(options.directory, options.htdocs);
-  options.views = resolveFullPath(options.directory, options.views);
-
-  // Make sure directories for media and database exist
-  const databaseDir = path.dirname(options.database);
-  fs.mkdirSync(databaseDir, { recursive: true }, (err) => {
-    if (err) throw err;
-  });
-  fs.mkdirSync(options.media, { recursive: true }, (err) => {
-    if (err) throw err;
+  ['config', 'database', 'media', 'htdocs', 'views']
+  .forEach(dir => {
+    options[dir] = resolveFullPath(options.directory, options[dir]);
   });
 
   const srf = require('../lib/srf')({
@@ -173,14 +144,7 @@ if (options.help) {
   ['SIGTERM', 'SIGINT']
   .forEach(signal => {
     process.on(signal, () => {
-      console.log('caught: ' + signal);
-      Promise.resolve()
-      .then(() => {
-        return srf.shutdown();
-      })
-      .then(() => {
-        process.exit();
-      });
+      srf.shutdown();
     });
   });
 
@@ -194,21 +158,15 @@ if (options.help) {
   } else if (command === undefined || command === 'run') {
     srf.runServer(options, subargv);
   } else {
-    console.error('Unsupported command: ' + command);
-    console.log(usage());
-    process.exit(1);
+    throw new Error('Unsupported command: ' + command);
   }
 }
 
-function resolveFullPath (root, p) {
-  if (p.substr(0, 1) === '/') {
-    return p;
-  }
-  if (p === '~') {
-    return process.env.HOME;
-  }
-  if (p.substr(0, 2) === '~/') {
-    return path.join(process.env.HOME, p.substr(2));
-  }
-  return path.join(root, p);
+try {
+  main();
+} catch (err) {
+  console.error('failed with error:');
+  console.error('    ' + err.message);
+  console.error(usage());
+  process.exitCode = 1;
 }

@@ -11,7 +11,11 @@ t.test('cli unsupported command', t => {
     exec(cmd, (err, stdout, stderr) => {
       if (err) {
         t.equal(err.code, 1, 'exit status is 1');
-        t.equal(stderr, 'Unsupported command: asdf\n', 'check stderr');
+        t.equal(
+          stderr.split('\n')[1],
+          '    Unsupported command: asdf',
+          'check stderr'
+        );
         return t.end();
       }
       t.fail('should not succeed');
