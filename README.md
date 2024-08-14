@@ -4543,3 +4543,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add command line argument to specify the scheduler plugin
  * Change test package to @ig3/test
  * Change CSS for buttons, for more consistent font and font-size
+ * Add graph of interval and factor to card back page

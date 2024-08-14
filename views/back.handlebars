@@ -19,7 +19,12 @@
 <button onclick="replay()" class="shortcut_p">Play</button>
 <a href="/" class="shortcut_b"><button>Stop</button></a>
 </div>
+<div class="charts">
+<h3>Card History</h3>
+<div id="cardHistory" class="chart"></div>
 </div>
+</div>
+<script src="/js/plotly-latest.min.js" charset="utf-8"></script>
 <script>
   function review (ease) {
     console.log('review ', ease);
@@ -49,4 +54,59 @@
       window.location('/');
     });
   };
+
+  let cardHistory = document.getElementById('cardHistory');
+  if (cardHistory) {
+    console.log('got cardHistory');
+    const data = [
+      {{{json chartData.cardInterval}}},
+      {{{json chartData.cardFactor}}},
+    ];
+    data[0].mode = 'lines';
+    data[0].name = 'Interval';
+    data[0].line = {
+      color: 'rgb(31, 119, 180)'
+    };
+    data[1].mode = 'lines';
+    data[1].name = 'Factor';
+    data[1].yaxis = 'y2';
+    data[1].line = {
+      color: 'rgb(185, 213, 232)'
+    };
+    let maxInterval = 0;
+    for (let i = data[0].y.length; i > 0; i--) {
+      if (data[0].y[i] > maxInterval) maxInterval = data[0].y[i];
+    }
+    let maxFactor = 0;
+    console.log('chart 1: ', data[1].y);
+    for (let i = data[1].y.length; i > 0; i--) {
+      if (data[1].y[i] > maxFactor) maxFactor = data[1].y[i];
+    }
+    console.log('maxInterval: ', maxInterval);
+    console.log('maxFactor: ', maxFactor);
+    Plotly.newPlot(cardHistory,
+      data, {
+        autosize: true,
+        margin: {
+          t: 10,
+          b: 10,
+          l: 30,
+          r: 10,
+        },
+        xaxis: { title: 'datetime', automargin: true },
+        yaxis: {
+          title: 'interval',
+          range: [ 0, maxInterval ],
+          automargin: true
+        },
+        yaxis2: {
+          title: 'factor',
+          overlaying: 'y',
+          side: 'right',
+          range: [ 0, maxFactor ],
+          automargin: true
+        }
+      }
+    );
+  }
 </script>
