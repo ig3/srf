@@ -1,23 +1,25 @@
 'use stcript';
 
-const dbSchema = '13';
+const dbSchema = '15';
 const t = require('@ig3/test');
 
 const exec = require('child_process').exec;
 // const execSync = require('child_process').execSync;
 const path = require('path');
-const tmp = require('tmp');
 const fs = require('fs');
 
 t.test('cli import', t => {
-  const tmpDir = tmp.dirSync({ unsafeCleanup: true });
   t.test('should fail with no file to import', t => {
+    const tmpDir = fs.mkdtempSync(path.join(__dirname, 'data', 'tmp'));
     t.teardown(() => {
-      tmpDir.removeCallback();
+      fs.rmSync(tmpDir, {
+        force: true,
+        recursive: true,
+      });
     });
     const cmd =
       path.join(__dirname, '..', 'bin', 'cmd.js') +
-      ' --directory ' + tmpDir.name +
+      ' --directory ' + tmpDir +
       ' import';
     exec(cmd, (err, stdout, stderr) => {
       if (err) {
@@ -30,13 +32,16 @@ t.test('cli import', t => {
   });
 
   t.test('should fail with missing file to import', t => {
+    const tmpDir = fs.mkdtempSync(path.join(__dirname, 'data', 'tmp'));
     t.teardown(() => {
-      tmpDir.removeCallback();
+      fs.rmSync(tmpDir, {
+        force: true,
+        recursive: true,
+      });
     });
-    const tmpDir = tmp.dirSync({ unsafeCleanup: true });
     const cmd =
       path.join(__dirname, '..', 'bin', 'cmd.js') +
-      ' --directory ' + tmpDir.name +
+      ' --directory ' + tmpDir +
       ' import nosuchfile';
     exec(cmd, (err, stdout, stderr) => {
       if (err) {
@@ -49,13 +54,16 @@ t.test('cli import', t => {
   });
 
   t.test('import from an Anki 2.1 export file', t => {
+    const tmpDir = fs.mkdtempSync(path.join(__dirname, 'data', 'tmp'));
     t.teardown(() => {
-      tmpDir.removeCallback();
+      fs.rmSync(tmpDir, {
+        force: true,
+        recursive: true,
+      });
     });
-    const tmpDir = tmp.dirSync({ unsafeCleanup: true });
     const cmd =
       path.join(__dirname, '..', 'bin', 'cmd.js') +
-      ' --directory ' + tmpDir.name +
+      ' --directory ' + tmpDir +
       ' import ' + path.join(__dirname, 'data', 'collection-2021-08-16@08-24-34.colpkg');
     exec(cmd, (err, stdout, stderr) => {
       if (err) {
@@ -63,13 +71,13 @@ t.test('cli import', t => {
         t.fail('should not fail');
         return t.end(true);
       }
-      t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
-      const dbpath = path.join(tmpDir.name, 'srf.db');
+      t.ok(fs.existsSync(tmpDir), 'check for data directory');
+      const dbpath = path.join(tmpDir, 'srf.db');
       t.ok(fs.existsSync(dbpath), 'check for database "' + dbpath + '"');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
-      const p = path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3');
+      t.ok(fs.existsSync(path.join(tmpDir, 'media')), 'check for media directory');
+      const p = path.join(tmpDir, 'media', 'audio1-1exercise2.mp3');
       t.ok(fs.existsSync(p), 'check for media file');
-      const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
+      const db = require('better-sqlite3')(path.join(tmpDir, 'srf.db'));
       t.ok(db, 'get a database handle');
       t.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
       const templates = db.prepare('select * from template').all();
@@ -300,7 +308,6 @@ t.test('cli import', t => {
           due: 1629388800,
           factor: 2,
           views: 1,
-          lapses: 0,
           ord: 0,
         },
         {
@@ -312,7 +319,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9384,
         },
         {
@@ -324,7 +330,6 @@ t.test('cli import', t => {
           due: 1629388800,
           factor: 2,
           views: 1,
-          lapses: 0,
           ord: 10,
         },
         {
@@ -336,7 +341,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9385,
         },
         {
@@ -348,7 +352,6 @@ t.test('cli import', t => {
           due: 1629059712,
           factor: 2,
           views: 1,
-          lapses: 0,
           ord: 20,
         },
         {
@@ -360,7 +363,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9386,
         },
         {
@@ -372,7 +374,6 @@ t.test('cli import', t => {
           due: 1629059719,
           factor: 2,
           views: 1,
-          lapses: 0,
           ord: 30,
         },
         {
@@ -384,7 +385,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9387,
         },
         {
@@ -396,7 +396,6 @@ t.test('cli import', t => {
           due: 1629059696,
           factor: 2,
           views: 1,
-          lapses: 0,
           ord: 40,
         },
         {
@@ -408,7 +407,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9388,
         },
         {
@@ -420,7 +418,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9389,
         },
         {
@@ -432,7 +429,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9390,
         },
         {
@@ -444,7 +440,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9390,
         },
         {
@@ -456,7 +451,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9391,
         },
         {
@@ -468,7 +462,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9391,
         },
         {
@@ -480,7 +473,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9392,
         },
         {
@@ -492,7 +484,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9392,
         },
         {
@@ -504,7 +495,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9393,
         },
         {
@@ -516,7 +506,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9393,
         },
         {
@@ -528,7 +517,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9394,
         },
         {
@@ -540,7 +528,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9394,
         },
         {
@@ -552,7 +539,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9395,
         },
         {
@@ -564,7 +550,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9395,
         },
         {
@@ -576,7 +561,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9396,
         },
         {
@@ -588,7 +572,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9396,
         },
         {
@@ -600,7 +583,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9397,
         },
         {
@@ -612,7 +594,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9397,
         },
         {
@@ -624,7 +605,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9398,
         },
         {
@@ -636,7 +616,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9398,
         },
         {
@@ -648,7 +627,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9399,
         },
         {
@@ -660,7 +638,6 @@ t.test('cli import', t => {
           due: 0,
           factor: 2,
           views: 0,
-          lapses: 0,
           ord: 9400,
         },
       ], 'cards load correctly');
@@ -677,7 +654,6 @@ t.test('cli import', t => {
           factor: 2.5,
           viewtime: 12,
           studytime: 12,
-          lapses: 0,
         },
         {
           id: 1629059013936,
@@ -689,7 +665,6 @@ t.test('cli import', t => {
           factor: 2.5,
           viewtime: 7,
           studytime: 7,
-          lapses: 0,
         },
         {
           id: 1629059023099,
@@ -701,7 +676,6 @@ t.test('cli import', t => {
           factor: 0,
           viewtime: 9,
           studytime: 9,
-          lapses: 0,
         },
         {
           id: 1629059027405,
@@ -713,7 +687,6 @@ t.test('cli import', t => {
           factor: 0,
           viewtime: 4,
           studytime: 4,
-          lapses: 0,
         },
         {
           id: 1629059039045,
@@ -725,7 +698,6 @@ t.test('cli import', t => {
           factor: 0,
           viewtime: 11,
           studytime: 11,
-          lapses: 0,
         },
       ], 'revlog loads correctly');
 
@@ -735,13 +707,16 @@ t.test('cli import', t => {
   });
 
   t.test('import from an Anki 2 shared deck', t => {
+    const tmpDir = fs.mkdtempSync(path.join(__dirname, 'data', 'tmp'));
     t.teardown(() => {
-      tmpDir.removeCallback();
+      fs.rmSync(tmpDir, {
+        force: true,
+        recursive: true,
+      });
     });
-    const tmpDir = tmp.dirSync({ unsafeCleanup: true });
     const cmd =
       path.join(__dirname, '..', 'bin', 'cmd.js') +
-      ' --directory ' + tmpDir.name +
+      ' --directory ' + tmpDir +
       ' import ' + path.join(__dirname, 'data', 'Coursera_-Chinese_for_Beginners.apkg');
     exec(cmd, (err, stdout, stderr) => {
       if (err) {
@@ -750,11 +725,11 @@ t.test('cli import', t => {
         return t.end(true);
       }
 
-      t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
-      const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
+      t.ok(fs.existsSync(tmpDir), 'check for data directory');
+      t.ok(fs.existsSync(path.join(tmpDir, 'srf.db')), 'check for database');
+      t.ok(fs.existsSync(path.join(tmpDir, 'media')), 'check for media directory');
+      t.ok(fs.existsSync(path.join(tmpDir, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
+      const db = require('better-sqlite3')(path.join(tmpDir, 'srf.db'));
       t.ok(db, 'get a database handle');
       t.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
       t.equal(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
@@ -765,13 +740,16 @@ t.test('cli import', t => {
   });
 
   t.test('import from an Anki 2 shared deck with revlog', t => {
+    const tmpDir = fs.mkdtempSync(path.join(__dirname, 'data', 'tmp'));
     t.teardown(() => {
-      tmpDir.removeCallback();
+      fs.rmSync(tmpDir, {
+        force: true,
+        recursive: true,
+      });
     });
-    const tmpDir = tmp.dirSync({ unsafeCleanup: true });
     const cmd =
       path.join(__dirname, '..', 'bin', 'cmd.js') +
-      ' --directory ' + tmpDir.name +
+      ' --directory ' + tmpDir +
       ' import ' + path.join(__dirname, 'data', 'Coursera_-Chinese_for_Beginners_modified.apkg');
     exec(cmd, (err, stdout, stderr) => {
       if (err) {
@@ -779,11 +757,11 @@ t.test('cli import', t => {
         t.fail('should not fail');
         return t.end(true);
       }
-      t.ok(fs.existsSync(tmpDir.name), 'check for data directory');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'srf.db')), 'check for database');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'media')), 'check for media directory');
-      t.ok(fs.existsSync(path.join(tmpDir.name, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
-      const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
+      t.ok(fs.existsSync(tmpDir), 'check for data directory');
+      t.ok(fs.existsSync(path.join(tmpDir, 'srf.db')), 'check for database');
+      t.ok(fs.existsSync(path.join(tmpDir, 'media')), 'check for media directory');
+      t.ok(fs.existsSync(path.join(tmpDir, 'media', 'audio1-1exercise2.mp3')), 'check for media file');
+      const db = require('better-sqlite3')(path.join(tmpDir, 'srf.db'));
       t.ok(db, 'get a database handle');
       t.equal(db.prepare('select value from config where name = \'srf schema version\'').get().value, dbSchema, 'check schema version');
       t.equal(db.prepare('select count() from card').get()['count()'], 31, 'check count of cards');
@@ -794,13 +772,16 @@ t.test('cli import', t => {
   });
 
   t.test('import templates CSV file', t => {
+    const tmpDir = fs.mkdtempSync(path.join(__dirname, 'data', 'tmp'));
     t.teardown(() => {
-      tmpDir.removeCallback();
+      fs.rmSync(tmpDir, {
+        force: true,
+        recursive: true,
+      });
     });
-    const tmpDir = tmp.dirSync({ unsafeCleanup: true });
     const cmd =
       path.join(__dirname, '..', 'bin', 'cmd.js') +
-      ' --directory ' + tmpDir.name +
+      ' --directory ' + tmpDir +
       ' import ' + path.join(__dirname, 'data', 'templates.csv');
     exec(cmd, (err, stdout, stderr) => {
       if (err) {
@@ -808,7 +789,7 @@ t.test('cli import', t => {
         t.fail('should not fail');
         return t.end(true);
       }
-      const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
+      const db = require('better-sqlite3')(path.join(tmpDir, 'srf.db'));
       t.ok(db, 'get a database handle');
       const templates = db.prepare('select * from template').all();
       t.deepEqual(templates, [
@@ -832,7 +813,7 @@ t.test('cli import', t => {
       db.close();
       const cmd =
         path.join(__dirname, '..', 'bin', 'cmd.js') +
-        ' --directory ' + tmpDir.name +
+        ' --directory ' + tmpDir +
         ' import ' + path.join(__dirname, 'data', 'fieldsets.csv');
       exec(cmd, (err, stdout, stderr) => {
         if (err) {
@@ -840,7 +821,7 @@ t.test('cli import', t => {
           t.fail('should not fail');
           return t.end();
         }
-        const db = require('better-sqlite3')(path.join(tmpDir.name, 'srf.db'));
+        const db = require('better-sqlite3')(path.join(tmpDir, 'srf.db'));
         t.ok(db, 'get a database handle');
         const templates = db.prepare('select * from template').all();
         t.deepEqual(templates, [
@@ -878,7 +859,7 @@ t.test('cli import', t => {
             ord: 2,
           },
         ], 'fieldsets loaded successfully');
-        const cards = db.prepare('select id, fieldsetid, templateid, interval, due, factor, views, lapses, ord from card').all();
+        const cards = db.prepare('select id, fieldsetid, templateid, interval, due, factor, views, ord from card').all();
         t.ok(cards.length === 4, '4 cards created');
         t.deepEqual(cards, [
           {
@@ -889,7 +870,6 @@ t.test('cli import', t => {
             due: 0,
             factor: 2,
             views: 0,
-            lapses: 0,
             ord: 1,
           }, {
             id: 2,
@@ -899,7 +879,6 @@ t.test('cli import', t => {
             due: 0,
             factor: 2,
             views: 0,
-            lapses: 0,
             ord: 1,
           }, {
             id: 3,
@@ -909,7 +888,6 @@ t.test('cli import', t => {
             due: 0,
             factor: 2,
             views: 0,
-            lapses: 0,
             ord: 2,
           }, {
             id: 4,
@@ -919,7 +897,6 @@ t.test('cli import', t => {
             due: 0,
             factor: 2,
             views: 0,
-            lapses: 0,
             ord: 2,
           },
         ], 'cards created correctly');

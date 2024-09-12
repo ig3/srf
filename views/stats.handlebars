@@ -38,9 +38,8 @@ title="Total cards since beginning of study">{{cardsSeen}}</span></td></tr>
 <h3>Percent Correct</h3>
 <div id="percentCorrect" class="chart"></div>
 
-<h3>Matured &amp; Lapsed</h3>
-<div id="matured" class="chart"></div>
-</div>
+<h3>Cards per Stage</h3>
+<div id="cardsPerStage" class="chart"></div>
 
 <h3>Cards Due per day</h3>
 <div id="cardsDuePerDay" class="chart"></div>
@@ -121,6 +120,39 @@ title="Total cards since beginning of study">{{cardsSeen}}</span></td></tr>
     );
   }
 
+  let cardsPerStage = document.getElementById('cardsPerStage');
+  if (cardsPerStage) {
+    const data = [
+        {{{json charts.chartStageNew}}},
+        {{{json charts.chartStageLearning}}},
+        {{{json charts.chartStageMature}}},
+        {{{json charts.chartStageMastered}}},
+    ];
+    data[0].connectgaps = true;
+    data[0].stackgroup = 0;
+    data[0].name = 'new';
+    data[1].stackgroup = 0;
+    data[1].name = 'learning';
+    data[2].stackgroup = 0;
+    data[2].name = 'mature';
+    data[3].stackgroup = 0;
+    data[3].name = 'mastered';
+    Plotly.newPlot(cardsPerStage,
+      data, {
+        showlegend: false,
+        autosize: true,
+        margin: {
+          t: 10,
+          b: 10,
+          l: 10,
+          r: 10
+        },
+        yaxis: { title: 'cards', automargin: true },
+        xaxis: { title: 'day', automargin: true },
+      },
+    );
+  }
+
   let cardsDuePerDay = document.getElementById('cardsDuePerDay');
   if (cardsDuePerDay) {
     Plotly.newPlot(cardsDuePerDay,
@@ -170,72 +202,4 @@ title="Total cards since beginning of study">{{cardsSeen}}</span></td></tr>
       } 
     );
   }
-
-  const chart6Data = [
-    {{{json charts.chartMatureTrace1}}},
-    {{{json charts.chartMatureTrace2}}},
-    {{{json charts.chartMatureTrace3}}},
-    {{{json charts.chartMatureTrace4}}}
-  ];
-  let maxy1 = -Infinity;
-  let miny1 = Infinity;
-  let maxy2 = -Infinity;
-  for (let i = chart6Data[0].y.length; i > 0; i--) {
-    if (chart6Data[0].y[i] < miny1) miny1 = chart6Data[0].y[i];
-    if (chart6Data[1].y[i] > maxy1) maxy1 = chart6Data[1].y[i];
-    if (chart6Data[2].y[i] > maxy1) maxy1 = chart6Data[2].y[i];
-    if (chart6Data[3].y[i] > maxy2) maxy2 = chart6Data[3].y[i];
-  }
-  const miny2 = maxy2 * miny1 / maxy1;
-  const r1max = maxy1 + (maxy1 - miny1) * 0.05;
-  const r1min = miny1 - (maxy1 - miny1) * 0.05;
-  const r2max = maxy2 + (maxy2 - miny2) * 0.05;
-  const r2min = miny2 - (maxy2 - miny2) * 0.05;
-  chart6Data[0].line = {
-    color: 'rgb(250, 200, 0)'
-  };
-  chart6Data[1].line = {
-    color: 'rgb(256, 50, 50)'
-  };
-  chart6Data[2].line = {
-    color: 'rgb(50, 128, 50)'
-  };
-  chart6Data[3].line = {
-    color: 'rgb(100, 100, 200)'
-  };
-
-  let matured = document.getElementById('matured');
-  if (matured) {
-    Plotly.newPlot(matured,
-      chart6Data, {
-        autosize: true,
-        margin: {
-          t: 10,
-          b: 10,
-          l: 10,
-          r: 10
-        },
-        xaxis: { title: 'date', automargin: true },
-        yaxis: {
-          title: 'matured, lapsed, net (cards)',
-          range: [ r1min, r1max ],
-          automargin: true
-        },
-        yaxis2: {
-          title: 'cumulative (cards)',
-          overlaying: 'y',
-          side: 'right',
-          range: [ r2min, r2max ],
-          automargin: true
-        },
-        legend: {
-          orientation: 'h',
-          x: 0.2,
-          xanchor: 'left',
-          y: 1.1
-        }
-      }
-    );
-  }
-
 </script>

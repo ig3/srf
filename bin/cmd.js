@@ -167,6 +167,7 @@ try {
 } catch (err) {
   console.error('failed with error:');
   console.error('    ' + err.message);
+  console.error('    ' + err.stack);
   console.error(usage());
   process.exitCode = 1;
 }

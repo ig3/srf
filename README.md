@@ -803,6 +803,10 @@ study.
 
 #### Charts
 
+##### New Cards per day
+
+This is the number of new cards presented each day since the start of study
+
 ##### Card Views per day
 
 This is the total number of card views each day since the start of study.
@@ -810,6 +814,16 @@ This is the total number of card views each day since the start of study.
 ##### Minutes Studied per day
 
 This is the total study time per day since the start of study.
+
+##### Cards per Stage
+
+This is a stacked chart of cards per stage: New, Learning, Matured and
+Mastered. The stages are distinguished by interval.
+
+ * New: 0 < interval < config.learningThreshold
+ * Learning: config.learningThreshold <= interval < config.matureThreshold
+ * Mature: config.matureThreshold <= interval < config.maxInterval
+ * Mastered: config.maxInterval <= interval
 
 ##### Cards Due per day
 
@@ -824,15 +838,6 @@ the interval after adjustment for percent correct. The Unadjusted Interval
 is the interval as set when the card was last viewed. The adjusted interval
 is the interval that will be the basis for calculation of the interval
 after the next review.
-
-##### New Cards per day
-
-This is the number of new cards presented each day since the start of study
-
-##### Matured & Lapsed
-
-This is the number of cards matured, lapsed, net change and cumulative per
-day since the start of study.
 
 ## Command Synopsis
 
@@ -871,11 +876,13 @@ This performs several 'fixes':
  * create any missing cards from fieldsets and templates and delete any
    cards for which there is no longer a fieldset and template.
  * fix revlog entries:
-   * make revlog IDs unique
+   * make revlog IDs unique and monotonic increasing
    * set 'lastinterval' to 'interval' of the previous revlog entry for the
      card
    * set 'interval' of the last revlog entry for a card to the 'lastinterval'
      of the card
+   * set revdate according to the id
+   * add missing counts of cards by stage to dailystats
 
 ### options
 
@@ -1195,15 +1202,9 @@ the scheduled interval.
 
 default: 21 days
 
-The interval beyond which cards are considered 'mature'. This doesn't
-affect reviews. It only affects some of the statistics.
-
 This affects the calculation of Percent Correct, which is compared against
 percentCorrectTarget. Only review of cards with an interval greater than
 matureThreshold are considered in calculating Percent Correct.
-
-A card is considered lapsed if its interval changes from longer than
-matureThreshold to shorter than matureThreshold.
 
 A card is counted as mature (Unconcious Competence) or mastered if its
 interval is greater than matureThreshold.
@@ -1251,10 +1252,9 @@ adjustments.
 Revlog also has two interval values: interval and lastinterval. But here
 their values are different. The value of interval is the new interval of
 the card, after review, based on the ease. The value of lastinterval is the
-unadjusted interval of the card the last time it was reviewed. It is used
-to determine if the card has matured or lapsed. It is redundant with the
-interval value of the previous revlog record for the card but saves a lot
-of lookup producing the statistics.
+unadjusted interval of the card the last time it was reviewed. It is
+redundant with the interval value of the previous revlog record for the
+card but saves a lot of lookup producing the statistics.
 
 #### percentCorrectSensitivity
 
@@ -2020,8 +2020,7 @@ When a card is reviewed, lastinterval is set to interval but interval might
 be adjusted before the card is reviewed again while lastinterval is not. It
 is always the interval when the card was last reviewed.
 
-The lastinterval is copied to the lastinterval field of revlog and used to
-determine if the card has matured or lapsed.
+The lastinterval is copied to the lastinterval field of revlog.
 
 #### due
 This is the time (seconds since the epoch) when the card is due to be
@@ -2063,9 +2062,6 @@ The fields / statistics are:
  * cardviews - total number of reviews
  * studytime - total minutes of study
  * newcards - the number of new cards reviewed
- * matured - the number of cards that became mature
- * lapsed - the number of cards that lapsed from mature (i.e. you forgot)
- * mature - the number of mature cards
  * percentcorrect - the percent of 'correct' reviews
 
 This table is updated after each review.
@@ -2169,9 +2165,8 @@ local timezone. Performing the conversion dynamically, per record, when the
 charts are produced adds significant time to the query or processing.
 
 lastinterval is recorded to avoid having to do a lookup of the interval of
-the previous revlog for the card. It is used in determining if a card has
-lapsed or matured and if the card was new. It is also used in calculating
-percent correct.
+the previous revlog for the card. It is used in determining if the card was
+new. It is also used in calculating percent correct.
 
 ### template
 A template record associates a templateset name with a pair of mustache
@@ -4544,3 +4539,9 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Change test package to @ig3/test
  * Change CSS for buttons, for more consistent font and font-size
  * Add graph of interval and factor to card back page
+
+### 6.0.13 - 20240912
+ * Drop the Matured & Lapsed chart and related data
+ * Add chart of cards by stage
+ * Update dailystats at each card review
+ * Enhance fix to add missing dailystats counts of cards by stage

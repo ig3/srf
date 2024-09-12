@@ -227,14 +227,13 @@ t.test('srf.js', async t => {
           lastinterval,
           factor,
           viewtime,
-          studytime,
-          lapses
-        ) values (?,?,?,?,?,?,?,?,?,?)`
+          studytime
+        ) values (?,?,?,?,?,?,?,?,?)`
       );
 
-      insertRevlog.run(ts, '20240101', 1, 'good', 500, 0, 2, 20, 20, 0);
-      insertRevlog.run(ts, '20240101', 1, 'good', 500, 0, 2, 20, 20, 0);
-      insertRevlog.run(ts, '20240101', 1, 'good', 500, 0, 2, 20, 20, 0);
+      insertRevlog.run(ts, '20240101', 1, 'good', 500, 0, 2, 20, 20);
+      insertRevlog.run(ts, '20240101', 1, 'good', 500, 0, 2, 20, 20);
+      insertRevlog.run(ts, '20240101', 1, 'good', 500, 0, 2, 20, 20);
       srf.fixDatabase();
       t.pass('should not throw');
       t.end();
