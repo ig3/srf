@@ -4545,3 +4545,7 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add chart of cards by stage
  * Update dailystats at each card review
  * Enhance fix to add missing dailystats counts of cards by stage
+
+### 6.0.14 - WIP
+ * Don't average percent correct
+ * Record current percent correct in dailystats
