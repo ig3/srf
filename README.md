@@ -4549,3 +4549,4 @@ Decrease sensitivity to average study time to range 90% to 110%
 ### 6.0.14 - WIP
  * Don't average percent correct
  * Record current percent correct in dailystats
+ * Change card history graph interpolation style

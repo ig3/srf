@@ -65,13 +65,15 @@
     data[0].mode = 'lines';
     data[0].name = 'Interval';
     data[0].line = {
-      color: 'rgb(31, 119, 180)'
+      color: 'rgb(31, 119, 180)',
+      shape: 'hv'
     };
     data[1].mode = 'lines';
     data[1].name = 'Factor';
     data[1].yaxis = 'y2';
     data[1].line = {
-      color: 'rgb(185, 213, 232)'
+      color: 'rgb(185, 213, 232)',
+      shape: 'hv'
     };
     let maxInterval = 0;
     for (let i = data[0].y.length; i > 0; i--) {
