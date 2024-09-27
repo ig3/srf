@@ -57,7 +57,6 @@
 
   let cardHistory = document.getElementById('cardHistory');
   if (cardHistory) {
-    console.log('got cardHistory');
     const data = [
       {{{json chartData.cardInterval}}},
       {{{json chartData.cardFactor}}},
@@ -66,14 +65,14 @@
     data[0].name = 'Interval';
     data[0].line = {
       color: 'rgb(31, 119, 180)',
-      shape: 'hv'
+      shape: 'vh'
     };
     data[1].mode = 'lines';
     data[1].name = 'Factor';
     data[1].yaxis = 'y2';
     data[1].line = {
       color: 'rgb(185, 213, 232)',
-      shape: 'hv'
+      shape: 'vh'
     };
     let maxInterval = 0;
     for (let i = data[0].y.length; i > 0; i--) {
@@ -97,16 +96,18 @@
         },
         xaxis: { title: 'datetime', automargin: true },
         yaxis: {
-          title: 'interval',
-          range: [ 0, maxInterval ],
-          automargin: true
+          title: 'interval (days)',
+          // range: [ 0, maxInterval ],
+          automargin: true,
+          rangemode: 'tozero'
         },
         yaxis2: {
           title: 'factor',
           overlaying: 'y',
           side: 'right',
-          range: [ 0, maxFactor ],
-          automargin: true
+          // range: [ 0, maxFactor ],
+          automargin: true,
+          rangemode: 'tozero'
         }
       }
     );
