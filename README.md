@@ -4550,3 +4550,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Don't average percent correct
  * Record current percent correct in dailystats
  * Change card history graph
+ * Fill gaps in dailystats
