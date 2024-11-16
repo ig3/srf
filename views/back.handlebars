@@ -5,7 +5,8 @@
 </div>
 <div class="buttons">
 <span id="card-metrics">
-(<span title="card interval">{{interval}}</span>
+(<span title="original interval">{{card.lastinterval}}</span>
+<span title="adjusted interval">{{card.interval}}</span>
 <span title="time since last review">{{timeSinceLastReview}}</span>
 <span title="card factor">{{card.factor}}</span>)
 </span>
@@ -20,7 +21,7 @@
 <a href="/" class="shortcut_b"><button>Stop</button></a>
 </div>
 <div class="charts">
-<h3>Card History</h3>
+<h3>Card History - ID {{card.id}}</h3>
 <div id="cardHistory" class="chart"></div>
 </div>
 </div>
@@ -65,14 +66,14 @@
     data[0].name = 'Interval';
     data[0].line = {
       color: 'rgb(31, 119, 180)',
-      shape: 'vh'
+      shape: 'hv'
     };
     data[1].mode = 'lines';
     data[1].name = 'Factor';
     data[1].yaxis = 'y2';
     data[1].line = {
       color: 'rgb(185, 213, 232)',
-      shape: 'vh'
+      shape: 'hv'
     };
     let maxInterval = 0;
     for (let i = data[0].y.length; i > 0; i--) {
