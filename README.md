@@ -4553,3 +4553,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Fill gaps in dailystats
  * Make stroke image smaller
  * Reduce getAverageStudyTime default window to 7 days
+ * Add total to chart of cards per stage on stats page

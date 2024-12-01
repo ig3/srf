@@ -127,6 +127,7 @@ title="Total cards since beginning of study">{{cardsSeen}}</span></td></tr>
         {{{json charts.chartStageLearning}}},
         {{{json charts.chartStageMature}}},
         {{{json charts.chartStageMastered}}},
+        {{{json charts.chartTotalCards}}},
     ];
     data[0].connectgaps = true;
     data[0].stackgroup = 0;
@@ -137,6 +138,7 @@ title="Total cards since beginning of study">{{cardsSeen}}</span></td></tr>
     data[2].name = 'mature';
     data[3].stackgroup = 0;
     data[3].name = 'mastered';
+    data[4].name = 'total';
     Plotly.newPlot(cardsPerStage,
       data, {
         showlegend: false,
