@@ -62,7 +62,7 @@ The home page shows statistics of your study:
  * cards reviewed and minutes studied in the past 24 hours
  * cards due and predicted minutes to study in the next 24 hours
  * study time per day: a forward looking average used to determine new card
-   mode and a short term historic average
+   mode and a short term (7 days) historic average
  * new cards per day: new cards in the past 24 hours and a short term
    historic average
  * percent of cards that you got correct (i.e. not rated Fail)
@@ -592,7 +592,7 @@ The home page presents some basic study statistics:
  * The number of cards due and estimated minutes to study in the next 24
    hours
  * Study time per day: short term used to determine new card mode /
-   historic average
+   historic 7 days average
  * New cards per day: past 24 hours / historic average
  * New cards during the past 24 hours
  * The percentage of correct (not 'Fail') responses to mature cards in the
@@ -4552,3 +4552,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Change card history graph
  * Fill gaps in dailystats
  * Make stroke image smaller
+ * Reduce getAverageStudyTime default window to 7 days
