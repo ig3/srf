@@ -5,14 +5,14 @@
 ><td><span title="Today">{{newCardsToday}}</span> /
 <span title="Short term average">{{newCardsShortTermAverage}}</span> /
 <span title="Long term average">{{newCardsLongTermAverage}}</span></td></tr>
-<tr><th>Cards seen:</th><td><span
-title="Total cards since beginning of study">{{cardsSeen}}</span></td></tr>
-<tr><th>Cards by Stage:</th
-><td><span title="Unseen">{{countUI}}</span> /
-<span title="New">{{countCI}}</span> /
-<span title="Learning">{{countCC}}</span> /
-<span title="Mature">{{countUC}}</span> /
-<span title="Mastered">{{countM}}</span></td></tr>
+<tr><th>Cards:</th
+><td><span title="Total">{{cardCounts.total}}</span> (
+<span title="Unseen">{{cardCounts.unseen}}</span> /
+<span title="Seen">{{cardCounts.seen}}</span> (
+<span title="New">{{cardCounts.new}}</span> /
+<span title="Learning">{{cardCounts.learning}}</span> /
+<span title="Mature">{{cardCounts.mature}}</span> /
+<span title="Mastered">{{cardCounts.mastered}}</span> ))</td></tr>
 <tr><th>Percent correct:</th><td>{{percentCorrect}}%</td></tr>
 <tr><th>Average time per review:</th><td>{{averageStudyTimePerReview}} (sec)</td></tr>
 <tr><th>Cards today:</th

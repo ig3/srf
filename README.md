@@ -727,15 +727,16 @@ This is the number of new cards viewed in the current day,
 short term (past 7 days) average of new cards per day and
 long term (since the beginning of study) average of new cards per day.
 
-#### Cards seen
+#### Cards
 
-This is the total number of distinct cards that have been seen at least
-once since the start of study.
-
-#### Cards by Stage
-
-The stage is determined by card interval. The stages are: Unseen, New,
-Learning, Mature and Mastered.
+This is various counts of cards:
+ * Total cards, broken down into:
+     * Unseen cards,
+     * Seen cards, broken down into:
+         * New cards,
+         * Learning cards,
+         * Mature cards,
+         * Mastered cards
 
 #### Percent Correct
 
@@ -4554,3 +4555,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Make stroke image smaller
  * Reduce getAverageStudyTime default window to 7 days
  * Add total to chart of cards per stage on stats page
+ * Consolidate counts of cards and add count of total cards seen
