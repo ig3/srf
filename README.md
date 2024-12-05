@@ -4547,7 +4547,7 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Update dailystats at each card review
  * Enhance fix to add missing dailystats counts of cards by stage
 
-### 6.0.14 - WIP
+### 6.0.14 - 20241206
  * Don't average percent correct
  * Record current percent correct in dailystats
  * Change card history graph
@@ -4556,3 +4556,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Reduce getAverageStudyTime default window to 7 days
  * Add total to chart of cards per stage on stats page
  * Consolidate counts of cards and add count of total cards seen
+ * Update dependencies
