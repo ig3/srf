@@ -59,20 +59,20 @@
   let cardHistory = document.getElementById('cardHistory');
   if (cardHistory) {
     const data = [
-      {{{json chartData.cardInterval}}},
       {{{json chartData.cardFactor}}},
+      {{{json chartData.cardInterval}}},
     ];
     data[0].mode = 'lines';
-    data[0].name = 'Interval';
+    data[0].name = 'Factor';
     data[0].line = {
-      color: 'rgb(31, 119, 180)',
+      color: 'rgb(185, 213, 232)',
       shape: 'hv'
     };
     data[1].mode = 'lines';
-    data[1].name = 'Factor';
+    data[1].name = 'Interval';
     data[1].yaxis = 'y2';
     data[1].line = {
-      color: 'rgb(185, 213, 232)',
+      color: 'rgb(31, 119, 180)',
       shape: 'hv'
     };
     let maxInterval = 0;
@@ -97,19 +97,19 @@
         },
         xaxis: { title: 'datetime', automargin: true },
         yaxis: {
-          title: 'interval (days)',
-          // range: [ 0, maxInterval ],
+          title: 'factor',
+          // range: [ 0, maxFactor ],
           automargin: true,
           rangemode: 'tozero'
         },
         yaxis2: {
-          title: 'factor',
+          title: 'interval (days)',
+          // range: [ 0, maxInterval ],
           overlaying: 'y',
           side: 'right',
-          // range: [ 0, maxFactor ],
           automargin: true,
           rangemode: 'tozero'
-        }
+        },
       }
     );
   }

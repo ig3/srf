@@ -4557,3 +4557,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add total to chart of cards per stage on stats page
  * Consolidate counts of cards and add count of total cards seen
  * Update dependencies
+ * Swap y axes of card history graph on back
