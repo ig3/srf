@@ -4558,3 +4558,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Consolidate counts of cards and add count of total cards seen
  * Update dependencies
  * Swap y axes of card history graph on back
+ * Reorder time per day on home page
