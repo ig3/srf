@@ -4559,3 +4559,6 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Update dependencies
  * Swap y axes of card history graph on back
  * Reorder time per day on home page
+
+### 6.0.15 - WIP
+ * Change order of data after New Cards Per Day on home page
