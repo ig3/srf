@@ -4562,3 +4562,4 @@ Decrease sensitivity to average study time to range 90% to 110%
 
 ### 6.0.15 - WIP
  * Change order of data after New Cards Per Day on home page
+ * Change order of data after New cards per day on stats page
