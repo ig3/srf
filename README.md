@@ -4231,6 +4231,13 @@ Forgotten, but a shorter word.
 
 Lost?
 
+## Development
+
+srf source repository is at
+[Codeberg ig3/srf](https://codeberg.org/ig3/srf)
+and
+[GitHub ig3/srf](https://github.com/ig3/srf)
+
 ## Changes
 
 ### 1.1.0 - 20220916
