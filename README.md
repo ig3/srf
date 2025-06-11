@@ -4572,3 +4572,5 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Change order of data after New cards per day on stats page
  * Update dependencies
 
+### 6.0.15 - WIP
+ * Defer percent correct config parameter defaults to srf-scheduler
