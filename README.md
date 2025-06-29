@@ -4573,4 +4573,5 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Update dependencies
 
 ### 6.0.15 - WIP
- * Defer percent correct config parameter defaults to srf-scheduler
+ * Remove remaining scheduler parameters from defaults set in srf.lib
+ * Reorganize parameters on home and card pages
