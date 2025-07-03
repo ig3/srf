@@ -4575,3 +4575,4 @@ Decrease sensitivity to average study time to range 90% to 110%
 ### 6.0.15 - WIP
  * Remove remaining scheduler parameters from defaults set in srf.lib
  * Reorganize parameters on home and card pages
+ * Use weighted average for study time
