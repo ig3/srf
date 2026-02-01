@@ -2064,6 +2064,13 @@ The fields / statistics are:
  * studytime - total minutes of study
  * newcards - the number of new cards reviewed
  * percentcorrect - the percent of 'correct' reviews
+ * stageNew - the number of cards at stage New
+ * stageLearning - the number of cards at stage Learning
+ * stageMature - the number of cards at stage Mature
+ * stageMastered - the number of cards at stage Mastered
+ * latency - the average latency of reviewed cards (seconds)
+ * backlog - the minimum count of cards due
+ * overdue - the minimum count of cards overdue
 
 This table is updated after each review.
 
@@ -2158,7 +2165,10 @@ CREATE TABLE revlog (
  * factor: a factor for determining interval
  * viewtime: the time spent viewing the card
  * studytime: the time spent studying the card, for study time calculations
- * lapses: the number of times the card has lapsed
+ * due: the time the card is due
+ * lastdue: the time the card was due
+ * backlog: the count of cards due
+ * overdue: the count of cards overdue
 
 The revdate field is redundant with id but it reduces processing time to
 produce statistics charts that are grouped by date, where the date is
@@ -4576,3 +4586,6 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Remove remaining scheduler parameters from defaults set in srf.lib
  * Reorganize parameters on home and card pages
  * Use weighted average for study time
+ * Add due, lastdue, backlog and overdue to revlog
+ * Add latency, backlog and overdue to dailystats 
+ * Add latency to home page stats
