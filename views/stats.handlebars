@@ -36,6 +36,9 @@
 <h3>Minutes of Study per day</h3>
 <div id="minutesStudiedPerDay" class="chart"></div>
 
+<h3>Backlog, Overdue and Latency</h3>
+<div id="latency" class="chart"></div>
+
 <h3>Percent Correct</h3>
 <div id="percentCorrect" class="chart"></div>
 
@@ -118,6 +121,65 @@
         yaxis: { title: 'cards', automargin: true },
         xaxis: { title: 'date', automargin: true }
       }
+    );
+  }
+
+  let latency = document.getElementById('latency');
+  if (latency) {
+    const latencyData = [
+      {{{json charts.chartsLatency.chartBacklog}}},
+      {{{json charts.chartsLatency.chartOverdue}}},
+      {{{json charts.chartsLatency.chartLatency}}},
+    ];
+    latencyData[0].mode = 'lines';
+    latencyData[0].name = 'Backlog';
+    latencyData[0].line = {
+      color: 'rgb(220, 220, 0)',
+      shape: 'hv'
+    };
+    latencyData[1].mode = 'lines';
+    latencyData[1].name = 'Overdue';
+    latencyData[1].line = {
+      color: 'rgb(255, 0, 0)',
+      shape: 'hv'
+    };
+    latencyData[2].mode = 'lines';
+    latencyData[2].name = 'Latency';
+    latencyData[2].yaxis = 'y2';
+    latencyData[2].line = {
+      color: 'rgb(31, 119, 180)',
+      shape: 'hv'
+    };
+    Plotly.newPlot(latency,
+      latencyData, {
+        autosize: true,
+        margin: {
+          t: 10,
+          b: 10,
+          l: 10,
+          r: 10
+        },
+        xaxis: { title: 'day', automargin: true },
+        yaxis: {
+          title: 'Cards',
+          automargin: true,
+          rangemode: 'tozero'
+        },
+        yaxis2: {
+          title: 'Minutes',
+          overlaying: 'y',
+          side: 'right',
+          type: 'log',
+          autorange: true,
+          automargin: true,
+        },
+        legend: {
+          orientation: 'h',
+          x: 0.2,
+          xanchor: 'left',
+          y: 1.15
+        }
+      } 
     );
   }
 

@@ -808,13 +808,20 @@ study.
 
 This is the number of new cards presented each day since the start of study
 
-##### Card Views per day
+##### Card Reviews per day
 
 This is the total number of card views each day since the start of study.
 
-##### Minutes Studied per day
+##### Minutes of Study per day
 
 This is the total study time per day since the start of study.
+
+##### Backlog, Overdue and Latency
+
+This is the minimum number of cards backlogged each day (i.e. past due),
+the minimum number of cards overdue each day (i.e. more than 24 hours past
+due) and the average latency (minutes on a logarithmic scale) of cards
+reviewed each day.
 
 ##### Cards per Stage
 
@@ -4589,3 +4596,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add due, lastdue, backlog and overdue to revlog
  * Add latency, backlog and overdue to dailystats 
  * Add latency to home page stats
+ * Add chart: Latency, Backlog and Overdue
