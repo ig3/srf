@@ -1,6 +1,6 @@
 'use stcript';
 
-const dbSchema = '15';
+const dbSchema = '16';
 const t = require('@ig3/test');
 
 const exec = require('child_process').exec;
@@ -654,6 +654,10 @@ t.test('cli import', t => {
           factor: 2.5,
           viewtime: 12,
           studytime: 12,
+          due: null,
+          lastdue: null,
+          backlog: null,
+          overdue: null,
         },
         {
           id: 1629059013936,
@@ -665,6 +669,10 @@ t.test('cli import', t => {
           factor: 2.5,
           viewtime: 7,
           studytime: 7,
+          due: null,
+          lastdue: null,
+          backlog: null,
+          overdue: null,
         },
         {
           id: 1629059023099,
@@ -676,6 +684,10 @@ t.test('cli import', t => {
           factor: 0,
           viewtime: 9,
           studytime: 9,
+          due: null,
+          lastdue: null,
+          backlog: null,
+          overdue: null,
         },
         {
           id: 1629059027405,
@@ -687,6 +699,10 @@ t.test('cli import', t => {
           factor: 0,
           viewtime: 4,
           studytime: 4,
+          due: null,
+          lastdue: null,
+          backlog: null,
+          overdue: null,
         },
         {
           id: 1629059039045,
@@ -698,6 +714,10 @@ t.test('cli import', t => {
           factor: 0,
           viewtime: 11,
           studytime: 11,
+          due: null,
+          lastdue: null,
+          backlog: null,
+          overdue: null,
         },
       ], 'revlog loads correctly');
 
