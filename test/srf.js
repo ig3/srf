@@ -10,7 +10,7 @@ process.on('exit', () => {
     // Despite the force, removal will fail with a permission error
     fs.chmodSync(path.join(tmpdir, 'no-permissions'), 0o777);
     fs.rmSync(tmpdir, { recursive: true, force: true });
-  } catch(err) {
+  } catch (err) {
     console.log('fs.rmSync failed: ', err);
   }
 });
