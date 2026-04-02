@@ -6,7 +6,13 @@ const path = require('path');
 
 const tmpdir = fs.mkdtempSync(path.join(__dirname, 'data', 'tmp'));
 process.on('exit', () => {
-  fs.rmSync(tmpdir, { recursive: true, force: true });
+  try {
+    // Despite the force, removal will fail with a permission error
+    fs.chmodSync(path.join(tmpdir, 'no-permissions'), 0o777);
+    fs.rmSync(tmpdir, { recursive: true, force: true });
+  } catch(err) {
+    console.log('fs.rmSync failed: ', err);
+  }
 });
 fs.mkdirSync(path.join(tmpdir, 'no-permissions'), { mode: 0x000 });
 fs.mkdirSync(path.join(tmpdir, 'srf'));
