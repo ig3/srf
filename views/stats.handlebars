@@ -27,14 +27,20 @@
 </div>
 <div class="charts">
 
+<h3>Cards per Stage</h3>
+<div id="cardsPerStage" class="chart"></div>
+
 <h3>New Cards per day</h3>
 <div id="newCardsPerDay" class="chart"></div>
 
-<h3>Card Reviews per day</h3>
-<div id="cardViewsPerDay" class="chart"></div>
+<h3>Percent Correct</h3>
+<div id="percentCorrect" class="chart"></div>
 
-<h3>Minutes of Study per day</h3>
-<div id="minutesStudiedPerDay" class="chart"></div>
+<h3>Study Time per day</h3>
+<div id="studyTimePerDay" class="chart"></div>
+
+<h3>Reviews per day</h3>
+<div id="reviewsPerDay" class="chart"></div>
 
 <h3>Backlog & Overdue</h3>
 <div id="backlog" class="chart"></div>
@@ -42,26 +48,20 @@
 <h3>Latency</h3>
 <div id="latency" class="chart"></div>
 
-<h3>Percent Correct</h3>
-<div id="percentCorrect" class="chart"></div>
-
-<h3>Cards per Stage</h3>
-<div id="cardsPerStage" class="chart"></div>
+<h3>Cards per interval</h3>
+<div id="cardsPerInterval" class="chart"></div>
 
 <h3>Cards Due per day</h3>
 <div id="cardsDuePerDay" class="chart"></div>
-
-<h3>Cards per interval</h3>
-<div id="cardsPerInterval" class="chart"></div>
 
 <div class="buttons">
 <a href="/" class="default_action"><button>Home</button></a>
 </div>
 <script src="/js/plotly-latest.min.js" charset="utf-8"></script>
 <script>
-  let cardViewsPerDay = document.getElementById('cardViewsPerDay');
-  if (cardViewsPerDay) {
-    Plotly.newPlot(cardViewsPerDay,
+  let reviewsPerDay = document.getElementById('reviewsPerDay');
+  if (reviewsPerDay) {
+    Plotly.newPlot(reviewsPerDay,
       [ {{{json charts.chartCardViewsPerDay}}} ], {
         autosize: true,
         margin: {
@@ -76,9 +76,9 @@
     );
   }
 
-  let minutesStudiedPerDay = document.getElementById('minutesStudiedPerDay');
-  if (minutesStudiedPerDay) {
-    Plotly.newPlot(minutesStudiedPerDay,
+  let studyTimePerDay = document.getElementById('studyTimePerDay');
+  if (studyTimePerDay) {
+    Plotly.newPlot(studyTimePerDay,
       [ {{{json charts.chartMinutesStudiedPerDay}}} ], {
         autosize: true,
         margin: {
@@ -156,7 +156,7 @@
         },
         xaxis: { title: 'day', automargin: true },
         yaxis: {
-          title: 'Cards',
+          title: 'cards',
           automargin: true,
           type: 'log',
           rangemode: 'tozero'
@@ -193,7 +193,7 @@
         },
         xaxis: { title: 'day', automargin: true },
         yaxis: {
-          title: 'Minutes',
+          title: 'minutes',
           type: 'log',
           automargin: true,
           rangemode: 'tozero'
