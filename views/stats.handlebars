@@ -70,7 +70,11 @@
           l: 10,
           r: 10
         },
-        yaxis: { title: 'reviews', automargin: true },
+        yaxis: {
+          title: 'reviews',
+          automargin: true,
+          rangemode: 'tozero'
+        },
         xaxis: { title: 'date', automargin: true }
       }
     );
@@ -87,7 +91,11 @@
           l: 10,
           r: 10
         },
-        yaxis: { title: 'min', automargin: true },
+        yaxis: {
+          title: 'min',
+          automargin: true,
+          rangemode: 'tozero'
+          },
         xaxis: { title: 'date', automargin: true }
       }
     );
@@ -104,7 +112,11 @@
           l: 10,
           r: 10
         },
-        yaxis: { title: 'percent', automargin: true },
+        yaxis: {
+          title: 'percent',
+          automargin: true,
+          rangemode: 'tozero'
+          },
         xaxis: { title: 'date', automargin: true }
       }
     );
@@ -121,7 +133,11 @@
           l: 10,
           r: 10
         },
-        yaxis: { title: 'cards', automargin: true },
+        yaxis: {
+          title: 'cards',
+          automargin: true,
+          rangemode: 'tozero'
+        },
         xaxis: { title: 'date', automargin: true }
       }
     );
@@ -137,13 +153,11 @@
     backlogData[0].name = 'Backlog';
     backlogData[0].line = {
       color: 'rgb(220, 220, 0)',
-      shape: 'hv'
     };
     backlogData[1].mode = 'lines';
     backlogData[1].name = 'Overdue';
     backlogData[1].line = {
       color: 'rgb(255, 0, 0)',
-      shape: 'hv'
     };
     Plotly.newPlot(backlog,
       backlogData, {
@@ -178,10 +192,10 @@
     ];
     latencyData[0].mode = 'lines';
     latencyData[0].name = 'Latency';
-    latencyData[0].line = {
-      color: 'rgb(31, 119, 180)',
-      shape: 'hv'
-    };
+//    latencyData[0].line = {
+//      color: 'rgb(31, 119, 180)',
+//      shape: 'hv'
+//    };
     Plotly.newPlot(latency,
       latencyData, {
         autosize: true,
@@ -237,7 +251,11 @@
           l: 10,
           r: 10
         },
-        yaxis: { title: 'cards', automargin: true },
+        yaxis: {
+          title: 'cards',
+          automargin: true,
+          rangemode: 'tozero'
+        },
         xaxis: { title: 'day', automargin: true },
       },
     );
@@ -254,7 +272,11 @@
           l: 10,
           r: 10
         },
-        yaxis: { title: 'cards', automargin: true },
+        yaxis: {
+          title: 'cards',
+          automargin: true,
+          rangemode: 'tozero'
+          },
         xaxis: { title: 'day', automargin: true }
       }
     );
@@ -281,7 +303,11 @@
           l: 10,
           r: 10
         },
-        yaxis: { title: 'cards', automargin: true },
+        yaxis: {
+          title: 'cards',
+          automargin: true,
+          rangemode: 'tozero'
+          },
         xaxis: { title: 'days', automargin: true },
         legend: {
           orientation: 'h',
