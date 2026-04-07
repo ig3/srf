@@ -740,25 +740,27 @@ This is various counts of cards:
 
 #### Percent Correct
 
-This is the percentage of 'correct' responses (a.k.a. not Fail) for cards
-with intervals between config.matureThreshold and config.maxInterval,
-reviewed in the window config.percentCorrectWindow.
+This is the percentage of reviews that are not rated 'Fail'.
 
-Cards with maximum interval are excluded on the premise that they are
-mastered and it is not performance on these cards that should be regulated,
-but rather performance on mature cards (Unconcious Competence). 
+This is calculated with both a time window and an interval window.
 
-Maybe this should also include the learning cards, but these are excluded
-on the premise that while learning the error rate will be relativley high
-and the regulation effectively regulates how quickly cards progress through
-learning to mastered, even though the learning cards are not included in
-the calculation of percent correct.
+The time windows is config.percentCorrectWindow. Only reviews within this
+window are considered.
 
-Card intervals are adjusted according to the difference between the average
-percent correct and config.percentCorrectTarget. If average percent correct
-is less than the target then intervals are shortened, making cards due
-sooner. If it is more than the target then intervals are lengthened, making
-cards due later.
+The interval window is config.matureThreshold to config.maxInterval
+(exclusive). This excludes reviews of new cards and cards at maximum
+interval. The excluded cards are not the target of review difficulty
+control.
+
+If there are fewer than config.minPercentCorrectCount reviews within these
+windows, then the lower bound on interval is removed.
+
+When a card is reviewed and the new interval is greater than
+config.learningThreshold, then the intervals and due dates of all cards with
+interval between learningThreshold and maxInterval are adjusted according
+to the difference between 'percent correct' and config.percentCorrectTarget,
+multiplied by percentCorrectSensitivity. This adjustment makes reviews
+sooner or later, to achieve the target percent correct.
 
 #### Average time per review
 
@@ -4597,3 +4599,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add latency, backlog and overdue to dailystats 
  * Add latency to home page stats
  * Add chart: Latency, Backlog and Overdue
+ * Change calculation of percent correct
