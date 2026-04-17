@@ -61,8 +61,9 @@
 <script>
   let reviewsPerDay = document.getElementById('reviewsPerDay');
   if (reviewsPerDay) {
-    Plotly.newPlot(reviewsPerDay,
-      [ {{{json charts.chartCardViewsPerDay}}} ], {
+    const data = [ {{{json charts.chartCardViewsPerDay}}} ];
+    const x = data[0].x;
+    Plotly.newPlot(reviewsPerDay, data, {
         autosize: true,
         margin: {
           t: 10,
@@ -75,15 +76,20 @@
           automargin: true,
           rangemode: 'tozero'
         },
-        xaxis: { title: 'date', automargin: true }
+        xaxis: {
+          title: 'date',
+          automargin: true,
+          range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+          }
       }
     );
   }
 
   let studyTimePerDay = document.getElementById('studyTimePerDay');
   if (studyTimePerDay) {
-    Plotly.newPlot(studyTimePerDay,
-      [ {{{json charts.chartMinutesStudiedPerDay}}} ], {
+    const data = [ {{{json charts.chartMinutesStudiedPerDay}}} ];
+    const x = data[0].x;
+    Plotly.newPlot(studyTimePerDay, data, {
         autosize: true,
         margin: {
           t: 10,
@@ -96,15 +102,20 @@
           automargin: true,
           rangemode: 'tozero'
           },
-        xaxis: { title: 'date', automargin: true }
+        xaxis: {
+          title: 'date',
+          automargin: true,
+          range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+          }
       }
     );
   }
 
   let percentCorrect = document.getElementById('percentCorrect');
   if (percentCorrect) {
-    Plotly.newPlot(percentCorrect,
-      [ {{{json charts.chartPercentCorrect}}} ], {
+    const data = [ {{{json charts.chartPercentCorrect}}} ];
+    const x = data[0].x;
+    Plotly.newPlot(percentCorrect, data, {
         autosize: true,
         margin: {
           t: 10,
@@ -117,15 +128,20 @@
           automargin: true,
           rangemode: 'tozero'
           },
-        xaxis: { title: 'date', automargin: true }
+        xaxis: {
+          title: 'date',
+          automargin: true,
+          range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+          }
       }
     );
   }
 
   let newCardsPerDay  = document.getElementById('newCardsPerDay');
   if (newCardsPerDay) {
-    Plotly.newPlot(newCardsPerDay ,
-      [ {{{json charts.chartNewCardsPerDay}}} ], {
+    const data = [ {{{json charts.chartNewCardsPerDay}}} ];
+    const x = data[0].x;
+    Plotly.newPlot(newCardsPerDay , data, {
         autosize: true,
         margin: {
           t: 10,
@@ -138,7 +154,11 @@
           automargin: true,
           rangemode: 'tozero'
         },
-        xaxis: { title: 'date', automargin: true }
+        xaxis: {
+          title: 'date',
+          automargin: true,
+          range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+          }
       }
     );
   }
@@ -231,6 +251,7 @@
         {{{json charts.chartStageMastered}}},
         {{{json charts.chartTotalCards}}},
     ];
+    const x = data[0].x;
     data[0].connectgaps = true;
     data[0].stackgroup = 0;
     data[0].name = 'new';
@@ -241,8 +262,7 @@
     data[3].stackgroup = 0;
     data[3].name = 'mastered';
     data[4].name = 'total';
-    Plotly.newPlot(cardsPerStage,
-      data, {
+    Plotly.newPlot(cardsPerStage, data, {
         showlegend: false,
         autosize: true,
         margin: {
@@ -256,15 +276,22 @@
           automargin: true,
           rangemode: 'tozero'
         },
-        xaxis: { title: 'day', automargin: true },
+        xaxis: {
+          title: 'day',
+          automargin: true,
+          range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+          },
       },
     );
   }
 
   let cardsDuePerDay = document.getElementById('cardsDuePerDay');
   if (cardsDuePerDay) {
-    Plotly.newPlot(cardsDuePerDay,
-      [ {{{json charts.chartCardsDuePerDay}}} ], {
+    const data = [ {{{json charts.chartCardsDuePerDay}}} ];
+    const x = data[0].x;
+    console.log('minx: ', data[0].x[0]);
+    console.log('maxx: ', data[0].x.slice(-1)[0]);
+    Plotly.newPlot(cardsDuePerDay, data, {
         autosize: true,
         margin: {
           t: 10,
@@ -277,7 +304,11 @@
           automargin: true,
           rangemode: 'tozero'
           },
-        xaxis: { title: 'day', automargin: true }
+        xaxis: {
+          title: 'day',
+          automargin: true,
+          range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+          }
       }
     );
   }
