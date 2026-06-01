@@ -4600,3 +4600,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add latency to home page stats
  * Add chart: Latency, Backlog and Overdue
  * Change calculation of percent correct
+ * Fix getAverageNewCardsPerDay
