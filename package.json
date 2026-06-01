@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:ig3/srf.git"
+    "url": "https://codeberg.org/ig3/srf.git"
   },
   "author": "",
   "license": "ISC",

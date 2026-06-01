@@ -4601,3 +4601,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add chart: Latency, Backlog and Overdue
  * Change calculation of percent correct
  * Fix getAverageNewCardsPerDay
+ * Change git repository to https://codeberg.org/ig3/srf.git
