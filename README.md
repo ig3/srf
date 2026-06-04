@@ -4602,3 +4602,6 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Change calculation of percent correct
  * Fix getAverageNewCardsPerDay
  * Change git repository to https://codeberg.org/ig3/srf.git
+
+### 6.0.17 - WIP
+ * Fix chart: cards due per day
