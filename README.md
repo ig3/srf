@@ -4607,3 +4607,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Fix chart: cards due per day
  * Fix getAverageNewCardsPerDay
  * Fix getAverageStudyTime
+ * On home page, round study time rather than truncating
