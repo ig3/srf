@@ -768,6 +768,13 @@ This is the average time for each review of a card. It includes small gaps
 between reviews. It is the total study time for the day divided by the
 number of reviews.
 
+#### Average time per card
+
+This is the average total study time per day for each unique card studied,
+including multiple reviews for cards with intervals less than 1 day. It is
+the total study time for the day divided by the number of unique cards
+studied that day, averaged over several days.
+
 #### Cards today
 
 This is the total number of distinct cards viewed today and the number of
@@ -4608,3 +4615,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Change getAverageNewCardsPerDay
  * Change getAverageStudyTime
  * On home page, round study time rather than truncating
+ * Add Average study time per card to stats page
