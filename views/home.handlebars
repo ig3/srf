@@ -33,11 +33,11 @@ title="forward looking average for new card mode">{{studyTime}}</span></td></tr>
 </tbody>
 </table>
 {{#if studyNow}}
-<a href="/next" class="default_action shortcut_s"><button>Study</button></a>
-<a href="/"><button>Reload</button></a>
+<a id="study" href="/next" class="default_action shortcut_s"><button>Study</button></a>
+<a id="reload" href="/"><button>Reload</button></a>
 {{else}}
-<a href="/studyNow"><button>Study</button></a>
-<a href="/" class="default_action"><button>Reload</button></a>
+<a id="study" href="/studyNow"><button>Study</button></a>
+<a id="reload" href="/" class="default_action"><button>Reload</button></a>
 {{/if}}
 <h3>Study time per hour</h3>
 <div id="chart1" class="chart"></div>

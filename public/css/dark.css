@@ -91,3 +91,11 @@ button {
 a.default_action button {
   background-color: lightgray;
 }
+
+#study button {
+  background-color: #ba5d50;
+}
+
+#study.default_action button {
+  background-color: #1c7a43;
+}
