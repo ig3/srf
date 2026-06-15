@@ -43,22 +43,23 @@ id="signal_statsPast24Hours.newCards" title="new cards past 24 hours">{{statsPas
 <tr><th>New Cards Per Day:</th>
 <td colspan=2><span
   id="home_averageNewCards"
-  title="short term historic average">{{averageNewCards}}</span> / <span
+  title="short term historic average (cards/day)">{{averageNewCards}}</span> / <span
   id="home_newCardsSeen"
-  title="past 24 hours">{{newCardsSeen}}</span></td></tr>
+  title="past 24 hours (cards)">{{newCardsSeen}}</span></td></tr>
 
 <tr><th>Percent correct:</th>
 <td colspan=2><span id="home_percentCorrect">{{percentCorrect}}</span>%</td></tr>
 
 <tr><th>Cards due:</th><td colspan=2><span id="home_due"
-title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdue}}</span></td></tr>
+title="due (cards)">{{dueNow}}</span> / <span id="home_overdue"
+title="overdue (cards)">{{overdue}}</span></td></tr>
 
 <tr><th>Time to earliest due card:</th>
 <td colspan=2><span
  id="home_time_to_earliest_due_card"
  title="Time to earliest due card (hh:mm:ss)">{{timeToNextDue}}</span> / <span
  id="home_average_latency"
- title="Average latency">{{averageLatency}}</span></td></tr>
+ title="Average latency (min)">{{averageLatency}}</span></td></tr>
 </tbody>
 </table>
 <button id="study" class="shortcut_s" onclick="clickStudy('/next')">Study</button>
