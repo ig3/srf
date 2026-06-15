@@ -88,14 +88,14 @@ button {
   font-size: inherit;
 }
 
-a.default_action button {
+a.default_action {
   background-color: lightgray;
 }
 
-#study button {
+#study {
   background-color: #ba5d50;
 }
 
-#study.default_action button {
+#study.default_action {
   background-color: #1c7a43;
 }

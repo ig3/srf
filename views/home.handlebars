@@ -33,18 +33,18 @@ title="forward looking average for new card mode">{{studyTime}}</span></td></tr>
 </tbody>
 </table>
 {{#if studyNow}}
-<a id="study" href="/next" class="default_action shortcut_s"><button>Study</button></a>
-<a id="reload" href="/"><button>Reload</button></a>
+<button id="study" class="default_action shortcut_s" onclick="study('/next')">Study</button>
+<button id="reload" onclick="window.location.replace('/')">Reload</button>
 {{else}}
-<a id="study" href="/studyNow"><button>Study</button></a>
-<a id="reload" href="/" class="default_action"><button>Reload</button></a>
+<button id="study" onclick="study('/studyNow')">Study</button>
+<button id="reload" class="default_action" onclick="window.location.replace('/')">Reload</button>
 {{/if}}
 <h3>Study time per hour</h3>
 <div id="chart1" class="chart"></div>
 <div class="buttons">
-<a href="/admin"><button>Admin</button></a>
+<button onclick="window.location.replace('/admin')">Admin</button>
 &nbsp;
-<a id="button_stats" href="/stats"><button>Stats</button></a>
+<button id="button_stats" onclick="window.location.replace('/stats')">Stats</button>
 &nbsp;
 <a href="/help" target="_blank"><button>Help</button></a>
 </div>
@@ -81,4 +81,17 @@ title="forward looking average for new card mode">{{studyTime}}</span></td></tr>
       }
     }
   );
+</script>
+
+<script>
+  function study (url) {
+    fetch(url)
+    .then(response => {
+      response.json()
+      .then(data => {
+        console.log('fetch response: ', data);
+        window.location.replace(data.nextURL);
+      });
+    });
+  }
 </script>

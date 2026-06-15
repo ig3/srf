@@ -4616,3 +4616,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Change getAverageStudyTime
  * On home page, round study time rather than truncating
  * Add Average study time per card to stats page
+ * Change page loads to reduce browser history records

@@ -18,7 +18,7 @@
 <a href="/help" target="_blank"><button>Help</button></a>
 <a onclick="window.open('/fieldset/{{card.fieldsetid}}', 'Edit Fieldset', 'height=800,width=600');" class="shortcut_e" target="_blank"><button>Edit</button></a>
 <button onclick="replay()" class="shortcut_p">Play</button>
-<a href="/" class="shortcut_b"><button>Stop</button></a>
+<button class="shortcut_b" onclick="window.location.replace('/')">Stop</button>
 </div>
 <div class="charts">
 <h3>Card History - ID {{card.id}}</h3>
@@ -45,14 +45,13 @@
       }
       response.json()
       .then((data) => {
-        if (data.cardAvailable) window.location = '/next';
-        else window.location = '/';
+        window.location.replace(data.nextURL);
       });
     })
     .catch(err => {
       console.log('err: ', err);
       alert(err);
-      window.location('/');
+      window.location.replace('/');
     });
   };
 
