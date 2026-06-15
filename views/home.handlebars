@@ -1,3 +1,15 @@
+<div id="signal"><img id="signal_img"
+src="/img/{{theme}}-{{mode}}.png"></br><div><span id="signal_dueNow"
+title="due now">{{dueNow}}</span>/<span
+id="signal_statsNext24Hours.reviewsToNextNew" title="reviews before
+next new card">{{statsNext24Hours.reviewsToNextNew}}</span>/<span
+id="signal_statsNext24Hours.time" title="study time next 24
+hour">{{statsNext24Hours.time}}</span>/<span
+id="signal_statsPast24Hours.time" title="study time past 24
+hours">{{statsPast24Hours.time}}</span>/<span
+id="signal_statsPast24Hours.newCards" title="new cards past 24 hours">{{statsPast24Hours.newCards}}</span></div></div>
+
+<section id="home" class="hidden">
 <style>
   thead th {
     text-align: right;
@@ -10,37 +22,60 @@
   }
 </style>
 <div class="home {{mode}}">
-<div id="signal"><img src="/img/{{theme}}-{{mode}}.png"></br><div><span title="due now">{{dueNow}}</span>/<span title="reviews before next new card">{{statsNext24Hours.reviewsToNextNew}}</span>/<span title="study time next 24 hour">{{statsNext24Hours.time}}</span>/<span title="study time past 24 hours">{{statsPast24Hours.time}}</span>/<span title="new cards past 24 hours">{{statsPast24Hours.newCards}}</span></div></div>
-<h1><a href="/"><img src="img/logo.png"></a>Spaced Repetition Flashcards</h1>
+<h1><img onclick="clickHome()" src="img/logo.png">Spaced Repetition Flashcards</h1>
 <table>
 <thead>
 <tr><th></th><th>Cards</th><th>Minutes</th></tr>
 </thead>
 <tbody>
-<tr><th>Past 24 Hours:</th><td><span title="Cards reviewed (not reviews) in the past 24 hours">{{statsPast24Hours.count}}</span></td><td><span title="Actual study time in the past 24 hours">{{statsPast24Hours.time}}</tr>
-<tr><th>Next 24 Hours:</th><td><span title="Estimated Cards to review in the next 24 hours">{{statsNext24Hours.count}}</span></td><td><span title="Estimated study time in the next 24 hours">{{statsNext24Hours.time}}</span></tr>
-<tr><th>Study Time Per Day:</th><td colspan=2><span
-title="short term historic average">{{averageStudyTime}}</span> / <span
-title="forward looking average for new card mode">{{studyTime}}</span></td></tr>
-<tr><th>New Cards Per Day:</th><td colspan=2><span
+<tr><th>Past 24 Hours:</th>
+<td><span
+  id="home_statsPast24Hours.count"
+  title="Cards reviewed (not reviews) in the past 24 hours">{{statsPast24Hours.count}}</span></td>
+<td><span
+  id="home_statsPast24Hours.time"
+  title="Actual study time in the past 24 hours">{{statsPast24Hours.time}}</tr>
+
+<tr><th>Next 24 Hours:</th>
+<td><span
+  id="home_statsNext24Hours.count"
+  title="Estimated Cards to review in the next 24 hours">{{statsNext24Hours.count}}</span></td>
+<td><span
+  id="home_statsNext24Hours.time"
+  title="Estimated study time in the next 24 hours">{{statsNext24Hours.time}}</span></tr>
+
+<tr><th>Study Time Per Day:</th>
+<td colspan=2><span
+  id="home_averageStudyTime"
+  title="short term historic average">{{averageStudyTime}}</span> / <span
+  id="home_studyTime"
+  title="forward looking average for new card mode">{{studyTime}}</span></td></tr>
+
+<tr><th>New Cards Per Day:</th>
+<td colspan=2><span
+  id="home_averageNewCards"
   title="short term historic average">{{averageNewCards}}</span> / <span
+  id="home_newCardsSeen"
   title="past 24 hours">{{newCardsSeen}}</span></td></tr>
-<tr><th>Percent correct:</th><td colspan=2>{{percentCorrect}}%</td></tr>
-<tr><th>Cards due:</th><td colspan=2><span title="due">{{dueNow}}</span> / <span title="overdue">{{overdue}}</span></td></tr>
-<tr><th>Time to earliest due card:</th><td colspan=2><span
+
+<tr><th>Percent correct:</th>
+<td colspan=2><span id="home_percentCorrect">{{percentCorrect}}</span>%</td></tr>
+
+<tr><th>Cards due:</th><td colspan=2><span id="home_due"
+title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdue}}</span></td></tr>
+
+<tr><th>Time to earliest due card:</th>
+<td colspan=2><span
+ id="home_time_to_earliest_due_card"
  title="Time to earliest due card (hh:mm:ss)">{{timeToNextDue}}</span> / <span
+ id="home_average_latency"
  title="Average latency">{{averageLatency}}</span></td></tr>
 </tbody>
 </table>
-{{#if studyNow}}
-<button id="study" class="default_action shortcut_s" onclick="study('/next')">Study</button>
-<button id="reload" onclick="window.location.replace('/')">Reload</button>
-{{else}}
-<button id="study" onclick="study('/studyNow')">Study</button>
-<button id="reload" class="default_action" onclick="window.location.replace('/')">Reload</button>
-{{/if}}
+<button id="study" class="shortcut_s" onclick="clickStudy('/next')">Study</button>
+<button id="reload" onclick="clickHome()">Reload</button>
 <h3>Study time per hour</h3>
-<div id="chart1" class="chart"></div>
+<div id="home_chart1" class="chart"></div>
 <div class="buttons">
 <button onclick="window.location.replace('/admin')">Admin</button>
 &nbsp;
@@ -49,49 +84,751 @@ title="forward looking average for new card mode">{{studyTime}}</span></td></tr>
 <a href="/help" target="_blank"><button>Help</button></a>
 </div>
 </div>
+</section>
 
+<!-- This style is for front and back -->
+<style id="template_style">
+</style>
+
+<section id="front" class="hidden">
+  <div id="front_content">
+  <h1>Front</h1>
+  <div id="front_face" class="card">
+  {{{front}}}
+  </div>
+  <div class="buttons">
+  <span id="card-metrics">
+  (<span id="front_lastinterval" title="original interval">{{card.lastinterval}}</span>
+  <span id="front_interval" title="adjusted interval">{{card.interval}}</span>
+  <span id="front_timeSinceLastReview" title="time since last review">{{timeSinceLastReview}}</span>
+  <span id="front_factor" title="card factor">{{card.factor}}</span>)
+  </span>
+
+  <button onclick="clickFlip()">Flip</button>
+  <a href="/help" target="_blank"><button>Help</button></a>
+  <a onclick="window.open('/fieldset/{{card.fieldsetid}}', 'Edit Fieldset', 'height=800,width=600');" class="shortcut_e" target="_blank"><button>Edit</button></a>
+  <button onclick="replay()" class="shortcut_p">Play</button>
+  <button class="shortcut_s" onclick="clickStop()">Stop</button>
+  </div>
+  </div>
+</section>
+
+<section id="back" class="hidden">
+  <h1>Back</h1>
+  <div id="back_face" class="card">
+  {{{back}}}
+  </div>
+  <div class="buttons">
+  <span id="card-metrics">
+  (<span id="back_lastinterval" title="original interval">{{card.lastinterval}}</span>
+  <span id="back_interval" title="adjusted interval">{{card.interval}}</span>
+  <span id="back_timeSinceLastReview" title="time since last review">{{timeSinceLastReview}}</span>
+  <span id="back_factor" title="card factor">{{card.factor}}</span>)
+  </span>
+  </span>
+  <button onclick="review('fail')" class="shortcut_j">Fail (<span
+  id="back_intervals.fail">{{intervals.fail}}</span>)</button>
+  <button onclick="review('hard')" class="shortcut_k">Hard (<span
+  id="back_intervals.hard">{{intervals.hard}}</span>)</button>
+  <button onclick="review('good')" class="shortcut_l">Good (<span
+  id="back_intervals.good">{{intervals.good}}</span>)</button>
+  <button onclick="review('easy')" class="shortcut_semicolon">Easy (<span
+  id="back_intervals.easy">{{intervals.easy}}</span>)</button>
+  <a href="/help" target="_blank"><button>Help</button></a>
+  <a onclick="window.open('/fieldset/{{card.fieldsetid}}', 'Edit Fieldset', 'height=800,width=600');" class="shortcut_e" target="_blank"><button>Edit</button></a>
+  <button onclick="replay()" class="shortcut_p">Play</button>
+  <button class="shortcut_b" onclick="window.location.replace('/')">Stop</button>
+  </div>
+  <div class="charts">
+  <h3>Card History - ID {{card.id}}</h3>
+  <div id="cardHistory" class="chart"></div>
+  </div>
+
+</section>
+
+<section id="stats" class="hidden">
+  <h1>Stats</h1>
+  <h1><span onclick="window.location.replace('/')"><img src="img/logo.png"></span>Spaced Repetition Flashcards</h1>
+  <div class="status">
+  <table>
+  <tr><th>New cards per day:</th
+  ><td>
+  <span title="Long term average">{{newCardsLongTermAverage}}</span> /
+  <span title="Short term average">{{newCardsShortTermAverage}}</span> /
+  <span title="Today">{{newCardsToday}}</span></td></tr>
+  <tr><th>Cards:</th
+  ><td><span title="Total">{{cardCounts.total}}</span> (
+  <span title="Unseen">{{cardCounts.unseen}}</span> /
+  <span title="Seen">{{cardCounts.seen}}</span> (
+  <span title="New">{{cardCounts.new}}</span> /
+  <span title="Learning">{{cardCounts.learning}}</span> /
+  <span title="Mature">{{cardCounts.mature}}</span> /
+  <span title="Mastered">{{cardCounts.mastered}}</span> ))</td></tr>
+  <tr><th>Percent correct:</th><td>{{percentCorrect}}%</td></tr>
+  <tr><th>Average time per review:</th><td>{{averageStudyTimePerReview}} (sec)</td></tr>
+  <tr><th>Average time per card:</th><td>{{averageStudyTimePerCard}} (sec)</td></tr>
+  <tr><th>Cards today:</th
+  ><td><span title="Cards reviewed today">{{cardsViewedToday}}</span> /
+  <span title="Cards due later today">{{dueCount}}</span></td></tr
+  ><tr><th>Reviews per new card:</th><td><span title="Reviews until next new card">{{statsNext24Hours.reviewsToNextNew}}</span> / <span title="Minimum reviews between new cards">{{statsNext24Hours.minReviews}}</span></td></tr>
+  <tr><th>Study time today:</th><td>{{studyTimeToday}} (hh:mm:ss)</td></tr>
+  <tr><th>Average study time per day:</th><td>{{averageStudyTimePerDay}} (hh:mm:ss)</td></tr>
+  <tr><th>Time to earliest due card:</th><td>{{timeToNextDue}} (hh:mm:ss)</td></tr>
+  </table>
+  </div>
+  <div class="charts">
+
+  <h3>Cards per Stage</h3>
+  <div id="cardsPerStage" class="chart"></div>
+
+  <h3>Study Time per day</h3>
+  <div id="studyTimePerDay" class="chart"></div>
+
+  <h3>New Cards per day</h3>
+  <div id="newCardsPerDay" class="chart"></div>
+
+  <h3>Percent Correct</h3>
+  <div id="percentCorrect" class="chart"></div>
+
+  <h3>Reviews per day</h3>
+  <div id="reviewsPerDay" class="chart"></div>
+
+  <h3>Backlog & Overdue</h3>
+  <div id="backlog" class="chart"></div>
+
+  <h3>Latency</h3>
+  <div id="latency" class="chart"></div>
+
+  <h3>Cards per interval</h3>
+  <div id="cardsPerInterval" class="chart"></div>
+
+  <h3>Cards Due per day</h3>
+  <div id="cardsDuePerDay" class="chart"></div>
+
+  <div class="buttons">
+  <a href="/" class="default_action"><button>Home</button></a>
+  </div>
+  <script>
+    let reviewsPerDay = document.getElementById('reviewsPerDay');
+    if (reviewsPerDay) {
+      const data = [ {{{json charts.chartCardViewsPerDay}}} ];
+      Plotly.newPlot(reviewsPerDay, data, {
+          autosize: true,
+          margin: {
+            t: 10,
+            b: 10,
+            l: 10,
+            r: 10
+          },
+          yaxis: {
+            title: 'reviews',
+            automargin: true,
+            rangemode: 'tozero'
+          },
+          xaxis: {
+            title: 'date',
+            automargin: true,
+            range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+            }
+        }
+      );
+    }
+
+    let studyTimePerDay = document.getElementById('studyTimePerDay');
+    if (studyTimePerDay) {
+      const data = [ {{{json charts.chartMinutesStudiedPerDay}}} ];
+      const x = data[0].x;
+      Plotly.newPlot(studyTimePerDay, data, {
+          autosize: true,
+          margin: {
+            t: 10,
+            b: 10,
+            l: 10,
+            r: 10
+          },
+          yaxis: {
+            title: 'min',
+            automargin: true,
+            rangemode: 'tozero'
+            },
+          xaxis: {
+            title: 'date',
+            automargin: true,
+            range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+            }
+        }
+      );
+    }
+
+    let percentCorrect = document.getElementById('percentCorrect');
+    if (percentCorrect) {
+      const data = [ {{{json charts.chartPercentCorrect}}} ];
+      const x = data[0].x;
+      Plotly.newPlot(percentCorrect, data, {
+          autosize: true,
+          margin: {
+            t: 10,
+            b: 10,
+            l: 10,
+            r: 10
+          },
+          yaxis: {
+            title: 'percent',
+            automargin: true,
+            rangemode: 'tozero'
+            },
+          xaxis: {
+            title: 'date',
+            automargin: true,
+            range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+            }
+        }
+      );
+    }
+
+    let newCardsPerDay  = document.getElementById('newCardsPerDay');
+    if (newCardsPerDay) {
+      const data = [ {{{json charts.chartNewCardsPerDay}}} ];
+      const x = data[0].x;
+      Plotly.newPlot(newCardsPerDay , data, {
+          autosize: true,
+          margin: {
+            t: 10,
+            b: 10,
+            l: 10,
+            r: 10
+          },
+          yaxis: {
+            title: 'cards',
+            automargin: true,
+            rangemode: 'tozero'
+          },
+          xaxis: {
+            title: 'date',
+            automargin: true,
+            range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+            }
+        }
+      );
+    }
+
+    let backlog = document.getElementById('backlog');
+    if (backlog) {
+      const backlogData = [
+        {{{json charts.chartsLatency.chartBacklog}}},
+        {{{json charts.chartsLatency.chartOverdue}}},
+      ];
+      backlogData[0].mode = 'lines';
+      backlogData[0].name = 'Backlog';
+      backlogData[0].line = {
+        color: 'rgb(220, 220, 0)',
+      };
+      backlogData[1].mode = 'lines';
+      backlogData[1].name = 'Overdue';
+      backlogData[1].line = {
+        color: 'rgb(255, 0, 0)',
+      };
+      Plotly.newPlot(backlog,
+        backlogData, {
+          autosize: true,
+          margin: {
+            t: 10,
+            b: 10,
+            l: 10,
+            r: 10
+          },
+          xaxis: { title: 'day', automargin: true },
+          yaxis: {
+            title: 'cards',
+            automargin: true,
+            type: 'log',
+            rangemode: 'tozero'
+          },
+          legend: {
+            orientation: 'h',
+            x: 0.2,
+            xanchor: 'left',
+            y: 1.15
+          }
+        } 
+      );
+    }
+
+    let latency = document.getElementById('latency');
+    if (latency) {
+      const latencyData = [
+        {{{json charts.chartsLatency.chartLatency}}},
+      ];
+      latencyData[0].mode = 'lines';
+      latencyData[0].name = 'Latency';
+  //    latencyData[0].line = {
+  //      color: 'rgb(31, 119, 180)',
+  //      shape: 'hv'
+  //    };
+      Plotly.newPlot(latency,
+        latencyData, {
+          autosize: true,
+          margin: {
+            t: 10,
+            b: 10,
+            l: 10,
+            r: 10
+          },
+          xaxis: { title: 'day', automargin: true },
+          yaxis: {
+            title: 'minutes',
+            type: 'log',
+            automargin: true,
+            rangemode: 'tozero'
+          },
+          legend: {
+            orientation: 'h',
+            x: 0.2,
+            xanchor: 'left',
+            y: 1.15
+          }
+        } 
+      );
+    }
+
+    let cardsPerStage = document.getElementById('cardsPerStage');
+    if (cardsPerStage) {
+      const data = [
+          {{{json charts.chartStageNew}}},
+          {{{json charts.chartStageLearning}}},
+          {{{json charts.chartStageMature}}},
+          {{{json charts.chartStageMastered}}},
+          {{{json charts.chartTotalCards}}},
+      ];
+      const x = data[0].x;
+      data[0].connectgaps = true;
+      data[0].stackgroup = 0;
+      data[0].name = 'new';
+      data[1].stackgroup = 0;
+      data[1].name = 'learning';
+      data[2].stackgroup = 0;
+      data[2].name = 'mature';
+      data[3].stackgroup = 0;
+      data[3].name = 'mastered';
+      data[4].name = 'total';
+      Plotly.newPlot(cardsPerStage, data, {
+          showlegend: false,
+          autosize: true,
+          margin: {
+            t: 10,
+            b: 10,
+            l: 10,
+            r: 10
+          },
+          yaxis: {
+            title: 'cards',
+            automargin: true,
+            rangemode: 'tozero'
+          },
+          xaxis: {
+            title: 'day',
+            automargin: true,
+            range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+            },
+        },
+      );
+    }
+
+    let cardsDuePerDay = document.getElementById('cardsDuePerDay');
+    if (cardsDuePerDay) {
+      const data = [ {{{json charts.chartCardsDuePerDay}}} ];
+      const x = data[0].x;
+      console.log('minx: ', data[0].x[0]);
+      console.log('maxx: ', data[0].x.slice(-1)[0]);
+      Plotly.newPlot(cardsDuePerDay, data, {
+          autosize: true,
+          margin: {
+            t: 10,
+            b: 10,
+            l: 10,
+            r: 10
+          },
+          yaxis: {
+            title: 'cards',
+            automargin: true,
+            rangemode: 'tozero'
+            },
+          xaxis: {
+            title: 'day',
+            automargin: true,
+            range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
+            }
+        }
+      );
+    }
+
+    const intervalData = [
+      {{{json charts.chartCardsPerLastInterval}}},
+      {{{json charts.chartCardsPerInterval}}}
+    ];
+    intervalData[0].line = {
+      color: 'rgb(185, 213, 232)'
+    };
+    intervalData[1].line = {
+      color: 'rgb(31, 119, 180)'
+    };
+    let cardsPerInterval = document.getElementById('cardsPerInterval');
+    if (cardsPerInterval) {
+      Plotly.newPlot(cardsPerInterval,
+        intervalData, {
+          autosize: true,
+          margin: {
+            t: 10,
+            b: 10,
+            l: 10,
+            r: 10
+          },
+          yaxis: {
+            title: 'cards',
+            automargin: true,
+            rangemode: 'tozero'
+            },
+          xaxis: { title: 'days', automargin: true },
+          legend: {
+            orientation: 'h',
+            x: 0.2,
+            xanchor: 'left',
+            y: 1.15
+          }
+        } 
+      );
+    }
+  </script>
+</section>
+
+<!-- JavaScript for the new SPA mode -->
 <script src="/js/plotly-2.29.1.min.js" charset="utf-8"></script>
 <script>
-  let chart1 = document.getElementById('chart1');
-  const reviewTime = {{{json chartStudyTime.reviewTime}}};
-  const newTime = {{{json chartStudyTime.newTime}}};
-  reviewTime.type = 'bar';
-  reviewTime.name = 'review';
-  reviewTime.hovertemplate = '%{y}<extra></extra>';
-  newTime.type = 'bar';
-  newTime.name = 'new';
-  newTime.hovertemplate = '%{y}<extra></extra>';
-  Plotly.newPlot(chart1,
-    [ reviewTime, newTime ], {
-      barmode: 'stack',
-      autosize: true,
-      margin: {
-        t: 20,
-        b: 35,
-        l: 40,
-        r: 10
-      },
-      xaxis: { title: 'hour' },
-      yaxis: { title: 'minutes' },
-      legend: {
-        orientation: 'h',
-        x: 0.2,
-        xanchor: 'left',
-        y: 1.15,
-      }
-    }
-  );
-</script>
+  let currentCardID;
+  let currentCardStatTime;
+  let defaultAction = () => {
+    alert('missing default action');
+  }
 
-<script>
-  function study (url) {
-    fetch(url)
+  // mode is /next or /studyNow (these used to be paths)
+  function clickStudy (mode) {
+    if (mode === '/next') {
+      // There may be a card available for study now: only the server knows
+      // Query the server and, if there is a card available, display it
+      fetch('/next')
+      .then(response => {
+        response.json()
+        .then(data => {
+          if(data.cardID) {
+            // Load the card front in #front and display that section
+            loadCardFront(data.cardID);
+            displaySection('front');
+          } else {
+            loadHome();
+            displaySection('home');
+          }
+        });
+      });
+    } else if (mode === '/studyNow') {
+      fetch('/studyNow')
+      .then(response => {
+        response.json()
+        .then(data => {
+          if(data.cardID) {
+            // Load the card front in #front and display that section
+            alert('clickStudy got a card');
+            loadCardFront(data.cardID);
+            displaySection('front');
+          } else {
+            // Update #home and display it
+            alert('clickStudy didn not get a card');
+            displaySection('home');
+          }
+        });
+      });
+    } else {
+      alert('invalid mode in call to clickStudy');
+    }
+  }
+
+  function clickStop () {
+    loadHome();
+    displaySection('home');
+  }
+
+  function clickHome () {
+    loadHome();
+    displaySection('home');
+  }
+
+  function clickFlip () {
+    loadCardBack(currentCardID);
+    displaySection('back');
+  }
+
+  function loadHome () {
+    // Load current data to the home section
+    fetch('/homeData')
     .then(response => {
       response.json()
       .then(data => {
-        console.log('fetch response: ', data);
-        window.location.replace(data.nextURL);
+        console.log('home data: ', data);
+        document.getElementById('home_time_to_earliest_due_card')
+          .textContent = data.timeToNextDue;
+        document.getElementById('home_average_latency')
+          .textContent = data.averageLatency;
+        document.getElementById('home_due')
+          .textContent = data.dueNow;
+        document.getElementById('home_overdue')
+          .textContent = data.overdue;
+        document.getElementById('home_percentCorrect')
+          .textContent = data.percentCorrect;
+        document.getElementById('home_averageNewCards')
+          .textContent = data.averageNewCards;
+        document.getElementById('home_newCardsSeen')
+          .textContent = data.newCardsSeen;
+        document.getElementById('home_averageStudyTime')
+          .textContent = data.averageStudyTime;
+        document.getElementById('home_studyTime')
+          .textContent = data.studyTime;
+        document.getElementById('home_statsNext24Hours.count')
+          .textContent = data.statsNext24Hours.count;
+        document.getElementById('home_statsNext24Hours.time')
+          .textContent = data.statsNext24Hours.time;
+        document.getElementById('home_statsPast24Hours.count')
+          .textContent = data.statsPast24Hours.count;
+        document.getElementById('home_statsPast24Hours.time')
+          .textContent = data.statsPast24Hours.time;
+        setSignal(data);
+
+        // Update chart
+        let chart1 = document.getElementById('home_chart1');
+        const reviewTime = data.chartStudyTime.reviewTime;
+        const newTime = data.chartStudyTime.newTime;
+        reviewTime.type = 'bar';
+        reviewTime.name = 'review';
+        reviewTime.hovertemplate = '%{y}<extra></extra>';
+        newTime.type = 'bar';
+        newTime.name = 'new';
+        newTime.hovertemplate = '%{y}<extra></extra>';
+        Plotly.newPlot(chart1,
+          [ reviewTime, newTime ], {
+            barmode: 'stack',
+            autosize: true,
+            margin: {
+              t: 20,
+              b: 35,
+              l: 40,
+              r: 10
+            },
+            xaxis: { title: 'hour' },
+            yaxis: { title: 'minutes' },
+            legend: {
+              orientation: 'h',
+              x: 0.2,
+              xanchor: 'left',
+              y: 1.15,
+            }
+          }
+        );
       });
     });
   }
+
+  function setSignal (data) {
+    document.getElementById('signal_img')
+      .src = '/img/' + data.theme + '-' + data.mode + '.png';
+    document.getElementById('signal_dueNow')
+      .textContent = data.dueNow;
+    document.getElementById('signal_statsNext24Hours.reviewsToNextNew')
+      .textContent = data.statsNext24Hours.reviewsToNextNew;
+    document.getElementById('signal_statsNext24Hours.time')
+      .textContent = data.statsNext24Hours.time;
+    document.getElementById('signal_statsPast24Hours.time')
+      .textContent = data.statsPast24Hours.time;
+    document.getElementById('signal_statsPast24Hours.newCards')
+      .textContent = data.statsPast24Hours.newCards;
+  }
+
+  function loadCardFront (cardID) {
+    fetch('/card/' + cardID + '/front')
+    .then(response => {
+      response.json()
+      .then(data => {
+        console.log('front data: ', data);
+        document.getElementById('template_style')
+          .textContent = data.template.css;
+        document.getElementById('front_face')
+          .textContent = data.front;
+        document.getElementById('front_lastinterval')
+          .textContent = data.card.lastinterval;
+        document.getElementById('front_interval')
+          .textContent = data.card.interval;
+        document.getElementById('front_timeSinceLastReview')
+          .textContent = data.card.timeSinceLastReview;
+        document.getElementById('front_factor')
+          .textContent = data.card.factor;
+        setSignal(data);
+        currentCardID = data.card.id;
+        currentCardStartTime = data.cardStartTime;
+      });
+    });
+  }
+
+  function loadCardBack (cardID) {
+    fetch('/card/' + currentCardID + '/back?startTime=' + currentCardStartTime)
+    .then(response => {
+      response.json()
+      .then(data => {
+        console.log('back data: ', data);
+        document.getElementById('template_style')
+          .textContent = data.template.css;
+        document.getElementById('back_face')
+          .innerHTML = data.back;
+        document.getElementById('back_lastinterval')
+          .textContent = data.card.lastinterval;
+        document.getElementById('back_interval')
+          .textContent = data.card.interval;
+        document.getElementById('back_timeSinceLastReview')
+          .textContent = data.timeSinceLastReview;
+        document.getElementById('back_factor')
+          .textContent = data.card.factor;
+        document.getElementById('back_intervals.fail')
+          .textContent = data.intervals.fail;
+        document.getElementById('back_intervals.hard')
+          .textContent = data.intervals.hard;
+        document.getElementById('back_intervals.good')
+          .textContent = data.intervals.good;
+        document.getElementById('back_intervals.easy')
+          .textContent = data.intervals.easy;
+        setSignal(data);
+
+        const cardHistory = document.getElementById('cardHistory');
+        if (cardHistory) {
+          const chartData = [
+            data.chartData.cardFactor,
+            data.chartData.cardInterval,
+          ];
+          chartData[0].mode = 'lines';
+          chartData[0].name = 'Factor';
+          chartData[0].line = {
+            color: 'rgb(185, 213, 232)',
+            shape: 'hv'
+          };
+          chartData[1].mode = 'lines';
+          chartData[1].name = 'Interval';
+          chartData[1].yaxis = 'y2';
+          chartData[1].line = {
+            color: 'rgb(31, 119, 180)',
+            shape: 'hv'
+          };
+          let maxInterval = 0;
+          for (let i = chartData[0].y.length; i > 0; i--) {
+            if (chartData[0].y[i] > maxInterval) maxInterval = chartData[0].y[i];
+          }
+          let maxFactor = 0;
+          console.log('chart 1: ', chartData[1].y);
+          for (let i = chartData[1].y.length; i > 0; i--) {
+            if (chartData[1].y[i] > maxFactor) maxFactor = chartData[1].y[i];
+          }
+          console.log('maxInterval: ', maxInterval);
+          console.log('maxFactor: ', maxFactor);
+          Plotly.newPlot(cardHistory,
+            chartData, {
+              autosize: true,
+              margin: {
+                t: 10,
+                b: 10,
+                l: 30,
+                r: 10,
+              },
+              xaxis: { title: 'datetime', automargin: true },
+              yaxis: {
+                title: 'factor',
+                // range: [ 0, maxFactor ],
+                automargin: true,
+                rangemode: 'tozero'
+              },
+              yaxis2: {
+                title: 'interval (days)',
+                // range: [ 0, maxInterval ],
+                overlaying: 'y',
+                side: 'right',
+                automargin: true,
+                rangemode: 'tozero'
+              },
+            }
+          );
+        }
+      });
+    });
+  }
+
+  function review (ease) {
+    console.log('review ', ease);
+    fetch('/card/' + currentCardID + '/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        elapsed: 20,
+        ease: ease,
+        startTime: currentCardStartTime,
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(response.url + ': ' + response.status + ': ' +
+          response.statusText);
+      }
+      response.json()
+      .then((data) => {
+        console.log('response to review: ', data);
+        if (data.nextCardID) {
+          loadCardFront(data.nextCardID);
+          displaySection('front');
+        } else {
+          clickHome();
+        }
+      });
+    })
+    .catch(err => {
+      console.log('err: ', err);
+      alert(err);
+      clickHome();
+    });
+  }
+
+  function displaySection (section) {
+    const sections = document.getElementsByTagName('section')
+    for (const e of sections) {
+      if (e.id !== section) {
+        e.classList.add('hidden');
+      }
+    }
+    if (section === 'home') {
+      document.getElementById('home').classList.remove('hidden');
+      document.getElementById('signal').classList.remove('hidden');
+      defaultAction = () => {
+        clickStudy('/next');
+      };
+    } else if (section === 'front') {
+      document.getElementById('signal').classList.remove('hidden');
+      document.getElementById('front').classList.remove('hidden');
+      defaultAction = clickFlip;
+    } else if (section === 'back') {
+      document.getElementById('signal').classList.remove('hidden');
+      document.getElementById('back').classList.remove('hidden');
+      defaultAction = clickFlip;
+    } else {
+      document.getElementById('signal').classList.add('hidden');
+      document.getElementById(section).classList.remove('hidden');
+      defaultAction = () => {
+        alert('no default action set');
+      }
+    }
+  }
+
+  window.onload = (event) => {
+    clickHome();
+  };
 </script>

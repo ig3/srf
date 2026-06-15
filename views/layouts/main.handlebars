@@ -2,15 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8">
-  {{#if refresh}}
-  <meta http-equiv="refresh" content="{{refresh}}; url=/">
-  {{/if}}
   <title>srf</title>
   <link rel="icon" type="image/png" href="/img/logo.png">
   <link rel="stylesheet" href="/css/{{theme}}.css">
-  <style>
-    {{{template.css}}}
-  </style>
 </head>
 <body>
   <div id="content">
@@ -21,8 +15,7 @@
     function keyCapt (e) {
           console.log('keyCode: ', e.keyCode);
       if (e.keyCode === 32) {
-        let el = document.getElementsByClassName('default_action')[0];
-        if (el) el.click();
+        defaultAction();
       } else if (e.keyCode === 98) { // b
         let el = document.getElementsByClassName('shortcut_b')[0];
         if (el) el.click();

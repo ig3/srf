@@ -49,7 +49,11 @@ br {
   width: 100%;
   text-align: center;
 }
-#card-contents img {
+#front_face img {
+  max-width: 200px;
+  max-height: 200px;
+}
+#back_face img {
   max-width: 200px;
   max-height: 200px;
 }
@@ -98,4 +102,16 @@ a.default_action {
 
 #study.default_action {
   background-color: #1c7a43;
+}
+
+.hidden {
+  display: none;
+}
+
+#front_content {
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 5px;
+  background: #222;
+  color: lightgray;
 }
