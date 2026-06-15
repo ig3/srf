@@ -107,7 +107,7 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
   <button onclick="clickFlip()">Flip</button>
   <a href="/help" target="_blank"><button>Help</button></a>
   <a onclick="window.open('/fieldset/{{card.fieldsetid}}', 'Edit Fieldset', 'height=800,width=600');" class="shortcut_e" target="_blank"><button>Edit</button></a>
-  <button onclick="replay()" class="shortcut_p">Play</button>
+  <button onclick="playAudio('front')" class="shortcut_p">Play</button>
   <button class="shortcut_s" onclick="clickStop()">Stop</button>
   </div>
   </div>
@@ -136,7 +136,7 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
   id="back_intervals.easy">{{intervals.easy}}</span>)</button>
   <a href="/help" target="_blank"><button>Help</button></a>
   <a onclick="window.open('/fieldset/{{card.fieldsetid}}', 'Edit Fieldset', 'height=800,width=600');" class="shortcut_e" target="_blank"><button>Edit</button></a>
-  <button onclick="replay()" class="shortcut_p">Play</button>
+  <button onclick="playAudio('back')" class="shortcut_p">Play</button>
   <button class="shortcut_b" onclick="window.location.replace('/')">Stop</button>
   </div>
   <div class="charts">
@@ -220,6 +220,7 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
 <!-- JavaScript for the new SPA mode -->
 <script src="/js/plotly-2.29.1.min.js" charset="utf-8"></script>
 <script>
+  let currentSection;
   let currentCardID;
   let currentCardStatTime;
   let defaultAction = () => {
@@ -238,10 +239,8 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
           if(data.cardID) {
             // Load the card front in #front and display that section
             loadCardFront(data.cardID);
-            displaySection('front');
           } else {
             loadHome();
-            displaySection('home');
           }
         });
       });
@@ -254,7 +253,6 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
             // Load the card front in #front and display that section
             alert('clickStudy got a card');
             loadCardFront(data.cardID);
-            displaySection('front');
           } else {
             // Update #home and display it
             alert('clickStudy didn not get a card');
@@ -269,31 +267,29 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
 
   function clickStop () {
     loadHome();
-    displaySection('home');
   }
 
   function clickHome () {
     loadHome();
-    displaySection('home');
   }
 
   function clickStats () {
     loadStats();
-    displaySection('stats');
   }
 
   function clickFlip () {
     loadCardBack(currentCardID);
-    displaySection('back');
   }
 
   function loadHome () {
+    displaySection('home');
     // Load current data to the home section
     fetch('/homeData')
     .then(response => {
       response.json()
       .then(data => {
         console.log('home data: ', data);
+        // Make the section visible so sizing works
         document.getElementById('home_time_to_earliest_due_card')
           .textContent = data.timeToNextDue;
         document.getElementById('home_average_latency')
@@ -352,6 +348,10 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
             }
           }
         );
+        document.getElementById('signal').classList.remove('hidden');
+        defaultAction = () => {
+          clickStudy('/next');
+        };
       });
     });
   }
@@ -362,6 +362,7 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
       response.json()
       .then(data => {
         console.log('stats data: ', data);
+        displaySection('stats');
         document.getElementById('stats_newCardsLongTermAverage')
           .textContent = data.newCardsLongTermAverage;
         document.getElementById('stats_newCardsShortTermAverage')
@@ -703,6 +704,7 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
             } 
           );
         }
+        displaySection('stats');
       });
     });
   }
@@ -728,10 +730,12 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
       response.json()
       .then(data => {
         console.log('front data: ', data);
+        displaySection('front');
         document.getElementById('template_style')
           .textContent = data.template.css;
         document.getElementById('front_face')
-          .textContent = data.front;
+          .innerHTML = data.front;
+        setupAudio('front');
         document.getElementById('front_lastinterval')
           .textContent = data.card.lastinterval;
         document.getElementById('front_interval')
@@ -743,6 +747,9 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
         setSignal(data);
         currentCardID = data.card.id;
         currentCardStartTime = data.cardStartTime;
+        document.getElementById('signal').classList.remove('hidden');
+        defaultAction = clickFlip;
+        playAudio('front');
       });
     });
   }
@@ -753,10 +760,12 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
       response.json()
       .then(data => {
         console.log('back data: ', data);
+        displaySection('back');
         document.getElementById('template_style')
           .textContent = data.template.css;
         document.getElementById('back_face')
           .innerHTML = data.back;
+        setupAudio('back');
         document.getElementById('back_lastinterval')
           .textContent = data.card.lastinterval;
         document.getElementById('back_interval')
@@ -832,6 +841,12 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
             }
           );
         }
+        document.getElementById('signal').classList.remove('hidden');
+        defaultAction = () => {
+          alert('no default action');
+        };
+        playAudio('back');
+        console.log('finish displaySection back');
       });
     });
   }
@@ -857,7 +872,6 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
         console.log('response to review: ', data);
         if (data.nextCardID) {
           loadCardFront(data.nextCardID);
-          displaySection('front');
         } else {
           clickHome();
         }
@@ -871,36 +885,129 @@ title="due">{{dueNow}}</span> / <span id="home_overdue" title="overdue">{{overdu
   }
 
   function displaySection (section) {
+    currentSection = section;
     const sections = document.getElementsByTagName('section')
     for (const e of sections) {
       if (e.id !== section) {
         e.classList.add('hidden');
       }
     }
-    if (section === 'home') {
-      document.getElementById('home').classList.remove('hidden');
-      document.getElementById('signal').classList.remove('hidden');
-      defaultAction = () => {
-        clickStudy('/next');
-      };
-    } else if (section === 'front') {
-      document.getElementById('signal').classList.remove('hidden');
-      document.getElementById('front').classList.remove('hidden');
-      defaultAction = clickFlip;
-    } else if (section === 'back') {
-      document.getElementById('signal').classList.remove('hidden');
-      document.getElementById('back').classList.remove('hidden');
-      defaultAction = clickFlip;
-    } else {
+    console.log('expose section: ' + section);
+    document.getElementById(section).classList.remove('hidden');
+    return;
+
+    /*
       document.getElementById('signal').classList.add('hidden');
-      document.getElementById(section).classList.remove('hidden');
       defaultAction = () => {
         alert('no default action set');
       }
+    */
+  }
+
+  function setupAudio (face) {
+    console.log('setupAudio ' + face);
+    // The DOM is stupid: getElementsByTagName doesn't return an array
+    // of elements. Instead, it returns an HTMLCollection, which is an
+    // "array-like object" which is not like an array. So, one has to
+    // do stupid shit like the following to iterate over the elements.
+    let elements = document.querySelectorAll('#' + face + ' audio');
+    console.log('elements: ', elements);
+    for (let element of elements) {
+      console.log('setup one element');
+      element.volume = 0.4;
+      const files = element.dataset.files.split(',');
+      console.log('audio files: ', files);
+      element.src = files[0];
+      element.pause();
+      let i = 0;
+      function callback (e) {
+        console.log('ended callback function');
+        i++;
+        if (i < files.length) {
+          element.src = files[i];
+        } else {
+          element.removeEventListener('ended', callback);
+        }
+      }
+      element.addEventListener('ended', callback);
+    }
+  }
+
+  function playAudio (face) {
+    console.log('playAudio ' + face);
+    let elements = document.querySelectorAll('#' + face + ' audio');
+    console.log('elements: ', elements);
+    for (let element of elements) {
+      console.log('play one audio element');
+      element.play();
     }
   }
 
   window.onload = (event) => {
     clickHome();
+
+    document.addEventListener("keypress", keyCapt, false);
+    function keyCapt (e) {
+      console.log('keyCode: ', e.keyCode);
+      if (currentSection === 'home') {
+        if (e.keyCode === 32) {
+          clickStudy('/next');
+        } else if (e.keyCode === 115) { // s
+          clickStudy('/next');
+        }
+      } else if (currentSection === 'front') {
+        if (e.keyCode === 32) {
+          clickFlip();
+        } else if (e.keyCode === 112) { // p
+          playAudio('front');
+        }
+      } else if (currentSection === 'back') {
+        if (e.keyCode === 112) { // p
+          playAudio('back');
+        } else if (e.keyCode === 106) { // j
+          review('fail');
+        } else if (e.keyCode === 107) { // k
+          review('hard');
+        } else if (e.keyCode === 108) { // l
+          review('good');
+        } else if (e.keyCode === 59) { // ;
+          review('easy');
+        } else if (e.keyCode === 115) { // s
+          clickHome();
+        }
+      }
+      /*
+      if (e.keyCode === 32) {
+        defaultAction();
+      } else if (e.keyCode === 98) { // b
+        let el = document.getElementsByClassName('shortcut_b')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 101) { // e
+        let el = document.getElementsByClassName('shortcut_e')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 106) { // j
+        let el = document.getElementsByClassName('shortcut_j')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 107) { // k
+        let el = document.getElementsByClassName('shortcut_k')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 108) { // l
+        let el = document.getElementsByClassName('shortcut_l')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 112) { // p
+        let el = document.getElementsByClassName('shortcut_p')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 114) { // r
+        let el = document.getElementsByClassName('shortcut_r')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 115) { // s
+        let el = document.getElementsByClassName('shortcut_s')[0];
+        if (el) el.click();
+      } else if (e.keyCode === 59) { // ;
+        let el = document.getElementsByClassName('shortcut_semicolon')[0].click();
+        if (el) el.click();
+      }
+      */
+    }
   };
 </script>
