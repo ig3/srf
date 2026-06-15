@@ -79,7 +79,12 @@ a:visited {
 }
 
 .status th {
+  text-align: right;
+}
+
+.status td {
   text-align: left;
+  padding-left: 1em;
 }
 
 button {
@@ -115,3 +120,15 @@ a.default_action {
   background: #222;
   color: lightgray;
 }
+
+#home thead th {
+  text-align: right;
+}
+#home tbody th {
+  text-align: right;
+}
+#home tbody td {
+  text-align: right;
+  padding-left: 2em;
+}
+
