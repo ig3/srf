@@ -278,8 +278,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
     .then(response => {
       response.json()
       .then(data => {
-        console.log('home data: ', data);
-        // Make the section visible so sizing works
         document.getElementById('home_time_to_earliest_due_card')
           .textContent = data.timeToNextDue;
         document.getElementById('home_average_latency')
@@ -351,7 +349,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
     .then(response => {
       response.json()
       .then(data => {
-        console.log('stats data: ', data);
         displaySection('stats');
         document.getElementById('stats_newCardsLongTermAverage')
           .textContent = data.newCardsLongTermAverage;
@@ -631,8 +628,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
         if (cardsDuePerDay) {
           const chartData = [ data.charts.chartCardsDuePerDay ];
           const x = chartData[0].x;
-          console.log('minx: ', chartData[0].x[0]);
-          console.log('maxx: ', chartData[0].x.slice(-1)[0]);
           Plotly.newPlot(
             cardsDuePerDay,
             chartData, {
@@ -719,7 +714,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
     .then(response => {
       response.json()
       .then(data => {
-        console.log('front data: ', data);
         displaySection('front');
         document.getElementById('template_style')
           .textContent = data.template.css;
@@ -749,7 +743,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
     .then(response => {
       response.json()
       .then(data => {
-        console.log('back data: ', data);
         displaySection('back');
         document.getElementById('template_style')
           .textContent = data.template.css;
@@ -798,12 +791,9 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
             if (chartData[0].y[i] > maxInterval) maxInterval = chartData[0].y[i];
           }
           let maxFactor = 0;
-          console.log('chart 1: ', chartData[1].y);
           for (let i = chartData[1].y.length; i > 0; i--) {
             if (chartData[1].y[i] > maxFactor) maxFactor = chartData[1].y[i];
           }
-          console.log('maxInterval: ', maxInterval);
-          console.log('maxFactor: ', maxFactor);
           Plotly.newPlot(cardHistory,
             chartData, {
               autosize: true,
@@ -836,13 +826,11 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
           alert('no default action');
         };
         playAudio('back');
-        console.log('finish displaySection back');
       });
     });
   }
 
   function review (ease) {
-    console.log('review ', ease);
     fetch('/card/' + currentCardID + '/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -859,7 +847,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
       }
       response.json()
       .then((data) => {
-        console.log('response to review: ', data);
         if (data.nextCardID) {
           loadCardFront(data.nextCardID);
         } else {
@@ -882,7 +869,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
         e.classList.add('hidden');
       }
     }
-    console.log('expose section: ' + section);
     document.getElementById(section).classList.remove('hidden');
     return;
 
@@ -895,23 +881,18 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   }
 
   function setupAudio (face) {
-    console.log('setupAudio ' + face);
     // The DOM is stupid: getElementsByTagName doesn't return an array
     // of elements. Instead, it returns an HTMLCollection, which is an
     // "array-like object" which is not like an array. So, one has to
     // do stupid shit like the following to iterate over the elements.
     let elements = document.querySelectorAll('#' + face + ' audio');
-    console.log('elements: ', elements);
     for (let element of elements) {
-      console.log('setup one element');
       element.volume = 0.4;
       const files = element.dataset.files.split(',');
-      console.log('audio files: ', files);
       element.src = files[0];
       element.pause();
       let i = 0;
       function callback (e) {
-        console.log('ended callback function');
         i++;
         if (i < files.length) {
           element.src = files[i];
@@ -924,11 +905,8 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   }
 
   function playAudio (face) {
-    console.log('playAudio ' + face);
     let elements = document.querySelectorAll('#' + face + ' audio');
-    console.log('elements: ', elements);
     for (let element of elements) {
-      console.log('play one audio element');
       element.play();
     }
   }
@@ -938,7 +916,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
 
     document.addEventListener("keypress", keyCapt, false);
     function keyCapt (e) {
-      console.log('keyCode: ', e.keyCode);
       if (currentSection === 'home') {
         if (e.keyCode === 32) {
           clickStudy('/next');
