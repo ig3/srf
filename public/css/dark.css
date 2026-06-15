@@ -123,6 +123,7 @@ a.default_action {
 
 #home thead th {
   text-align: right;
+  padding-left: 2em;
 }
 #home tbody th {
   text-align: right;
