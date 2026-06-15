@@ -273,6 +273,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
 
   function loadHome () {
     displaySection('home');
+    document.getElementById('signal').classList.remove('hidden');
     // Load current data to the home section
     fetch('/homeData')
     .then(response => {
@@ -336,7 +337,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
             }
           }
         );
-        document.getElementById('signal').classList.remove('hidden');
         defaultAction = () => {
           clickStudy('/next');
         };
@@ -345,11 +345,12 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   }
 
   function loadStats () {
+    displaySection('stats');
+    document.getElementById('signal').classList.add('hidden');
     fetch('/stats')
     .then(response => {
       response.json()
       .then(data => {
-        displaySection('stats');
         document.getElementById('stats_newCardsLongTermAverage')
           .textContent = data.newCardsLongTermAverage;
         document.getElementById('stats_newCardsShortTermAverage')
@@ -689,7 +690,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
             } 
           );
         }
-        displaySection('stats');
       });
     });
   }
@@ -710,11 +710,12 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   }
 
   function loadCardFront (cardID) {
+    displaySection('front');
+    document.getElementById('signal').classList.remove('hidden');
     fetch('/card/' + cardID + '/front')
     .then(response => {
       response.json()
       .then(data => {
-        displaySection('front');
         document.getElementById('template_style')
           .textContent = data.template.css;
         document.getElementById('front_face')
@@ -731,7 +732,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
         setSignal(data);
         currentCardID = data.card.id;
         currentCardStartTime = data.cardStartTime;
-        document.getElementById('signal').classList.remove('hidden');
         defaultAction = clickFlip;
         playAudio('front');
       });
@@ -739,11 +739,12 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   }
 
   function loadCardBack (cardID) {
+    displaySection('back');
+    document.getElementById('signal').classList.remove('hidden');
     fetch('/card/' + currentCardID + '/back?startTime=' + currentCardStartTime)
     .then(response => {
       response.json()
       .then(data => {
-        displaySection('back');
         document.getElementById('template_style')
           .textContent = data.template.css;
         document.getElementById('back_face')
@@ -821,7 +822,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
             }
           );
         }
-        document.getElementById('signal').classList.remove('hidden');
         defaultAction = () => {
           alert('no default action');
         };
