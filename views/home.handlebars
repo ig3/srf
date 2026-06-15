@@ -213,9 +213,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   let currentSection;
   let currentCardID;
   let currentCardStatTime;
-  let defaultAction = () => {
-    alert('missing default action');
-  }
 
   // mode is /next or /studyNow (these used to be paths)
   function clickStudy (mode) {
@@ -337,9 +334,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
             }
           }
         );
-        defaultAction = () => {
-          clickStudy('/next');
-        };
       });
     });
   }
@@ -732,7 +726,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
         setSignal(data);
         currentCardID = data.card.id;
         currentCardStartTime = data.cardStartTime;
-        defaultAction = clickFlip;
         playAudio('front');
       });
     });
@@ -822,9 +815,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
             }
           );
         }
-        defaultAction = () => {
-          alert('no default action');
-        };
         playAudio('back');
       });
     });
@@ -870,14 +860,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
       }
     }
     document.getElementById(section).classList.remove('hidden');
-    return;
-
-    /*
-      document.getElementById('signal').classList.add('hidden');
-      defaultAction = () => {
-        alert('no default action set');
-      }
-    */
   }
 
   function setupAudio (face) {
