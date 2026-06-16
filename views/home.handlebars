@@ -59,7 +59,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
  id="home_time_to_earliest_due_card"
  title="Time to earliest due card (hh:mm:ss)">{{timeToNextDue}}</span> / <span
  id="home_average_latency"
- title="Average latency (min)">{{averageLatency}}</span></td></tr>
+ title="Average latency">{{averageLatency}}</span></td></tr>
 </tbody>
 </table>
 <button id="study" class="shortcut_s" onclick="clickStudy('/next')">Study</button>
@@ -81,7 +81,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
 </style>
 
 <section id="front" class="hidden">
-  <h1>Front</h1>
   <div id="front_content">
   <div id="front_face" class="card">
   {{{front}}}
@@ -104,7 +103,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
 </section>
 
 <section id="back" class="hidden">
-  <h1>Back</h1>
   <div id="back_face" class="card">
   {{{back}}}
   </div>
@@ -211,6 +209,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
 <script src="/js/plotly-2.29.1.min.js" charset="utf-8"></script>
 <script>
   let currentSection;
+  let currentCard;
   let currentCardID;
   let currentCardStatTime;
 
@@ -225,7 +224,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
         .then(data => {
           if(data.cardID) {
             // Load the card front in #front and display that section
-            loadCardFront(data.cardID);
+            loadCard(data.cardID);
           } else {
             loadHome();
           }
@@ -239,7 +238,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
           if(data.cardID) {
             // Load the card front in #front and display that section
             alert('clickStudy got a card');
-            loadCardFront(data.cardID);
+            loadCard(data.cardID);
           } else {
             // Update #home and display it
             alert('clickStudy didn not get a card');
@@ -265,7 +264,64 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   }
 
   function clickFlip () {
-    loadCardBack(currentCardID);
+    displaySection('back');
+    playAudio('back');
+    // Now that the back is visible, the cart can be loaded
+    // It must be visible to size itself correctly
+    const cardHistory = document.getElementById('cardHistory');
+    if (cardHistory) {
+      const chartData = [
+        currentCard.chartData.cardFactor,
+        currentCard.chartData.cardInterval,
+      ];
+      chartData[0].mode = 'lines';
+      chartData[0].name = 'Factor';
+      chartData[0].line = {
+        color: 'rgb(185, 213, 232)',
+        shape: 'hv'
+      };
+      chartData[1].mode = 'lines';
+      chartData[1].name = 'Interval';
+      chartData[1].yaxis = 'y2';
+      chartData[1].line = {
+        color: 'rgb(31, 119, 180)',
+        shape: 'hv'
+      };
+      let maxInterval = 0;
+      for (let i = chartData[0].y.length; i > 0; i--) {
+        if (chartData[0].y[i] > maxInterval) maxInterval = chartData[0].y[i];
+      }
+      let maxFactor = 0;
+      for (let i = chartData[1].y.length; i > 0; i--) {
+        if (chartData[1].y[i] > maxFactor) maxFactor = chartData[1].y[i];
+      }
+      Plotly.newPlot(cardHistory,
+        chartData, {
+          autosize: true,
+          margin: {
+            t: 10,
+            b: 10,
+            l: 30,
+            r: 10,
+          },
+          xaxis: { title: 'datetime', automargin: true },
+          yaxis: {
+            title: 'factor',
+            // range: [ 0, maxFactor ],
+            automargin: true,
+            rangemode: 'tozero'
+          },
+          yaxis2: {
+            title: 'interval (days)',
+            // range: [ 0, maxInterval ],
+            overlaying: 'y',
+            side: 'right',
+            automargin: true,
+            rangemode: 'tozero'
+          },
+        }
+      );
+    }
   }
 
   function loadHome () {
@@ -703,121 +759,62 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
       .textContent = data.statsPast24Hours.newCards;
   }
 
-  function loadCardFront (cardID) {
+  // Load the card front and back with a single request
+  function loadCard (cardID) {
+    // Displaying a card starts with displaying the front
     displaySection('front');
     document.getElementById('signal').classList.remove('hidden');
-    fetch('/card/' + cardID + '/front')
+    fetch('/card/' + cardID)
     .then(response => {
       response.json()
       .then(data => {
+        console.log('card data: ', data);
+        currentCard = data;
+
+        // First load the card front
         document.getElementById('front_face').classList.add('dim');
         document.getElementById('template_style')
-          .textContent = data.template.css;
+          .textContent = currentCard.template.css;
         document.getElementById('front_face')
-          .innerHTML = data.front;
+          .innerHTML = currentCard.front;
         setupAudio('front');
         document.getElementById('front_lastinterval')
-          .textContent = data.card.lastinterval;
+          .textContent = formatSeconds(currentCard.lastinterval);
         document.getElementById('front_interval')
-          .textContent = data.card.interval;
+          .textContent = formatSeconds(currentCard.interval);
         document.getElementById('front_timeSinceLastReview')
-          .textContent = data.card.timeSinceLastReview;
+          .textContent = formatSeconds(currentCard.timeSinceLastReview);
         document.getElementById('front_factor')
-          .textContent = data.card.factor;
+          .textContent = currentCard.factor.toFixed(3);
         document.getElementById('front_face').classList.remove('dim');
-        setSignal(data);
-        currentCardID = data.card.id;
-        currentCardStartTime = data.cardStartTime;
+        setSignal(currentCard);
+        currentCardID = currentCard.id;
+        currentCardStartTime = Math.floor(Date.now() / 1000);
         playAudio('front');
-      });
-    });
-  }
 
-  function loadCardBack (cardID) {
-    displaySection('back');
-    document.getElementById('signal').classList.remove('hidden');
-    fetch('/card/' + currentCardID + '/back?startTime=' + currentCardStartTime)
-    .then(response => {
-      response.json()
-      .then(data => {
-        document.getElementById('template_style')
-          .textContent = data.template.css;
+        // Then load the card back
         document.getElementById('back_face')
-          .innerHTML = data.back;
+          .innerHTML = currentCard.back;
         setupAudio('back');
         document.getElementById('back_lastinterval')
-          .textContent = data.card.lastinterval;
+          .textContent = formatSeconds(currentCard.lastinterval);
         document.getElementById('back_interval')
-          .textContent = data.card.interval;
+          .textContent = formatSeconds(currentCard.interval);
         document.getElementById('back_timeSinceLastReview')
-          .textContent = data.timeSinceLastReview;
+          .textContent = formatSeconds(currentCard.timeSinceLastReview);
         document.getElementById('back_factor')
-          .textContent = data.card.factor;
+          .textContent = currentCard.factor.toFixed(3);
         document.getElementById('back_intervals.fail')
-          .textContent = data.intervals.fail;
+          .textContent = formatSeconds(currentCard.intervals.fail);
         document.getElementById('back_intervals.hard')
-          .textContent = data.intervals.hard;
+          .textContent = formatSeconds(currentCard.intervals.hard);
         document.getElementById('back_intervals.good')
-          .textContent = data.intervals.good;
+          .textContent = formatSeconds(currentCard.intervals.good);
         document.getElementById('back_intervals.easy')
-          .textContent = data.intervals.easy;
-        setSignal(data);
+          .textContent = formatSeconds(currentCard.intervals.easy);
 
-        const cardHistory = document.getElementById('cardHistory');
-        if (cardHistory) {
-          const chartData = [
-            data.chartData.cardFactor,
-            data.chartData.cardInterval,
-          ];
-          chartData[0].mode = 'lines';
-          chartData[0].name = 'Factor';
-          chartData[0].line = {
-            color: 'rgb(185, 213, 232)',
-            shape: 'hv'
-          };
-          chartData[1].mode = 'lines';
-          chartData[1].name = 'Interval';
-          chartData[1].yaxis = 'y2';
-          chartData[1].line = {
-            color: 'rgb(31, 119, 180)',
-            shape: 'hv'
-          };
-          let maxInterval = 0;
-          for (let i = chartData[0].y.length; i > 0; i--) {
-            if (chartData[0].y[i] > maxInterval) maxInterval = chartData[0].y[i];
-          }
-          let maxFactor = 0;
-          for (let i = chartData[1].y.length; i > 0; i--) {
-            if (chartData[1].y[i] > maxFactor) maxFactor = chartData[1].y[i];
-          }
-          Plotly.newPlot(cardHistory,
-            chartData, {
-              autosize: true,
-              margin: {
-                t: 10,
-                b: 10,
-                l: 30,
-                r: 10,
-              },
-              xaxis: { title: 'datetime', automargin: true },
-              yaxis: {
-                title: 'factor',
-                // range: [ 0, maxFactor ],
-                automargin: true,
-                rangemode: 'tozero'
-              },
-              yaxis2: {
-                title: 'interval (days)',
-                // range: [ 0, maxInterval ],
-                overlaying: 'y',
-                side: 'right',
-                automargin: true,
-                rangemode: 'tozero'
-              },
-            }
-          );
-        }
-        playAudio('back');
+        // Defer loading the chart until the back is visible
+        // Otherwise, it can't detect window size
       });
     });
   }
@@ -827,7 +824,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        elapsed: 20,
         ease: ease,
         startTime: currentCardStartTime,
       })
@@ -840,7 +836,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
       response.json()
       .then((data) => {
         if (data.nextCardID) {
-          loadCardFront(data.nextCardID);
+          loadCard(data.nextCardID);
         } else {
           clickHome();
         }
@@ -961,4 +957,28 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
       */
     }
   };
+
+  function formatSeconds (n) {
+    if (n < 60) {
+      return n + 's';
+    }
+    n = n / 60;
+    if (n < 10) {
+      return n.toFixed(1) + 'm';
+    }
+    if (n < 60) {
+      return n.toFixed(0) + 'm';
+    }
+    n = n / 60;
+    if (n < 10) {
+      return n.toFixed(1) + 'h';
+    }
+    if (n < 24) {
+      return n.toFixed(0) + 'h';
+    }
+    n = n / 24;
+    if (n < 10) {
+      return n.toFixed(1) + 'd';
+    }
+  }
 </script>
