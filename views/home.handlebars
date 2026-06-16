@@ -361,6 +361,11 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
           .textContent = data.statsPast24Hours.count;
         document.getElementById('home_statsPast24Hours.time')
           .textContent = data.statsPast24Hours.time;
+        if (data.dueNow || data.mode === 'go') {
+          document.getElementById('study').classList.add('ready');
+        } else {
+          document.getElementById('study').classList.remove('ready');
+        }
         setSignal(data);
 
         // Update chart
