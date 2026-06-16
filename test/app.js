@@ -508,7 +508,7 @@ t.test('express app', async t => {
     })
     .then(data => {
       t.ok(data, 'got response data');
-      t.equal(data, '{"cardAvailable":true}', 'ok response');
+      t.equal(data, '{"nextCardID":2}', 'ok response');
       t.end();
     });
   });
@@ -533,72 +533,62 @@ t.test('express app', async t => {
     })
     .then(data => {
       t.ok(data, 'got response data');
-      t.equal(data, '{"cardAvailable":true}', 'ok response');
+      t.equal(data, '{"nextCardID":2}', 'ok response');
       t.end();
     });
   });
 
-  await t.test('get /card/1/front', t => {
-    return fetch('http://localhost:' + port + '/card/1/front')
+  await t.test('get /card/1', t => {
+    return fetch('http://localhost:' + port + '/card/1')
     .then(response => {
       t.equal(response.status, 200, 'Response status is 200');
       t.equal(response.statusText, 'OK', 'OK');
-      return response.text();
+      return response.json();
     })
     .then(data => {
       t.ok(data, 'got response data');
+      t.equal(data.id, 1, 'id');
+      t.equal(data.fieldsetid, 1, 'fieldset');
+      t.equal(data.templateid, 2, 'templateid');
+      t.equal(data.interval, 30, 'interval');
+      t.equal(data.lastinterval, 30, 'lastinterval');
+      t.ok(data.template, 'template');
+      t.ok(data.front, 'front');
+      t.ok(data.back, 'back');
+      t.ok(data.intervals, 'intervals');
+      t.ok(data.statsPast24Hours, 'statsPast24Hours');
+      t.ok(data.statsNext24Hours, 'statsNext24Hours');
+      t.equal(data.mode, 'go', 'mode');
       t.end();
     });
   });
 
-  await t.test('get /card/10/front', t => {
-    return fetch('http://localhost:' + port + '/card/10/front')
+  await t.test('get /card/666', t => {
+    return fetch('http://localhost:' + port + '/card/666')
     .then(response => {
-      t.equal(response.status, 200, 'Response status is 200');
-      t.equal(response.statusText, 'OK', 'OK');
-      return response.text();
-    })
-    .then(data => {
-      t.ok(data, 'got response data');
+      t.equal(response.status, 404, 'Response status is 404');
+      t.equal(response.statusText, 'Not Found', 'Not Found');
       t.end();
     });
   });
 
-  await t.test('get /card/1/back', t => {
-    return fetch('http://localhost:' + port + '/card/1/back')
+  await t.test('get /homeData', t => {
+    return fetch('http://localhost:' + port + '/homeData')
     .then(response => {
       t.equal(response.status, 200, 'Response status is 200');
       t.equal(response.statusText, 'OK', 'OK');
-      return response.text();
+      return response.json();
     })
     .then(data => {
-      t.ok(data, 'got response data');
-      t.end();
-    });
-  });
-
-  await t.test('get /card/2/back', t => {
-    return fetch('http://localhost:' + port + '/card/2/back')
-    .then(response => {
-      t.equal(response.status, 200, 'Response status is 200');
-      t.equal(response.statusText, 'OK', 'OK');
-      return response.text();
-    })
-    .then(data => {
-      t.ok(data, 'got response data');
-      t.end();
-    });
-  });
-
-  await t.test('get /card/10/back', t => {
-    return fetch('http://localhost:' + port + '/card/10/back')
-    .then(response => {
-      t.equal(response.status, 200, 'Response status is 200');
-      t.equal(response.statusText, 'OK', 'OK');
-      return response.text();
-    })
-    .then(data => {
-      t.ok(data, 'got response data');
+      t.ok(data, 'got data');
+      t.equal(data.predictedStudyTime, 13, 'predictedStudyTime');
+      t.equal(data.dueNow, 0, 'dueNow');
+      t.equal(data.overdue, 0, 'overdue');
+      t.equal(data.timeToNextDue, '00:00:30', 'timeToNextDue');
+      t.equal(data.nextCardID, 2, 'nextCardID');
+      t.equal(data.mode, 'go', 'mode');
+      t.equal(data.theme, 'dark', 'theme');
+      t.ok(data.chartStudyTime, 'chartStudyTime');
       t.end();
     });
   });

@@ -14,7 +14,7 @@ id="signal_statsPast24Hours.newCards" title="new cards past 24 hours">{{statsPas
 <h1><img onclick="clickHome()" src="img/logo.png">Spaced Repetition Flashcards</h1>
 <table>
 <thead>
-<tr><th></th><th>Cards</th><th>Minutes</th></tr>
+<tr><th></th><th>Cards</th><th>Time</th></tr>
 </thead>
 <tbody>
 <tr><th>Past 24 Hours:</th>
@@ -37,8 +37,8 @@ id="signal_statsPast24Hours.newCards" title="new cards past 24 hours">{{statsPas
 <td colspan=2><span
   id="home_averageStudyTime"
   title="short term historic average">{{averageStudyTime}}</span> / <span
-  id="home_studyTime"
-  title="forward looking average for new card mode">{{studyTime}}</span></td></tr>
+  id="home_predictedStudyTime"
+  title="forward looking average for new card mode">{{predictedStudyTime}}</span></td></tr>
 
 <tr><th>New Cards Per Day:</th>
 <td colspan=2><span
@@ -62,7 +62,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
  title="Average latency">{{averageLatency}}</span></td></tr>
 </tbody>
 </table>
-<button id="study" class="shortcut_s" onclick="clickStudy('/next')">Study</button>
+<button id="study" class="shortcut_s" onclick="clickStudy()">Study</button>
 <button id="reload" onclick="clickHome()">Reload</button>
 <h3>Study time per hour</h3>
 <div id="home_chart1" class="chart"></div>
@@ -209,47 +209,23 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
 <script>
   let currentSection;
   let currentCard;
-  let currentCardID;
   let currentCardStatTime;
-  let currentDue;
+  let nextCardID;
   let homeIntervalTimerID;
 
   // mode is /next or /studyNow (these used to be paths)
-  function clickStudy (mode) {
-    if (mode === '/next') {
-      // There may be a card available for study now: only the server knows
-      // Query the server and, if there is a card available, display it
-      fetch('/next')
-      .then(response => {
-        response.json()
-        .then(data => {
-          if(data.cardID) {
-            // Load the card front in #front and display that section
-            loadCard(data.cardID);
-          } else {
-            loadHome();
-          }
-        });
+  function clickStudy () {
+    fetch('/studyNow')
+    .then(response => {
+      response.json()
+      .then(data => {
+        if(data.cardID) {
+          loadCard(data.cardID);
+        } else {
+          loadHome();
+        }
       });
-    } else if (mode === '/studyNow') {
-      fetch('/studyNow')
-      .then(response => {
-        response.json()
-        .then(data => {
-          if(data.cardID) {
-            // Load the card front in #front and display that section
-            alert('clickStudy got a card');
-            loadCard(data.cardID);
-          } else {
-            // Update #home and display it
-            alert('clickStudy didn not get a card');
-            displaySection('home');
-          }
-        });
-      });
-    } else {
-      alert('invalid mode in call to clickStudy');
-    }
+    });
   }
 
   function clickStop () {
@@ -326,46 +302,46 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   }
 
   function loadHome () {
-    displaySection('home');
     document.getElementById('signal').classList.remove('hidden');
     // Load current data to the home section
     fetch('/homeData')
     .then(response => {
       response.json()
       .then(data => {
-        currentDue = data.dueNow;
+        nextCardID = data.nextCardID;
         document.getElementById('home_time_to_earliest_due_card')
           .textContent = data.timeToNextDue;
         document.getElementById('home_average_latency')
-          .textContent = data.averageLatency;
+          .textContent = formatSeconds(data.averageLatency);
         document.getElementById('home_due')
           .textContent = data.dueNow;
         document.getElementById('home_overdue')
           .textContent = data.overdue;
         document.getElementById('home_percentCorrect')
-          .textContent = data.percentCorrect;
+          .textContent = data.percentCorrect.toFixed(2);
         document.getElementById('home_averageNewCards')
-          .textContent = data.averageNewCards;
+          .textContent = data.averageNewCards.toFixed(2);
         document.getElementById('home_newCardsSeen')
-          .textContent = data.newCardsSeen;
+          .textContent = data.statsPast24Hours.newCards;
         document.getElementById('home_averageStudyTime')
-          .textContent = data.averageStudyTime;
-        document.getElementById('home_studyTime')
-          .textContent = data.studyTime;
+          .textContent = formatSeconds(data.averageStudyTime);
+        document.getElementById('home_predictedStudyTime')
+          .textContent = formatSeconds(data.predictedStudyTime);
         document.getElementById('home_statsNext24Hours.count')
           .textContent = data.statsNext24Hours.count;
         document.getElementById('home_statsNext24Hours.time')
-          .textContent = data.statsNext24Hours.time;
+          .textContent = formatSeconds(data.statsNext24Hours.time);
         document.getElementById('home_statsPast24Hours.count')
           .textContent = data.statsPast24Hours.count;
         document.getElementById('home_statsPast24Hours.time')
-          .textContent = data.statsPast24Hours.time;
+          .textContent = formatSeconds(data.statsPast24Hours.time);
         if (data.dueNow || data.mode === 'go') {
           document.getElementById('study').classList.add('ready');
         } else {
           document.getElementById('study').classList.remove('ready');
         }
         setSignal(data);
+        displaySection('home');
 
         // Update chart
         let chart1 = document.getElementById('home_chart1');
@@ -412,7 +388,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   }
 
   function loadStats () {
-    displaySection('stats');
     document.getElementById('signal').classList.add('hidden');
     fetch('/stats')
     .then(response => {
@@ -458,6 +433,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
           .textContent = data.averageStudyTimePerDay;
         document.getElementById('stats_timeToNextDue')
           .textContent = data.timeToNextDue;
+        displaySection('stats');
 
         let reviewsPerDay = document.getElementById('reviewsPerDay');
         if (reviewsPerDay) {
@@ -769,17 +745,16 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
     document.getElementById('signal_statsNext24Hours.reviewsToNextNew')
       .textContent = data.statsNext24Hours.reviewsToNextNew;
     document.getElementById('signal_statsNext24Hours.time')
-      .textContent = data.statsNext24Hours.time;
+      .textContent = Math.round(data.statsNext24Hours.time/60);
     document.getElementById('signal_statsPast24Hours.time')
-      .textContent = data.statsPast24Hours.time;
+      .textContent = Math.round(data.statsPast24Hours.time/60);
     document.getElementById('signal_statsPast24Hours.newCards')
       .textContent = data.statsPast24Hours.newCards;
   }
 
   // Load the card front and back with a single request
+  // Displaying a card starts with displaying the front
   function loadCard (cardID) {
-    // Displaying a card starts with displaying the front
-    displaySection('front');
     document.getElementById('signal').classList.remove('hidden');
     fetch('/card/' + cardID)
     .then(response => {
@@ -804,8 +779,8 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
           .textContent = currentCard.factor.toFixed(3);
         document.getElementById('front_face').classList.remove('dim');
         setSignal(currentCard);
-        currentCardID = currentCard.id;
         currentCardStartTime = Math.floor(Date.now() / 1000);
+        displaySection('front');
         playAudio('front');
 
         // Then load the card back
@@ -836,7 +811,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   }
 
   function review (ease) {
-    fetch('/card/' + currentCardID + '/', {
+    fetch('/card/' + currentCard.id + '/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -851,6 +826,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
       }
       response.json()
       .then((data) => {
+        nextCardID = data.nextCardID;
         if (data.nextCardID) {
           loadCard(data.nextCardID);
         } else {
@@ -914,13 +890,13 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
     function keyCapt (e) {
       if (currentSection === 'home') {
         if (e.keyCode === 32) { // space
-          if (currentDue) {
-            clickStudy('/next');
+          if (nextCardID) {
+            loadCard(nextCardID);
           } else {
             loadHome();
           }
         } else if (e.keyCode === 115) { // s
-          clickStudy('/next');
+          clickStudy();
         }
       } else if (currentSection === 'front') {
         if (e.keyCode === 32) {
