@@ -213,6 +213,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   let currentCardID;
   let currentCardStatTime;
   let currentDue;
+  let homeIntervalTimerID;
 
   // mode is /next or /studyNow (these used to be paths)
   function clickStudy (mode) {
@@ -394,6 +395,16 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
         );
       });
     });
+    if (!homeIntervalTimerID) {
+      homeIntervalTimerID = setInterval(() => {
+        if (currentSection === 'home') {
+          loadHome();
+        } else {
+          clearInterval(homeIntervalTimerID);
+          homeIntervalTimerID = 0;
+        }
+      }, 5 * 60 * 1000);
+    }
   }
 
   function loadStats () {
@@ -770,7 +781,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
     .then(response => {
       response.json()
       .then(data => {
-        console.log('card data: ', data);
         currentCard = data;
 
         // First load the card front
