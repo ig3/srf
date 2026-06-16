@@ -81,8 +81,8 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
 </style>
 
 <section id="front" class="hidden">
-  <div id="front_content">
   <h1>Front</h1>
+  <div id="front_content">
   <div id="front_face" class="card">
   {{{front}}}
   </div>
@@ -710,6 +710,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
     .then(response => {
       response.json()
       .then(data => {
+        document.getElementById('front_face').classList.add('dim');
         document.getElementById('template_style')
           .textContent = data.template.css;
         document.getElementById('front_face')
@@ -723,6 +724,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
           .textContent = data.card.timeSinceLastReview;
         document.getElementById('front_factor')
           .textContent = data.card.factor;
+        document.getElementById('front_face').classList.remove('dim');
         setSignal(data);
         currentCardID = data.card.id;
         currentCardStartTime = data.cardStartTime;
