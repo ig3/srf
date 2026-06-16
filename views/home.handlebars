@@ -909,7 +909,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
     document.addEventListener("keypress", keyCapt, false);
     function keyCapt (e) {
       if (currentSection === 'home') {
-        if (e.keyCode === 32) {
+        if (e.keyCode === 32) { // space
           if (currentDue) {
             clickStudy('/next');
           } else {
@@ -937,6 +937,10 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
           review('easy');
         } else if (e.keyCode === 115) { // s
           clickHome();
+        }
+      } else if (currentSection === 'stats') {
+        if (e.keyCode === 32) { // space
+          loadHome();
         }
       }
       /*
