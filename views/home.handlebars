@@ -212,6 +212,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   let currentCard;
   let currentCardID;
   let currentCardStatTime;
+  let currentDue;
 
   // mode is /next or /studyNow (these used to be paths)
   function clickStudy (mode) {
@@ -332,6 +333,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
     .then(response => {
       response.json()
       .then(data => {
+        currentDue = data.dueNow;
         document.getElementById('home_time_to_earliest_due_card')
           .textContent = data.timeToNextDue;
         document.getElementById('home_average_latency')
@@ -898,7 +900,11 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
     function keyCapt (e) {
       if (currentSection === 'home') {
         if (e.keyCode === 32) {
-          clickStudy('/next');
+          if (currentDue) {
+            clickStudy('/next');
+          } else {
+            loadHome();
+          }
         } else if (e.keyCode === 115) { // s
           clickStudy('/next');
         }
