@@ -63,7 +63,7 @@ The home page shows statistics of your study:
  * cards due and predicted minutes to study in the next 24 hours
  * study time per day: a forward looking average used to determine new card
    mode and a short term (7 days) historic average
- * new cards per day: new cards in the past 24 hours and a short term
+ * new cards per day: new cards in current calendar day and a short term
    historic average
  * percent of cards that you got correct (i.e. not rated Fail)
  * number of cards due and overdue for review
@@ -75,7 +75,7 @@ The status at the top right includes:
    * Yellow (slow): new cards at intervals
    * Red (stop): no new cards
  * Cards due
- * New cards in the past 24 hours
+ * New cards in the current calendar day 
  * Minutes studied in the past 24 hours
  * Predicted minutes to study in the next 24 hours
 
@@ -1285,7 +1285,7 @@ learning and mature cards.
 
 default: 20
 
-The maximum number of new cards to be presented within 24 hours.
+The maximum number of new cards to be presented each calendar day.
 
 #### minStudyTime
 
@@ -1298,10 +1298,10 @@ the past 24 hours is more than this.
 
 default: 30 minutes
 
-If total study time for the past 24 hours and predicted study time to study
-all cards due in the next 24 hours are both less than this, then new cards
-will be presented, interleaved with due cards. If either exceeds this, then
-only due cards will be presented.
+This is a factor the scheduler uses to determine if new cards should be
+presented and the number of reviews between new cards. The number of new
+cards presented is adjusted to keep the average study time per day close to
+this target.
 
 #### probabilityOldestDue
 
@@ -1717,11 +1717,10 @@ approximately at config.targetStudyTime.
 The new cards are presented at intervals, mixed in with review cards.
 
 New cards are not presented if:
- * total study time in the past 24 hours is more than the target
  * estimated study time to review all cards due in the next 24 hours is
    more than the target
  * there are overdue cards
- * config.maxNewCardsPerDay new cards have been seen in the past 24 hours
+ * new cards in the current calendar day is more than config.maxNewCardsPerDay
 
 New cards start with a minimal interval. If they remain hard, the interval
 will continue minimal, until you have reviewed the card enough times to

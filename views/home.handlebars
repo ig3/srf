@@ -44,8 +44,8 @@ id="signal_statsPast24Hours.newCards" title="new cards past 24 hours">{{statsPas
 <td colspan=2><span
   id="home_averageNewCards"
   title="short term historic average (cards/day)">{{averageNewCards}}</span> / <span
-  id="home_newCardsSeen"
-  title="past 24 hours (cards)">{{newCardsSeen}}</span></td></tr>
+  id="home_newCardsToday"
+  title="current calendar day (cards)">{{newCardsToday}}</span></td></tr>
 
 <tr><th>Percent correct:</th>
 <td colspan=2><span id="home_percentCorrect">{{percentCorrect}}</span>%</td></tr>
@@ -321,8 +321,8 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
           .textContent = data.percentCorrect.toFixed(2);
         document.getElementById('home_averageNewCards')
           .textContent = data.averageNewCards.toFixed(2);
-        document.getElementById('home_newCardsSeen')
-          .textContent = data.statsPast24Hours.newCards;
+        document.getElementById('home_newCardsToday')
+          .textContent = data.newCardsToday;
         document.getElementById('home_averageStudyTime')
           .textContent = formatSeconds(data.averageStudyTime);
         document.getElementById('home_predictedStudyTime')
