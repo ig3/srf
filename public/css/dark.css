@@ -19,6 +19,10 @@ h1 img {
   padding-right: 20px;
   width: 60px;
 }
+h1 img:hover {
+  cursor: pointer;
+}
+
 br {
   display: block;
   height: 0;
@@ -98,6 +102,9 @@ button {
   padding-right: 4px;
   font-family: inherit;
   font-size: inherit;
+}
+button:hover {
+  cursor: pointer;
 }
 
 a.default_action {
