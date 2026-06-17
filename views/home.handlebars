@@ -7,7 +7,7 @@ id="signal_statsNext24Hours.time" title="study time next 24
 hour">{{statsNext24Hours.time}}</span>/<span
 id="signal_statsPast24Hours.time" title="study time past 24
 hours">{{statsPast24Hours.time}}</span>/<span
-id="signal_statsPast24Hours.newCards" title="new cards past 24 hours">{{statsPast24Hours.newCards}}</span></div></div>
+id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday}}</span></div></div>
 
 <section id="home" class="hidden">
 <div class="home {{mode}}">
@@ -748,8 +748,8 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
       .textContent = Math.round(data.statsNext24Hours.time/60);
     document.getElementById('signal_statsPast24Hours.time')
       .textContent = Math.round(data.statsPast24Hours.time/60);
-    document.getElementById('signal_statsPast24Hours.newCards')
-      .textContent = data.statsPast24Hours.newCards;
+    document.getElementById('signal_newCardsToday')
+      .textContent = data.newCardsToday;
   }
 
   // Load the card front and back with a single request
