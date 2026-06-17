@@ -57,7 +57,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
 <tr><th>Time to earliest due card:</th>
 <td colspan=2><span
  id="home_time_to_earliest_due_card"
- title="Time to earliest due card (hh:mm:ss)">{{timeToNextDue}}</span> / <span
+ title="Time to earliest due card">{{timeToNextDue}}</span> / <span
  id="home_average_latency"
  title="Average latency">{{averageLatency}}</span></td></tr>
 </tbody>
@@ -167,7 +167,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   <tr><th>Average study time per day:</th>
   <td><span id="stats_averageStudyTimePerDay">{{averageStudyTimePerDay}}</span> (hh:mm:ss)</td></tr>
   <tr><th>Time to earliest due card:</th>
-  <td><span id="stats_timeToNextDue">{{timeToNextDue}}</span> (hh:mm:ss)</td></tr>
+  <td><span id="stats_timeToNextDue">{{timeToNextDue}}</span></td></tr>
   </table>
   </div>
   <div class="charts">
@@ -310,7 +310,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
       .then(data => {
         nextCardID = data.nextCardID;
         document.getElementById('home_time_to_earliest_due_card')
-          .textContent = data.timeToNextDue;
+          .textContent = formatSeconds(data.timeToNextDue);
         document.getElementById('home_average_latency')
           .textContent = formatSeconds(data.averageLatency);
         document.getElementById('home_due')
@@ -432,7 +432,7 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
         document.getElementById('stats_averageStudyTimePerDay')
           .textContent = data.averageStudyTimePerDay;
         document.getElementById('stats_timeToNextDue')
-          .textContent = data.timeToNextDue;
+          .textContent = formatSeconds(data.timeToNextDue);
         displaySection('stats');
 
         let reviewsPerDay = document.getElementById('reviewsPerDay');
@@ -959,33 +959,35 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   };
 
   function formatSeconds (n) {
+    const s = n < 0 ? '-' : '';
+    if (n < 0) n = -n;
     n = Math.floor(n)
     // Display as seconds
     if (n < 60) {
-      return n + 's';
+      return s + n + 's';
     }
     // Display as minutes
     n = n / 60;
     if (n < 10) {
-      return n.toFixed(1) + 'm';
+      return s + n.toFixed(1) + 'm';
     }
     if (n < 60) {
-      return n.toFixed(0) + 'm';
+      return s + n.toFixed(0) + 'm';
     }
     // Display as hours
     n = n / 60;
     if (n < 10) {
-      return n.toFixed(1) + 'h';
+      return s + n.toFixed(1) + 'h';
     }
     if (n < 24) {
-      return n.toFixed(0) + 'h';
+      return s + n.toFixed(0) + 'h';
     }
     // Display as days
     n = n / 24;
     if (n < 10) {
-      return n.toFixed(1) + 'd';
+      return s + n.toFixed(1) + 'd';
     } else {
-      return n.toFixed(0) + 'd';
+      return s + n.toFixed(0) + 'd';
     }
   }
 </script>
