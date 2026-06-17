@@ -164,9 +164,9 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   <span id="stats_statsNext24Hours.minReviews" title="Minimum reviews between new cards">{{statsNext24Hours.minReviews}}</span> /
   <span id="stats_statsNext24Hours.reviewsToNextNew" title="Reviews until next new card">{{statsNext24Hours.reviewsToNextNew}}</span></td></tr>
   <tr><th>Study time today:</th>
-  <td><span id="stats_studyTimeToday">{{studyTimeToday}}</span> (hh:mm:ss)</td></tr>
+  <td><span id="stats_studyTimeToday">{{studyTimeToday}}</span></td></tr>
   <tr><th>Average study time per day:</th>
-  <td><span id="stats_averageStudyTimePerDay">{{averageStudyTimePerDay}}</span> (hh:mm:ss)</td></tr>
+  <td><span id="stats_averageStudyTimePerDay">{{averageStudyTimePerDay}}</span></td></tr>
   <tr><th>Time to earliest due card:</th>
   <td><span id="stats_timeToNextDue">{{timeToNextDue}}</span></td></tr>
   </table>
@@ -431,9 +431,9 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
         document.getElementById('stats_statsNext24Hours.reviewsToNextNew')
           .textContent = data.statsNext24Hours.reviewsToNextNew;
         document.getElementById('stats_studyTimeToday')
-          .textContent = data.studyTimeToday;
+          .textContent = formatSeconds(data.studyTimeToday);
         document.getElementById('stats_averageStudyTimePerDay')
-          .textContent = data.averageStudyTimePerDay;
+          .textContent = formatSeconds(data.averageStudyTimePerDay);
         document.getElementById('stats_timeToNextDue')
           .textContent = formatSeconds(data.timeToNextDue);
         displaySection('stats');
