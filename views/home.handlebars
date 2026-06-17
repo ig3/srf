@@ -886,75 +886,65 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   window.onload = (event) => {
     clickHome();
 
-    document.addEventListener("keypress", keyCapt, false);
+    document.addEventListener("keydown", keyCapt, false);
     function keyCapt (e) {
       if (currentSection === 'home') {
-        if (e.keyCode === 32) { // space
+        if (e.key === ' ') { // space
+          e.preventDefault();
+          e.stopPropagation();
           if (nextCardID) {
             loadCard(nextCardID);
           } else {
             loadHome();
           }
-        } else if (e.keyCode === 115) { // s
+        } else if (e.key === 's') {
+          e.preventDefault();
+          e.stopPropagation();
           clickStudy();
         }
       } else if (currentSection === 'front') {
-        if (e.keyCode === 32) {
+        if (e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
           clickFlip();
-        } else if (e.keyCode === 112) { // p
+        } else if (e.key === 'p') {
+          e.preventDefault();
+          e.stopPropagation();
           playAudio('front');
         }
       } else if (currentSection === 'back') {
-        if (e.keyCode === 112) { // p
+        if (e.key === 'p') {
+          e.preventDefault();
+          e.stopPropagation();
           playAudio('back');
-        } else if (e.keyCode === 106) { // j
+        } else if (e.key === 'j') {
+          e.preventDefault();
+          e.stopPropagation();
           review('fail');
-        } else if (e.keyCode === 107) { // k
+        } else if (e.key === 'k') {
+          e.preventDefault();
+          e.stopPropagation();
           review('hard');
-        } else if (e.keyCode === 108) { // l
+        } else if (e.key === 'l') {
+          e.preventDefault();
+          e.stopPropagation();
           review('good');
-        } else if (e.keyCode === 59) { // ;
+        } else if (e.key === ';') {
+          e.preventDefault();
+          e.stopPropagation();
           review('easy');
-        } else if (e.keyCode === 115) { // s
+        } else if (e.key === 's') {
+          e.preventDefault();
+          e.stopPropagation();
           clickHome();
         }
       } else if (currentSection === 'stats') {
-        if (e.keyCode === 32) { // space
+        if (e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
           loadHome();
         }
       }
-      /*
-      if (e.keyCode === 32) {
-        defaultAction();
-      } else if (e.keyCode === 98) { // b
-        let el = document.getElementsByClassName('shortcut_b')[0];
-        if (el) el.click();
-      } else if (e.keyCode === 101) { // e
-        let el = document.getElementsByClassName('shortcut_e')[0];
-        if (el) el.click();
-      } else if (e.keyCode === 106) { // j
-        let el = document.getElementsByClassName('shortcut_j')[0];
-        if (el) el.click();
-      } else if (e.keyCode === 107) { // k
-        let el = document.getElementsByClassName('shortcut_k')[0];
-        if (el) el.click();
-      } else if (e.keyCode === 108) { // l
-        let el = document.getElementsByClassName('shortcut_l')[0];
-        if (el) el.click();
-      } else if (e.keyCode === 112) { // p
-        let el = document.getElementsByClassName('shortcut_p')[0];
-        if (el) el.click();
-      } else if (e.keyCode === 114) { // r
-        let el = document.getElementsByClassName('shortcut_r')[0];
-        if (el) el.click();
-      } else if (e.keyCode === 115) { // s
-        let el = document.getElementsByClassName('shortcut_s')[0];
-        if (el) el.click();
-      } else if (e.keyCode === 59) { // ;
-        let el = document.getElementsByClassName('shortcut_semicolon')[0].click();
-        if (el) el.click();
-      }
-      */
     }
   };
 
