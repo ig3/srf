@@ -27,11 +27,16 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
 
 <tr><th>Next 24 Hours:</th>
 <td><span
+  id="home_statsNext24Hours.cardsDue"
+  title="Cards due in the next 24 hours"
+  >{{statsNext24Hours.cardsDue}}</span> / <span
   id="home_statsNext24Hours.count"
-  title="Estimated Cards to review in the next 24 hours">{{statsNext24Hours.count}}</span></td>
+  title="Estimated total cards to review in the next 24 hours"
+  >{{statsNext24Hours.count}}</span></td>
 <td><span
   id="home_statsNext24Hours.time"
-  title="Estimated study time in the next 24 hours">{{statsNext24Hours.time}}</span></tr>
+  title="Estimated study time in the next 24 hours"
+  >{{statsNext24Hours.time}}</span></td></tr>
 
 <tr><th>Study Time per Day:</th>
 <td colspan=2><span
@@ -57,8 +62,6 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
 <td colspan=2><span
   id="home_due"
   title="Due now">{{dueNow}}</span> / <span
-  id="home_cardsDue"
-  title="Due in the next 24 hours">{{cardsDue}}</span> / <span
   id="home_overdue"
   title="Overdue">{{overdue}}</span
   ></td></tr>
@@ -321,8 +324,6 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           .textContent = formatSeconds(data.averageLatency);
         document.getElementById('home_due')
           .textContent = data.dueNow;
-        document.getElementById('home_cardsDue')
-          .textContent = data.statsNext24Hours.cardsDue;
         document.getElementById('home_overdue')
           .textContent = data.overdue;
         document.getElementById('home_percentCorrect')
@@ -337,6 +338,8 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           .textContent = formatSeconds(data.averageStudyTime);
         document.getElementById('home_predictedStudyTime')
           .textContent = formatSeconds(data.predictedStudyTime);
+        document.getElementById('home_statsNext24Hours.cardsDue')
+          .textContent = data.statsNext24Hours.cardsDue;
         document.getElementById('home_statsNext24Hours.count')
           .textContent = data.statsNext24Hours.count;
         document.getElementById('home_statsNext24Hours.time')
