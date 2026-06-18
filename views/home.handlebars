@@ -212,7 +212,6 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
   let currentCard;
   let currentCardStatTime;
   let nextCardID;
-  let homeIntervalTimerID;
 
   // mode is /next or /studyNow (these used to be paths)
   function clickStudy () {
@@ -378,16 +377,14 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
         );
       });
     });
-    if (!homeIntervalTimerID) {
-      homeIntervalTimerID = setInterval(() => {
+    setTimeout(
+      () => {
         if (currentSection === 'home') {
           loadHome();
-        } else {
-          clearInterval(homeIntervalTimerID);
-          homeIntervalTimerID = 0;
         }
-      }, 5 * 60 * 1000);
-    }
+      },
+      5 * 60 * 1000
+    );
   }
 
   function loadStats () {
