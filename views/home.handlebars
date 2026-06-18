@@ -53,9 +53,15 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
 <tr><th>Percent correct:</th>
 <td colspan=2><span id="home_percentCorrect">{{percentCorrect}}</span>%</td></tr>
 
-<tr><th>Cards due:</th><td colspan=2><span id="home_due"
-title="due (cards)">{{dueNow}}</span> / <span id="home_overdue"
-title="overdue (cards)">{{overdue}}</span></td></tr>
+<tr><th>Cards due:</th>
+<td colspan=2><span
+  id="home_due"
+  title="Due now">{{dueNow}}</span> / <span
+  id="home_cardsDue"
+  title="Due in the next 24 hours">{{cardsDue}}</span> / <span
+  id="home_overdue"
+  title="Overdue">{{overdue}}</span
+  ></td></tr>
 
 <tr><th>Time to earliest due card:</th>
 <td colspan=2><span
@@ -315,6 +321,8 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
           .textContent = formatSeconds(data.averageLatency);
         document.getElementById('home_due')
           .textContent = data.dueNow;
+        document.getElementById('home_cardsDue')
+          .textContent = data.statsNext24Hours.cardsDue;
         document.getElementById('home_overdue')
           .textContent = data.overdue;
         document.getElementById('home_percentCorrect')
