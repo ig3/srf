@@ -33,19 +33,22 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
   id="home_statsNext24Hours.time"
   title="Estimated study time in the next 24 hours">{{statsNext24Hours.time}}</span></tr>
 
-<tr><th>Study Time Per Day:</th>
+<tr><th>Study Time per Day:</th>
 <td colspan=2><span
+  id="home_studyTimeToday" title="Today">{{studyTimeToday}}</span> / <span
   id="home_averageStudyTime"
-  title="short term average">{{averageStudyTime}}</span> / <span
+  title="Average">{{averageStudyTime}}</span> / <span
   id="home_predictedStudyTime"
-  title="Predicted average for new card mode">{{predictedStudyTime}}</span></td></tr>
+  title="Predicted average">{{predictedStudyTime}}</span
+  ></td></tr>
 
-<tr><th>New Cards Per Day:</th>
+<tr><th>New Cards per Day:</th>
 <td colspan=2><span
-  id="home_averageNewCards"
-  title="short term historic average (cards/day)">{{averageNewCards}}</span> / <span
   id="home_newCardsToday"
-  title="current calendar day (cards)">{{newCardsToday}}</span></td></tr>
+  title="Today">{{newCardsToday}}</span> / <span
+  id="home_averageNewCards"
+  title="Average">{{averageNewCards}}</span
+  ></td></tr>
 
 <tr><th>Percent correct:</th>
 <td colspan=2><span id="home_percentCorrect">{{percentCorrect}}</span>%</td></tr>
@@ -321,6 +324,8 @@ title="overdue (cards)">{{overdue}}</span></td></tr>
           .textContent = data.averageNewCards.toFixed(2);
         document.getElementById('home_newCardsToday')
           .textContent = data.newCardsToday;
+        document.getElementById('home_studyTimeToday')
+          .textContent = formatSeconds(data.studyTimeToday);
         document.getElementById('home_averageStudyTime')
           .textContent = formatSeconds(data.averageStudyTime);
         document.getElementById('home_predictedStudyTime')
