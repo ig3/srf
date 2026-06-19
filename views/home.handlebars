@@ -716,9 +716,17 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           data.charts.chartCardsPerLastInterval,
           data.charts.chartCardsPerInterval,
         ];
+        // If mode isn't 'lines' the defaul range creates space on the
+        // left and right of the x axis. This is by design. See:
+        // https://github.com/plotly/plotly.js/issues/5280
+        // Setting the range explicitly makes the range consistent
+        // with other plots.
+        const range = [ 0, intervalData[0].x.length - 1 ];
+        intervalData[0].mode = 'lines+markers';
         intervalData[0].line = {
           color: 'rgb(185, 213, 232)'
         };
+        intervalData[1].mode = 'lines+markers';
         intervalData[1].line = {
           color: 'rgb(31, 119, 180)'
         };
@@ -734,12 +742,16 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
                 l: 10,
                 r: 10
               },
+              xaxis: {
+                title: 'days',
+                automargin: true,
+                range: range,
+                },
               yaxis: {
                 title: 'cards',
                 automargin: true,
                 rangemode: 'tozero'
                 },
-              xaxis: { title: 'days', automargin: true },
               legend: {
                 orientation: 'h',
                 x: 0.2,
