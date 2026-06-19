@@ -221,6 +221,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
   let currentCard;
   let currentCardStatTime;
   let nextCardID;
+  let timerID;
 
   // mode is /next or /studyNow (these used to be paths)
   function clickStudy () {
@@ -388,8 +389,10 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
         );
       });
     });
-    setTimeout(
+    if (timerID) clearTimeout(timerID);
+    timerID = setTimeout(
       () => {
+        timerID = 0;
         if (currentSection === 'home') {
           loadHome();
         }
@@ -816,6 +819,19 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           .textContent = formatSeconds(currentCard.intervals.good);
         document.getElementById('back_intervals.easy')
           .textContent = formatSeconds(currentCard.intervals.easy);
+        if (timerID) clearTimeout(timerID);
+        timerID = setTimeout(
+          () => {
+            timerID = 0;
+            if (
+              currentSection === 'front' ||
+              currentSection === 'back'
+            ) {
+              loadHome();
+            }
+          },
+          (currentCard.maxViewTime || 2 * 60) * 1000
+        );
 
         // Defer loading the chart until the back is visible
         // Otherwise, it can't detect window size
