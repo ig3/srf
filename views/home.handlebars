@@ -215,7 +215,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
 </section>
 
 <!-- JavaScript for the new SPA mode -->
-<script src="/js/plotly-latest.min.js" charset="utf-8"></script>
+<script src="/js/plotly-3.6.0.min.js" charset="utf-8"></script>
 <script>
   let currentSection;
   let currentCard;
@@ -284,6 +284,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
       }
       Plotly.newPlot(cardHistory,
         chartData, {
+          hovermode: 'x',
           autosize: true,
           margin: {
             t: 10,
@@ -369,6 +370,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
         newTime.hovertemplate = '%{y}<extra></extra>';
         Plotly.newPlot(chart1,
           [ reviewTime, newTime ], {
+            hovermode: 'x',
             barmode: 'stack',
             autosize: true,
             margin: {
@@ -458,6 +460,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           Plotly.newPlot(
             reviewsPerDay,
             chartData, {
+              hovermode: 'x',
               autosize: true,
               margin: {
                 t: 10,
@@ -486,6 +489,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           Plotly.newPlot(
             studyTimePerDay,
             chartData, {
+              hovermode: 'x',
               autosize: true,
               margin: {
                 t: 10,
@@ -514,6 +518,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           Plotly.newPlot(
             percentCorrect,
             chartData, {
+              hovermode: 'x',
               autosize: true,
               margin: {
                 t: 10,
@@ -542,6 +547,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           Plotly.newPlot(
             newCardsPerDay,
             chartData, {
+              hovermode: 'x',
               autosize: true,
               margin: {
                 t: 10,
@@ -582,6 +588,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           Plotly.newPlot(
             backlog,
             backlogData, {
+              hovermode: 'x',
               autosize: true,
               margin: {
                 t: 10,
@@ -615,6 +622,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           latencyData[0].name = 'Latency';
           Plotly.newPlot(latency,
             latencyData, {
+              hovermode: 'x',
               autosize: true,
               margin: {
                 t: 10,
@@ -662,6 +670,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           Plotly.newPlot(
             cardsPerStage,
             chartData, {
+              hovermode: 'x',
               showlegend: false,
               autosize: true,
               margin: {
@@ -691,6 +700,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           Plotly.newPlot(
             cardsDuePerDay,
             chartData, {
+              hovermode: 'x',
               autosize: true,
               margin: {
                 t: 10,
@@ -735,6 +745,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           Plotly.newPlot(
             cardsPerInterval,
             intervalData, {
+              hovermode: 'x',
               autosize: true,
               margin: {
                 t: 10,

@@ -4619,3 +4619,4 @@ Decrease sensitivity to average study time to range 90% to 110%
 
 ### 6.1.1 - WIP
  * Change cursor to pointer when hovering clickable items
+ * Update plotly.js to 3.6.0
