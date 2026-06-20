@@ -56,14 +56,6 @@ br {
   width: 100%;
   text-align: center;
 }
-#front_face img {
-  max-width: 200px;
-  max-height: 200px;
-}
-#back_face img {
-  max-width: 200px;
-  max-height: 200px;
-}
 audio {
   display: none;
 }
