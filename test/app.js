@@ -558,7 +558,6 @@ t.test('express app', async t => {
       t.ok(data.intervals, 'intervals');
       t.ok(data.statsPast24Hours, 'statsPast24Hours');
       t.ok(data.statsNext24Hours, 'statsNext24Hours');
-      t.equal(data.mode, 'go', 'mode');
       t.end();
     });
   });
@@ -584,9 +583,8 @@ t.test('express app', async t => {
       t.equal(data.predictedStudyTime, 13, 'predictedStudyTime');
       t.equal(data.dueNow, 0, 'dueNow');
       t.equal(data.overdue, 0, 'overdue');
-      t.equal(data.timeToNextDue, '00:00:30', 'timeToNextDue');
+      t.equal(data.timeToNextDue, 30, 'timeToNextDue');
       t.equal(data.nextCardID, 2, 'nextCardID');
-      t.equal(data.mode, 'go', 'mode');
       t.equal(data.theme, 'dark', 'theme');
       t.ok(data.chartStudyTime, 'chartStudyTime');
       t.end();

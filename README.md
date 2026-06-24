@@ -1775,7 +1775,6 @@ The scheduler must provide the following methods:
 
  * getCountCardsDueToday
  * getIntervals
- * getNewCardMode
  * getNextCard
  * getNextDue
  * getNextNew
@@ -1795,15 +1794,6 @@ Takes a card object as argument.
 Returns an object with attributes for each ease: fail, hard, good and easy,
 the values being the new interval for the given card if that ease is
 selected.
-
-#### getNewCardMode
-
-Returns the mode: 'go', 'slow' or 'stop', for presenting new cards. Mode
-`go` is the most aggressive: new cards are presented if there is no due
-card, or at intervals if there are due cards. Mode 'slow' presents new
-cards only at intervals between due cards. Mode 'stop' indicates that new
-cards will not be presented. See the scheduler documentation for details of
-when these modes pertain.
 
 #### getNextCard
 
@@ -4616,3 +4606,4 @@ Decrease sensitivity to average study time to range 90% to 110%
 ### 6.1.1 - WIP
  * Change cursor to pointer when hovering clickable items
  * Update plotly.js to 3.6.0
+ * Remove getNewCardMode
