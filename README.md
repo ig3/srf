@@ -70,10 +70,6 @@ The home page shows statistics of your study:
  * chart of study time per hour: past 24 hours and next 24 hours
 
 The status at the top right includes:
- * Traffic lights for new cards:
-   * Green (go): new cards at intervals and if there are no due cards
-   * Yellow (slow): new cards at intervals
-   * Red (stop): no new cards
  * Cards due
  * New cards in the current calendar day 
  * Minutes studied in the past 24 hours

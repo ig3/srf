@@ -1,5 +1,4 @@
-<div id="signal"><img id="signal_img"
-src="/img/{{theme}}-{{mode}}.png"></br><div><span id="signal_dueNow"
+<div id="signal"><div><span id="signal_dueNow"
 title="due now">{{dueNow}}</span>/<span
 id="signal_statsNext24Hours.reviewsToNextNew" title="reviews before
 next new card">{{statsNext24Hours.reviewsToNextNew}}</span>/<span
@@ -780,8 +779,6 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
   }
 
   function setSignal (data) {
-    document.getElementById('signal_img')
-      .src = '/img/' + data.theme + '-' + data.mode + '.png';
     document.getElementById('signal_dueNow')
       .textContent = data.dueNow;
     document.getElementById('signal_statsNext24Hours.reviewsToNextNew')
