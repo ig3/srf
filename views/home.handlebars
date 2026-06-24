@@ -351,7 +351,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           .textContent = data.statsPast24Hours.count;
         document.getElementById('home_statsPast24Hours.time')
           .textContent = formatSeconds(data.statsPast24Hours.time);
-        if (data.dueNow || data.mode === 'go') {
+        if (nextCardID) {
           document.getElementById('study').classList.add('ready');
         } else {
           document.getElementById('study').classList.remove('ready');
