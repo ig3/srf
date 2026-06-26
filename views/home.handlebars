@@ -41,9 +41,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
 <td colspan=2><span
   id="home_studyTimeToday" title="Today">{{studyTimeToday}}</span> / <span
   id="home_averageStudyTime"
-  title="Average">{{averageStudyTime}}</span> / <span
-  id="home_predictedStudyTime"
-  title="Predicted">{{predictedStudyTime}}</span
+  title="Average">{{averageStudyTime}}</span
   ></td></tr>
 
 <tr><th>New Cards per Day:</th>
@@ -338,8 +336,6 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           .textContent = formatSeconds(data.studyTimeToday);
         document.getElementById('home_averageStudyTime')
           .textContent = formatSeconds(data.averageStudyTime);
-        document.getElementById('home_predictedStudyTime')
-          .textContent = formatSeconds(data.predictedStudyTime);
         document.getElementById('home_statsNext24Hours.cardsDue')
           .textContent = data.statsNext24Hours.cardsDue;
         document.getElementById('home_statsNext24Hours.count')
