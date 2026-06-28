@@ -78,7 +78,9 @@ The status at the top right includes:
 To study a card, click the Study button or press the space bar.
 
 The study button will always present a card for study, ignoring the limits
-of the scheduler.
+of the scheduler. After clicking the Study button this override is
+persistent until either clicking a Stop button (on the front and back of
+each card) or five minutes elapses without reviewing a card.
 
 The space bar will present a card for study or reload the home page,
 according to the determination of the scheduler. 

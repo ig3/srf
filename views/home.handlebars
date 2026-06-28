@@ -220,9 +220,11 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
   let currentCardStatTime;
   let nextCardID;
   let timerID;
+  let overrideLimits;
+  let overrideTimerID;
 
-  // mode is /next or /studyNow (these used to be paths)
   function clickStudy () {
+    overrideLimits = true;
     fetch('/studyNow')
     .then(response => {
       response.json()
@@ -237,6 +239,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
   }
 
   function clickStop () {
+    overrideLimits = 0;
     loadHome();
   }
 
@@ -791,6 +794,16 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
   // Displaying a card starts with displaying the front
   function loadCard (cardID) {
     document.getElementById('signal').classList.remove('hidden');
+    if (overrideLimits) {
+      if (overrideTimerID) clearTimeout(overrideTimerID);
+      overrideTimerID = setTimeout(
+        () => {
+          overrideTimerID = 0;
+          overrideLimits = 0;
+        },
+        5 * 60 * 1000
+      );
+    }
     fetch('/card/' + cardID)
     .then(response => {
       response.json()
@@ -878,7 +891,11 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
         if (data.nextCardID) {
           loadCard(data.nextCardID);
         } else {
-          clickHome();
+          if (overrideLimits) {
+            clickStudy();
+          } else {
+            clickHome();
+          }
         }
       });
     })
