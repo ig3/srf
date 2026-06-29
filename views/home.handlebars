@@ -225,17 +225,22 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
 
   function clickStudy () {
     overrideLimits = true;
-    fetch('/studyNow')
-    .then(response => {
-      response.json()
-      .then(data => {
-        if(data.cardID) {
-          loadCard(data.cardID);
-        } else {
-          loadHome();
-        }
+    if (nextCardID) {
+      loadCard(nextCardID);
+    } else {
+      fetch('/studyNow')
+      .then(response => {
+        response.json()
+        .then(data => {
+          if(data.cardID) {
+            nextCardID = data.cardID;
+            loadCard(nextCardID);
+          } else {
+            loadHome();
+          }
+        });
       });
-    });
+    }
   }
 
   function clickStop () {
@@ -320,7 +325,6 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
     .then(response => {
       response.json()
       .then(data => {
-        nextCardID = data.nextCardID;
         document.getElementById('home_time_to_earliest_due_card')
           .textContent = formatSeconds(data.timeToNextDue);
         document.getElementById('home_average_latency')
@@ -349,9 +353,11 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           .textContent = data.statsPast24Hours.count;
         document.getElementById('home_statsPast24Hours.time')
           .textContent = formatSeconds(data.statsPast24Hours.time);
-        if (nextCardID) {
+        if (data.nextCardID) {
+          nextCardID = data.nextCardID;
           document.getElementById('study').classList.add('ready');
         } else {
+          nextCardID = 0;
           document.getElementById('study').classList.remove('ready');
         }
         setSignal(data);
@@ -887,10 +893,11 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
       }
       response.json()
       .then((data) => {
-        nextCardID = data.nextCardID;
         if (data.nextCardID) {
-          loadCard(data.nextCardID);
+          nextCardID = data.nextCardID;
+          loadCard(nextCardID);
         } else {
+          nextCardID = 0;
           if (overrideLimits) {
             clickStudy();
           } else {
