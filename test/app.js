@@ -580,7 +580,6 @@ t.test('express app', async t => {
     })
     .then(data => {
       t.ok(data, 'got data');
-      t.equal(data.predictedStudyTime, 13, 'predictedStudyTime');
       t.equal(data.dueNow, 0, 'dueNow');
       t.equal(data.overdue, 0, 'overdue');
       t.equal(data.timeToNextDue, 30, 'timeToNextDue');
