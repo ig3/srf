@@ -63,8 +63,9 @@ The home page shows statistics of your study:
  * cards due and predicted minutes to study in the next 24 hours
  * study time per day: a forward looking average used to determine new card
    mode and a short term (7 days) historic average
- * new cards per day: new cards in current calendar day and a short term
-   historic average
+ * new cards: new cards in current calendar day, short term
+   average new cards per day, reviews between new cards, and reviews until
+   next new card
  * percent of cards that you got correct (i.e. not rated Fail)
  * number of cards due and overdue for review
  * chart of study time per hour: past 24 hours and next 24 hours
