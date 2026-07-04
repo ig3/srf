@@ -52,6 +52,28 @@ templates. And if you want something more fundamentally different, you can
 replace the scheduler. It was ease of tinkering with the scheduler that
 motivated me to write this.
 
+### Study Guide
+The scheduler should adapt to your pattern of study, as long as your study
+schedule is reasonably consistent from day to day. On the other hand, it
+allows you to recover from periods without study gracefully.
+
+The extreme patterns of daily study are:
+ * one period of study each day - studying until there are no more due
+   cards, then stopping until the next day
+ * Constant monitoring and studying cards as soon as there are cards to
+   study, whether new or review cards
+
+The scheduler should, in a few days at most, adapt to any changes in
+pattern, as long as the new patter is reasonably consistent from day to
+day.
+
+Cards come due for review somewhat randomly. With a large collection of
+cards under review, while most days will be close to average, there will be
+unusual days with relatively extreme number of cards due.
+
+You can always use the override to study more and stop whenever you want.
+There is no need to obsess about reviewing cards as soon as they are due.
+
 ### Get an Anki Deck
 There are many places to download shared Anki decks and many tools for generating them. [AnkiWeb](https://ankiweb.net/shared/decks/) is one source. Search for 'shared Anki decks' or 'generate Anki decks'
 
