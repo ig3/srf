@@ -43,7 +43,7 @@
     "yauzl": "^3.4.0"
   },
   "devDependencies": {
-    "@ig3/eslint-config-entrain": "^4.0.4",
+    "@ig3/eslint-config-entrain": "^4.0.5",
     "@ig3/test": "^0.0.10",
     "c8": "^11.0.0",
     "multi-tape": "^1.17.1",
