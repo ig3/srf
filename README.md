@@ -4628,7 +4628,8 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Add Average study time per card to stats page
  * Change page loads to reduce browser history records
 
-### 6.1.1 - WIP
+### 6.1.1 - 20260706
  * Change cursor to pointer when hovering clickable items
  * Update plotly.js to 3.6.0
  * Remove getNewCardMode
+ * Update dependencies
