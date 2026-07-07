@@ -18,8 +18,16 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
 <tbody>
 <tr><th>Past 24 Hours:</th>
 <td><span
+  id="home_statsPast24Hours.due"
+  title="Cards due in the past 24 hours"
+  >{{statsPast24Hours.due}}</span> / <span
+  id="home_statsPast24Hours.new"
+  title="New cards in the past 24 hours"
+  >{{statsPast24Hours.new}}</span> / <span
   id="home_statsPast24Hours.count"
-  title="Cards reviewed (not reviews) in the past 24 hours">{{statsPast24Hours.count}}</span></td>
+  title="Total cards in the past 24 hours"
+  >{{statsPast24Hours.count}}</span>
+  </td>
 <td><span
   id="home_statsPast24Hours.time"
   title="Actual study time in the past 24 hours">{{statsPast24Hours.time}}</tr>
@@ -29,6 +37,9 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
   id="home_statsNext24Hours.cardsDue"
   title="Cards due in the next 24 hours"
   >{{statsNext24Hours.cardsDue}}</span> / <span
+  id="home_statsNext24Hours.new"
+  title="Average new cards per day"
+  >{{statsNext24Hours.new}}</span> / <span
   id="home_statsNext24Hours.count"
   title="Estimated total cards to review in the next 24 hours"
   >{{statsNext24Hours.count}}</span></td>
@@ -352,6 +363,8 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           .textContent = formatSeconds(data.averageStudyTime);
         document.getElementById('home_statsNext24Hours.cardsDue')
           .textContent = data.statsNext24Hours.cardsDue;
+        document.getElementById('home_statsNext24Hours.new')
+          .textContent = Math.round(data.averageNewCards);
         document.getElementById('home_statsNext24Hours.count')
           .textContent = data.statsNext24Hours.count;
         document.getElementById('home_statsNext24Hours.time')
@@ -360,6 +373,11 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           .textContent = data.statsNext24Hours.minReviews;
         document.getElementById('home_statsNext24Hours.reviewsToNextNew')
           .textContent = data.statsNext24Hours.reviewsToNextNew;
+        document.getElementById('home_statsPast24Hours.due')
+          .textContent = data.statsPast24Hours.count -
+            data.statsPast24Hours.newCards;
+        document.getElementById('home_statsPast24Hours.new')
+          .textContent = data.statsPast24Hours.newCards;
         document.getElementById('home_statsPast24Hours.count')
           .textContent = data.statsPast24Hours.count;
         document.getElementById('home_statsPast24Hours.time')
