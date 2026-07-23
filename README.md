@@ -4633,3 +4633,4 @@ Decrease sensitivity to average study time to range 90% to 110%
  * Update plotly.js to 3.6.0
  * Remove getNewCardMode
  * Update dependencies
+ * Fix stats page: Cards Due per day
