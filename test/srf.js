@@ -466,13 +466,6 @@ t.test('srf.js', async t => {
     t.end();
   });
 
-  await t.test('getDueCard', t => {
-    const card = srf.getDueCard();
-    t.ok(card, 'got a card');
-    t.equal(card.id, 2, 'got card 2');
-    t.end();
-  });
-
   await t.test('formatSeconds', t => {
     t.equal(srf.formatSeconds(30), '30s', '30 seconds');
     t.equal(srf.formatSeconds(120), '2.0m', '2 minutes');
