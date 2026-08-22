@@ -49,19 +49,6 @@ t.test('express app', async t => {
   const listener = app.listen();
   const port = listener.address().port;
 
-  await t.test('get /next', t => {
-    return fetch('http://localhost:' + port + '/next')
-    .then(response => {
-      t.equal(response.status, 200, 'Response status is 200');
-      t.equal(response.statusText, 'OK', 'OK');
-      return response.text();
-    })
-    .then(data => {
-      t.ok(data, 'got response data');
-      t.end();
-    });
-  });
-
   await t.test('get /studyNow', t => {
     return fetch('http://localhost:' + port + '/studyNow')
     .then(response => {
@@ -590,34 +577,8 @@ t.test('express app', async t => {
     });
   });
 
-  await t.test('get /new', t => {
-    return fetch('http://localhost:' + port + '/new')
-    .then(response => {
-      t.equal(response.status, 200, 'Response status is 200');
-      t.equal(response.statusText, 'OK', 'OK');
-      return response.text();
-    })
-    .then(data => {
-      t.ok(data, 'got response data');
-      t.end();
-    });
-  });
-
   await t.test('get /studyNow', t => {
     return fetch('http://localhost:' + port + '/studyNow')
-    .then(response => {
-      t.equal(response.status, 200, 'Response status is 200');
-      t.equal(response.statusText, 'OK', 'OK');
-      return response.text();
-    })
-    .then(data => {
-      t.ok(data, 'got response data');
-      t.end();
-    });
-  });
-
-  await t.test('get /next', t => {
-    return fetch('http://localhost:' + port + '/next')
     .then(response => {
       t.equal(response.status, 200, 'Response status is 200');
       t.equal(response.statusText, 'OK', 'OK');
@@ -699,19 +660,6 @@ t.test('express app', async t => {
   );
   db.prepare('update card set due = ?, interval = 10')
   .run(Math.floor(Date.now() / 1000) + 10);
-
-  await t.test('get /new', t => {
-    return fetch('http://localhost:' + port + '/new')
-    .then(response => {
-      t.equal(response.status, 200, 'Response status is 200');
-      t.equal(response.statusText, 'OK', 'OK');
-      return response.text();
-    })
-    .then(data => {
-      t.ok(data, 'got response data');
-      t.end();
-    });
-  });
 
   listener.close();
   // wtf.dump();
