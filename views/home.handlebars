@@ -362,17 +362,18 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
         document.getElementById('home_averageStudyTime')
           .textContent = formatSeconds(data.averageStudyTime);
         document.getElementById('home_statsNext24Hours.cardsDue')
-          .textContent = data.statsNext24Hours.cardsDue;
+          .textContent = data.cardsDueNext24Hours;
         document.getElementById('home_statsNext24Hours.new')
           .textContent = Math.round(data.averageNewCards);
         document.getElementById('home_statsNext24Hours.count')
-          .textContent = data.statsNext24Hours.count;
+          .textContent =
+            Math.round(data.cardsDueNext24Hours + data.averageNewCards);
         document.getElementById('home_statsNext24Hours.time')
-          .textContent = formatSeconds(data.statsNext24Hours.time);
+          .textContent = formatSeconds(data.studyTimeNext24Hours);
         document.getElementById('home_statsNext24Hours.minReviews')
-          .textContent = data.statsNext24Hours.minReviews;
+          .textContent = data.reviewsBetweenNewCards;
         document.getElementById('home_statsNext24Hours.reviewsToNextNew')
-          .textContent = data.statsNext24Hours.reviewsToNextNew;
+          .textContent = data.reviewsToNextNew;
         document.getElementById('home_statsPast24Hours.due')
           .textContent = data.statsPast24Hours.count -
             data.statsPast24Hours.newCards;
@@ -478,9 +479,9 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
         document.getElementById('stats_averageReviewsPerDay')
           .textContent = Math.round(data.averageReviewsPerDay);
         document.getElementById('stats_statsNext24Hours.minReviews')
-          .textContent = data.statsNext24Hours.minReviews;
+          .textContent = data.reviewsBetweenNewCards;
         document.getElementById('stats_statsNext24Hours.reviewsToNextNew')
-          .textContent = data.statsNext24Hours.reviewsToNextNew;
+          .textContent = data.reviewsToNextNew;
         document.getElementById('stats_studyTimeToday')
           .textContent = formatSeconds(data.studyTimeToday);
         document.getElementById('stats_averageStudyTimePerDay')
@@ -816,9 +817,9 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
     document.getElementById('signal_dueNow')
       .textContent = data.dueNow;
     document.getElementById('signal_statsNext24Hours.reviewsToNextNew')
-      .textContent = data.statsNext24Hours.reviewsToNextNew;
+      .textContent = data.reviewsToNextNew;
     document.getElementById('signal_statsNext24Hours.time')
-      .textContent = Math.round(data.statsNext24Hours.time/60);
+      .textContent = Math.round(data.studyTimeNext24Hours/60);
     document.getElementById('signal_statsPast24Hours.time')
       .textContent = Math.round(data.statsPast24Hours.time/60);
     document.getElementById('signal_newCardsToday')

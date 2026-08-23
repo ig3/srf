@@ -544,7 +544,9 @@ t.test('express app', async t => {
       t.ok(data.back, 'back');
       t.ok(data.intervals, 'intervals');
       t.ok(data.statsPast24Hours, 'statsPast24Hours');
-      t.ok(data.statsNext24Hours, 'statsNext24Hours');
+      t.equal(data.reviewsToNextNew, 0, 'reviewsToNextNew');
+      t.equal(data.studyTimeNext24Hours, 0, 'studyTimeNext24Hours');
+      t.ok(data.newCardsToday, 'newCardsToday');
       t.end();
     });
   });

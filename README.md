@@ -1798,19 +1798,15 @@ If a card is more than 24 hours past its due time, it is deemed to be
 
 The scheduler must provide the following methods:
 
- * getCountCardsDueToday
- * getIntervals
  * getNextCard
- * getNextDue
- * getNextNew
- * getStatsNext24Hours
- * getTimeNextDue
+ * getIntervals
+ * getStats
  * review
 
-#### getCountCardsDueToday
-
-Returns the number of cards that are due before the end of the day in local
-timezone.
+The scheduler may provide the following methods:
+ * load
+ * unload
+ * shutdown
 
 #### getIntervals(card)
 
@@ -1820,43 +1816,20 @@ Returns an object with attributes for each ease: fail, hard, good and easy,
 the values being the new interval for the given card if that ease is
 selected.
 
-#### getNextCard
+#### getNextCard(override)
 
 Returns a card object or undefined if there is no card that should be
 presented. The card may be a due card or a new card. See the scheduler
 documentation for details of when new or due cards are presented.
 
-#### getNextDue(override)
+If override is true, limits on new cards are ignored.
 
-Takes a boolean which can be set to true to override limits on presenting
-due cards.
 
-Returns a card object or undefined if there is no due card that should be
-presented.
+#### getStats()
 
-See the scheduler documentation of details of when cards are due and how
-the card to be presented is selected, if there are multiple cards due.
-
-#### getNextNew()
-
-Returns a card object of undefined if there are no more new cards.
-
-See the scheduler documentation for details of how the unseen cards are
-sorted to select the next new card to be presented.
-
-#### getStatsNext24Hours
-
-Returns an objects with properties:
- 
- * count: the number of cards due in the next 24 hours
- * time: extimated time to review these cards, based on recent performance
- * minReviews: minimum reviews between new cards in 'slow' mode
- * reviews: number of reviews since the last new card
-
-#### getTimeNextDue()
-
-Returns the due time (seconds since the epoch) of the card with the
-earliest due time.
+Returns a set of stats / parameters that the user might be interested to
+see in order to understand the state of the scheduler. The content will be
+scheduler specific.
 
 #### review(card, viewTime, studyTime, ease)
 
