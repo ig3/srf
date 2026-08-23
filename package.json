@@ -44,9 +44,9 @@
   },
   "devDependencies": {
     "@ig3/eslint-config-entrain": "^4.0.9",
+    "@ig3/multi-tape": "^1.8.0",
     "@ig3/test": "^0.0.12",
     "c8": "^12.0.0",
-    "multi-tape": "^1.17.1",
     "tmp": "^0.2.7",
     "wtfnode": "^0.10.1"
   },
