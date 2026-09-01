@@ -768,7 +768,7 @@ This is calculated with both a time window and an interval window.
 The time windows is config.percentCorrectWindow. Only reviews within this
 window are considered.
 
-The interval window is config.matureThreshold to config.maxInterval
+The interval window is config.stage2MaxInterval to config.stage3MaxInterval
 (exclusive). This excludes reviews of new cards and cards at maximum
 interval. The excluded cards are not the target of review difficulty
 control.
@@ -777,8 +777,8 @@ If there are fewer than config.minPercentCorrectCount reviews within these
 windows, then the lower bound on interval is removed.
 
 When a card is reviewed and the new interval is greater than
-config.learningThreshold, then the intervals and due dates of all cards with
-interval between learningThreshold and maxInterval are adjusted according
+config.stage1MaxInterval, then the intervals and due dates of all cards with
+interval between stage1MaxInterval and stage3MaxInterval are adjusted according
 to the difference between 'percent correct' and config.percentCorrectTarget,
 multiplied by percentCorrectSensitivity. This adjustment makes reviews
 sooner or later, to achieve the target percent correct.
@@ -858,10 +858,11 @@ reviewed each day.
 This is a stacked chart of cards per stage: New, Learning, Matured and
 Mastered. The stages are distinguished by interval.
 
- * New: 0 < interval < config.learningThreshold
- * Learning: config.learningThreshold <= interval < config.matureThreshold
- * Mature: config.matureThreshold <= interval < config.maxInterval
- * Mastered: config.maxInterval <= interval
+ * New: 0 < interval < config.stage1MaxInterval
+ * Learning: config.stage1MaxInterval <= interval <
+   config.stage2MaxInterval
+ * Mature: config.stage2MaxInterval <= interval < config.stage3MaxInterval
+ * Mastered: config.stage3MaxInterval <= interval
 
 ##### Cards Due per day
 
@@ -1103,15 +1104,15 @@ For example, a json file might be:
   "maxViewTime": "2 minutes",
 
   // The maximum interval to when a card is due.
-  "maxInterval": "1 year",
+  "stage3MaxInterval": "1 year",
   "maxGoodInterval": "1 year',
   "maxEasyInterval": "1 year",
 
   // The interval (seconds) beyond which a card is considered 'learning'
-  "learningThreshold": '1 week',
+  "stage1MaxInterval": '1 week',
 
   // The interval (seconds) beyond which a card is considered 'mature'
-  "matureThreshold": "21 days",
+  "stage2MaxInterval": "21 days",
 
   // The window (seconds) in which to average Percent Correct reviews
   "percentCorrectWindow": "1 month",
@@ -1209,11 +1210,13 @@ default: 2 minutes
 The maximum time for viewing a card. If a card is viewed for longer than
 this ease will be forced to 'again'.
 
-#### maxInterval (seconds)
+#### stage3MaxInterval (seconds)
 
 default: 1 year
 
 The maximum interval (time until next review) for a card.
+
+This should be the same as the scheduler's maximum interval.
 
 #### maxGoodInterval (seconds)
 
@@ -1227,7 +1230,7 @@ default: 1 year
 
 The maximum interval (time until next review) for a card that is Easy.
 
-#### learningThreshold (seconds)
+#### stage1MaxInterval (seconds)
 
 default: 1 week
 
@@ -1236,16 +1239,16 @@ rather than 'new' cards. Beyond this threshold, they are scheduled
 according to the actual interval since they were last reviewed, rather than
 the scheduled interval.
 
-#### matureThreshold (seconds)
+#### stage2MaxInterval (seconds)
 
 default: 21 days
 
 This affects the calculation of Percent Correct, which is compared against
 percentCorrectTarget. Only review of cards with an interval greater than
-matureThreshold are considered in calculating Percent Correct.
+stage2MaxInterval are considered in calculating Percent Correct.
 
 A card is counted as mature (Unconcious Competence) or mastered if its
-interval is greater than matureThreshold.
+interval is greater than stage2MaxInterval.
 
 #### percentCorrectWindow (seconds)
 
@@ -1526,7 +1529,7 @@ interval = 0 are sorted by ord then id and the first card is presented.
 
 Eventually an unseen card is presented for study for the first time,
 becoming a 'new' card. It is deemed to be a new card until its interval
-reaches the learning threshold (config.learningThreshold).
+reaches the learning threshold (config.stage1MaxInterval).
 
 At this stage, your ability to remember the card might be quite volatile.
 On the one hand, the novelty of it might make it easier to remember. On the
@@ -1558,14 +1561,14 @@ the exact interval doesn't make much difference.
 
 By default, cards are considered mature when their interval reaches 21
 days. The scheduling algorithm is still applied and the interval will still
-gradually increase, up to the maximum interval (config.maxInterval) which,
+gradually increase, up to the maximum interval (config.stage3MaxInterval) which,
 by default, is one year.
 
 ### Mastered / mastery / M
 
 Finally, cards reach the interval limit. They are mastered. 
 
-By default, the interval limit is 1 year (config.maxInterval). 
+By default, the interval limit is 1 year (config.stage3MaxInterval). 
 
 ## Scheduler
 
@@ -1651,7 +1654,7 @@ This is for cards that you could remember well: the timing since the last
 review was good - it was not too hard and not too easy. The card will be
 scheduled for review after a longer interval.
 
-For new cards (scheduled interval is less than config.learningThreshold),
+For new cards (scheduled interval is less than config.stage1MaxInterval),
 the previous schduled interval is used to calculate the new interval. For
 learning and mature cards, the actual interval since last review is used.
 This only makes a difference if there is a delay from scheduled review to
@@ -4387,7 +4390,8 @@ Update dependencies
  * Add link to config page to the admin page
 
 ### 4.1.1 - 20230417
- * Review calculation of percent correct: upper bound to config.maxInterval
+ * Review calculation of percent correct: upper bound to
+   config.stage3MaxInterval
  * Fix fixRevlogInterval to get card interval from card.lastinterval (the
 unadjusted interval) rather than card.interval (the adjusted interval).
  * Add a plot of unadjusted interval to Cards per interval.
@@ -4547,7 +4551,7 @@ Decrease sensitivity to average study time to range 90% to 110%
 
 ### 6.0.12 - 20240814
  * Change calculation of mature cards for daily stats
- * Fix getCountCardsStage4 to count cards with interval > maxInterval
+ * Fix getCountCardsStage4 to count cards with interval > stage3MaxInterval
  * Fix getCountCardsStage0 to count cards with interval < 0
  * Reduce goodMinInterval to 2 minutes
  * Remove dependency getopts in favour of node utils.parseArgs
