@@ -261,6 +261,23 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
     }
   }
 
+  function clickR () {
+    if (confirm('Reset database?')) {
+      fetch('/reset', {
+        method: 'POST',
+      })
+      .then(response => {
+        if (!response.ok) {
+          alert('reset failed');
+        }
+        loadHome();
+      })
+      .catch(err => {
+        alert(err);
+      });
+    }
+  }
+
   function clickStop () {
     overrideLimits = 0;
     loadHome();
@@ -1005,6 +1022,16 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           e.preventDefault();
           e.stopPropagation();
           clickStudy();
+        } else if (e.key === 'R') {
+          if (
+            !e.altKey &&
+            !e.ctrlKey &&
+            !e.metaKey
+          ) {
+            e.preventDefault();
+            e.stopPropagation();
+            clickR();
+          }
         }
       } else if (currentSection === 'front') {
         if (e.key === ' ') {
