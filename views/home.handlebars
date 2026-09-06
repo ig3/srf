@@ -242,7 +242,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
   let overrideTimerID;
 
   function clickStudy () {
-    overrideLimits = true;
+    overrideLimits = 5;
     if (nextCardID) {
       loadCard(nextCardID);
     } else {
@@ -924,11 +924,13 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
       response.json()
       .then((data) => {
         if (data.nextCardID) {
+          if (overrideLimits) overrideLimits--;
           nextCardID = data.nextCardID;
           loadCard(nextCardID);
         } else {
           nextCardID = 0;
           if (overrideLimits) {
+            overrideLimits = 5;
             clickStudy();
           } else {
             clickHome();
