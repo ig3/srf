@@ -115,8 +115,8 @@ t.test('srf.js', async t => {
     directory: path.join(tmpdir, 'srf'),
   });
 
-  await t.test('getCountDaysStudied', t => {
-    const days = srf.getCountDaysStudied();
+  await t.test('getDaysStudied', t => {
+    const days = srf.getDaysStudied();
     t.equal(days, 0, '0 days studied');
     t.end();
   });
@@ -454,9 +454,9 @@ t.test('srf.js', async t => {
     t.end();
   });
 
-  await t.test('getCountDaysStudied', t => {
-    const days = srf.getCountDaysStudied();
-    t.equal(days, 1, '0 days studied');
+  await t.test('getDaysStudied', t => {
+    const days = srf.getDaysStudied();
+    t.equal(days, 1, 'days studied');
     t.end();
   });
 
