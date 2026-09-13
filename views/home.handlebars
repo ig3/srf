@@ -538,7 +538,14 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
 
         let studyTimePerDay = document.getElementById('studyTimePerDay');
         if (studyTimePerDay) {
-          const chartData = [ data.charts.chartMinutesStudiedPerDay ];
+          const chartData = [
+            data.charts.chartMinutesStudiedPerDay,
+            data.charts.chartAverageStudyTimePerDay,
+          ];
+          chartData[0].mode = 'lines';
+          chartData[0].name = 'Minutes Per Day';
+          chartData[1].mode = 'lines';
+          chartData[1].name = 'Average Minutes Per Day';
           const x = chartData[0].x;
           Plotly.newPlot(
             studyTimePerDay,
@@ -560,7 +567,13 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
                 title: 'date',
                 automargin: true,
                 range: ( x.length > 0 ? [ x[0], x[x.length - 1] ] : [] ),
-                }
+                },
+              legend: {
+                orientation: 'h',
+                x: 0.2,
+                xanchor: 'left',
+                y: 1.15,
+              },
             }
           );
         }
