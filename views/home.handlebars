@@ -1,12 +1,8 @@
 <div id="signal"><div><span id="signal_dueNow"
 title="due now">{{dueNow}}</span>/<span
-id="signal_statsNext24Hours.reviewsToNextNew" title="reviews before
-next new card">{{statsNext24Hours.reviewsToNextNew}}</span>/<span
-id="signal_statsNext24Hours.time" title="study time next 24
-hour">{{statsNext24Hours.time}}</span>/<span
-id="signal_statsPast24Hours.time" title="study time past 24
-hours">{{statsPast24Hours.time}}</span>/<span
-id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday}}</span></div></div>
+id="signal_statsNext24Hours.reviewsToNextNew" title="reviews before next new card">{{statsNext24Hours.reviewsToNextNew}}</span>/<span
+id="signal_studyTimeToday" title="study time today"></span>/<span
+id="signal_averageStudyTimePerDay" title="average study time per day"></span></div></div>
 
 <section id="home" class="hidden">
 <div class="home">
@@ -51,8 +47,8 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
 <tr><th>Study Time:</th>
 <td colspan=2><span
   id="home_studyTimeToday" title="Today">{{studyTimeToday}}</span> / <span
-  id="home_averageStudyTime"
-  title="Average per day">{{averageStudyTime}}</span
+  id="home_averageStudyTimePerDay"
+  title="Average per day"></span
   ></td></tr>
 
 <tr><th>New Cards:</th>
@@ -189,7 +185,7 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
   <span id="stats_statsNext24Hours.reviewsToNextNew" title="Reviews until next new card">{{statsNext24Hours.reviewsToNextNew}}</span></td></tr>
   <tr><th>Study time:</th>
   <td><span id="stats_studyTimeToday" title="Today">{{studyTimeToday}}</span> /
-  <span id="stats_averageStudyTimePerDay" title="Average per day">{{averageStudyTimePerDay}}</span> /
+  <span id="stats_averageStudyTimePerDay" title="Average per day"></span> /
   <span id="stats_averageStudyTimePerCard" title="Average per card">{{averageStudyTimePerCard}}</span> (sec) /
   <span id="stats_averageStudyTimePerReview" title="Average per review">{{averageStudyTimePerReview}}</span> (sec)</td></tr>
   <tr><th>Time to earliest due card:</th>
@@ -376,8 +372,8 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
           .textContent = data.newCardsToday;
         document.getElementById('home_studyTimeToday')
           .textContent = formatSeconds(data.studyTimeToday);
-        document.getElementById('home_averageStudyTime')
-          .textContent = formatSeconds(data.averageStudyTime);
+        document.getElementById('home_averageStudyTimePerDay')
+          .textContent = formatSeconds(data.averageStudyTimePerDay);
         document.getElementById('home_statsNext24Hours.cardsDue')
           .textContent = data.cardsDueNext24Hours;
         document.getElementById('home_statsNext24Hours.new')
@@ -848,12 +844,10 @@ id="signal_newCardsToday" title="new cards current calendar day">{{newCardsToday
       .textContent = data.dueNow;
     document.getElementById('signal_statsNext24Hours.reviewsToNextNew')
       .textContent = data.reviewsToNextNew;
-    document.getElementById('signal_statsNext24Hours.time')
-      .textContent = Math.round(data.studyTimeNext24Hours/60);
-    document.getElementById('signal_statsPast24Hours.time')
-      .textContent = Math.round(data.statsPast24Hours.time/60);
-    document.getElementById('signal_newCardsToday')
-      .textContent = data.newCardsToday;
+    document.getElementById('signal_studyTimeToday')
+      .textContent = formatSeconds(data.studyTimeToday);
+    document.getElementById('signal_averageStudyTimePerDay')
+      .textContent = formatSeconds(data.averageStudyTimePerDay);
   }
 
   // Load the card front and back with a single request

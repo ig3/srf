@@ -92,11 +92,11 @@ The home page shows statistics of your study:
  * number of cards due and overdue for review
  * chart of study time per hour: past 24 hours and next 24 hours
 
-The status at the top right includes:
+The status at the top right shows:
  * Cards due
- * New cards in the current calendar day 
- * Minutes studied in the past 24 hours
- * Predicted minutes to study in the next 24 hours
+ * Reviews before next new card
+ * Study time in the current calendar day
+ * Average study time per day
 
 To study a card, click the Study button or press the space bar.
 
