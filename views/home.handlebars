@@ -846,6 +846,24 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
       .textContent = data.reviewsToNextNew;
     document.getElementById('signal_studyTimeToday')
       .textContent = formatSeconds(data.studyTimeToday);
+    if (data.studyTimeTarget) {
+      if (data.studyTimeToday > data.studyTimeTarget) {
+        document.getElementById('signal_studyTimeToday')
+          .classList.add('stop');
+        document.getElementById('signal_studyTimeToday')
+          .classList.remove('go', 'slow');
+      } else if (data.studyTimeToday > data.studyTimeTarget * 0.95) {
+        document.getElementById('signal_studyTimeToday')
+          .classList.add('slow');
+        document.getElementById('signal_studyTimeToday')
+          .classList.remove('go', 'stop');
+      } else {
+        document.getElementById('signal_studyTimeToday')
+          .classList.add('go');
+        document.getElementById('signal_studyTimeToday')
+          .classList.remove('slow', 'stop');
+      }
+    }
     document.getElementById('signal_averageStudyTimePerDay')
       .textContent = formatSeconds(data.averageStudyTimePerDay);
   }
