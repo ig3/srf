@@ -1105,65 +1105,25 @@ For example, a json file might be:
   // Beyond this, any answer is converted to 'again'
   "maxViewTime": "2 minutes",
 
-  // The maximum interval to when a card is due.
-  "stage3MaxInterval": "1 year",
-  "maxGoodInterval": "1 year',
-  "maxEasyInterval": "1 year",
-
-  // The interval (seconds) beyond which a card is considered 'learning'
-  "stage1MaxInterval": '1 week',
-
-  // The interval (seconds) beyond which a card is considered 'mature'
-  "stage2MaxInterval": "21 days",
-
-  // The window (seconds) in which to average Percent Correct reviews
-  "percentCorrectWindow": "1 month",
-
   // The window (seconds) in which to average new cards per day
   "newCardsWindow": "2 weeks",
 
-  // The minimum number of mature cards in the percent correct window
-  // at which percent correct is calculated.
-  "minPercentCorrectCount": 10,
+  // The time after which a card is deemed overdue
+  "overdueAfter": "28 hours",
 
   // The target for percent correct reviews
-  "percentCorrectTarget": 90,
-  "percentCorrectSensitivity": 0.0001,
+  "percentCorrectMinCount": 10,
+  "percentCorrectWindow": "1 month",
 
-  // The interval (seconds) between correct factor adjustments
-  "correctFactorAdjustmentInterval": "1 day",
-
-  // The maximum number of new cards in 24 hours.
-  "maxNewCardsPerDay": 20,
-
-  // Minimum study time (seconds) per day
-  "minStudyTime": "20 minutes",
-
-  // Target study time (seconds) per day
-  "targetStudyTime": "30 minutes",
-
-  // The probability of sorting due cards by due instead of inteval
-  "probabilityOldestDue": 0.2,
-
-  // minimum intervals according to responses to reviews
-  "againMaxInterval": "1 day",
-  "hardMinInterval": "1 week",
-  "goodMinInterval": "5 minutes",
-  "goodMinFactor": 1.1,
-  "easyMinInterval": "1 days",
-
-  // Static interval factors
-  "againFactor": 0.5,
-  "hardFactor": 0.8,
-  "goodFactor": 1.0,
-  "easyFactor": 1.5,
-
-  // Answer weights
-  "weightFail": 0,
-  "weightHard": 1,
-  "weightGood": 1.5,
-  "weightEasy": 2,
-  "decayFactor": 0.95
+  // This is the maximum interval for 'new' cards. It has no functional
+  // impact but affects statistics on the stats page.
+  "stage1MaxInterval": "1 week",
+  // This is the maximum interval for 'learning' cards.
+  "stage2MaxInterval": "21 days",
+  // This is the maximum interval for 'mature' cards.
+  // It should be the same as the scheduler's maximum interval.
+  // Cards are not expected to have an interval greater than this.
+  "stage3MaxInterval": "1 year",
 }
 ```
 
@@ -1173,18 +1133,6 @@ default: dark
 
 There is only one theme: dark. But this is only a CSS file. This setting is
 just the name of the CSS file, less the `.css` extension.
-
-#### minTimeBetweenRelatedCards (seconds)
-
-default: 1 hour
-
-A template set typically contains several templates. For each field set, a
-card will be produced for each template in the template set. Thus there
-will be several cards for each field set.
-
-The set of cards from a single field set are considered related. If one
-card from the set is reviewed, this is the minimum time before any other
-card from the set will be presented for review.
 
 ####  backupRetention
 
@@ -1212,45 +1160,19 @@ default: 2 minutes
 The maximum time for viewing a card. If a card is viewed for longer than
 this ease will be forced to 'again'.
 
-#### stage3MaxInterval (seconds)
+#### minPercentMinCount
 
-default: 1 year
+default: 10
 
-The maximum interval (time until next review) for a card.
+The minimum number of mature cards in the percent correct window at which
+percent correct is calculated based on mature cards. Below this, percent
+correct is calculated based on all reviews.
 
-This should be the same as the scheduler's maximum interval.
+#### overdueAfter
 
-#### maxGoodInterval (seconds)
+default: 28 hours
 
-default: 1 year
-
-The maximum interval (time until next review) for a card that is Good.
-
-#### maxEasyInterval (seconds)
-
-default: 1 year
-
-The maximum interval (time until next review) for a card that is Easy.
-
-#### stage1MaxInterval (seconds)
-
-default: 1 week
-
-The interval beyond which cards are considered to be 'learning' cards
-rather than 'new' cards. Beyond this threshold, they are scheduled
-according to the actual interval since they were last reviewed, rather than
-the scheduled interval.
-
-#### stage2MaxInterval (seconds)
-
-default: 21 days
-
-This affects the calculation of Percent Correct, which is compared against
-percentCorrectTarget. Only review of cards with an interval greater than
-stage2MaxInterval are considered in calculating Percent Correct.
-
-A card is counted as mature (Unconcious Competence) or mastered if its
-interval is greater than stage2MaxInterval.
+The time after which a card is deemed to be overdue. 
 
 #### percentCorrectWindow (seconds)
 
@@ -1261,179 +1183,23 @@ determining the intervals of cards. All responses within this window are
 considered in determining the percentage. Results of reviews longer ago
 than percentCorrectWindow are ignored.
 
-#### newCardsWindow (seconds)
-
-default: 2 weeks
-
-The window in which new cards per day are averaged. The average new cards
-per day is used to calculate the minimum interval between new cards.
-
-#### minPercentCorrectCount
-
-default: 10
-
-The minimum number of mature cards in the percent correct window at which
-percent correct is calculated.
-
-#### percentCorrectTarget (percent)
-
-default: 90
-
-The percentage of 'correct' responses (not 'Fail') is a factor in
-determining the intervals of cards. The percentCorrectTarget is the target
-percentage of 'correct' responses.
-
-The interval and due date of cards are adjusted according to the difference
-between the Percent Correct and this target, multiplied by
-percentCorrectSensitivity.
-
-Cards actually have two interval values: interval and lastinterval. The
-interval value is the interval, including any adjustments. The lastinterval
-value is what the interval was when the card was last reviewed, without any
-adjustments.
-
-Revlog also has two interval values: interval and lastinterval. But here
-their values are different. The value of interval is the new interval of
-the card, after review, based on the ease. The value of lastinterval is the
-unadjusted interval of the card the last time it was reviewed. It is
-redundant with the interval value of the previous revlog record for the
-card but saves a lot of lookup producing the statistics.
-
-#### percentCorrectSensitivity
-
-default: 0.0001
-
-This determines the sensitivity to the difference between Percent Correct
-and percentCorrectTarget, when adjusting the interval and due date of
-learning and mature cards.
-
-#### maxNewCardsPerDay
-
-default: 20
-
-The maximum number of new cards to be presented each calendar day.
-
-#### minStudyTime
-
-default: 20 minutes
-
-Minimum daily study time. New cards will be presented until study time in
-the past 24 hours is more than this.
-
-#### targetStudyTime
-
-default: 30 minutes
-
-This is a factor the scheduler uses to determine if new cards should be
-presented and the number of reviews between new cards. The number of new
-cards presented is adjusted to keep the average study time per day close to
-this target.
-
-#### probabilityOldestDue
-
-default: 0.2
-
-The probability that the next due card presented will be the first one due
-rather than the one with the shortest interval.
-
-#### againMaxInterval (seconds)
-
-default: 1 day
-
-The maximum interval for cards after response 'Fail'.
-
-#### hardMaxInterval (seconds)
+#### stage1MaxInterval
 
 default: 1 week
 
-This is the maximum interval after responding 'Hard' to a review.
+The maximum interval for cards deemed to be stage 1.
 
-#### goodMinInterval (seconds)
+#### stage2MaxInterval
 
-default: 5 minutes
+default: 21 days
 
-This is the minimum interval after responding 'Good' to a review.
+The maximum interval for cards deemed to be stage 2.
 
-#### goodMinFactor 
+#### stage3MaxInterval
 
-default: 1.1
+default: 1 year
 
-This is the minimum interval multiplier after responding 'Good' to a review.
-
-#### easyMinInterval (seconds)
-
-default: 1 day
-
-This is the minimum interval after responding 'Easy' to a review.
-
-#### againFactor
-
-default: 0.5
-
-After responding 'Fail' to a review, the new interval is the previous
-interval multiplied by this factor, but with a maximum of againMaxInterval
-which, by default, is 1 day.
-
-#### hardFactor
-
-default: 0.8
-
-After responding 'Hard' to a review, the new interval is the previous
-interval multiplied by this factor, but with a maximum of hardMaxInterval
-which, by default, is 1 week.
-
-#### goodFactor
-
-default: 1.0
-
-After responding 'Good' to a review, the new interval is the previous
-interval multiplied by this factor, the card factor and the 'correct'
-factor. See 'scheduler' below for details.
-
-#### easyFactor
-
-default: 1.5
-
-After responding 'Easy' to a review, the new interval is the actual
-interval since last review (i.e. time since last review, which may be more
-than the scheduled interval) multiplied by this factor and the card factor.
-
-#### weightFail
-
-default: 0
-
-The weight of an answer of Fail when calculating the exponentially
-weighted moving average of review replies: the card ease factor.
-
-#### weightHard
-
-default: 1
-
-The weight of an answer of Hard when calculating the exponentially
-weighted moving average of review replies: the card ease factor.
-
-#### weightGood
-
-default: 1.5
-
-The weight of an answer of Good when calculating the exponentially
-weighted moving average of review replies: the card ease factor.
-
-#### weightEasy
-
-default: 2
-
-The weight of an answer of Easy when calculating the exponentially
-weighted moving average of review replies: the card ease factor.
-
-#### decayFactor
-
-default: 0.95
-
-The decay factor when calculating the exponentially weighted moving average
-of review replies: the card ease factor.
-
-ewma(n) = w(n-1) * decayFactor + w(n) * (1 - decayFactor)
+The maximum interval for cards deemed to be stage 3.
 
 ### Commands
 
