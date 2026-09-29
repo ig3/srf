@@ -1796,8 +1796,9 @@ You can override the scheduler and study a new card at any time by clicking
 the New Card button on the home page.
 
 #### Overdue cards
-If a card is more than 24 hours past its due time, it is deemed to be
-`overdue`. When there are overdue cards, no new cards will be presented.
+A card is overdue if more than `config.overdueAfter` has elapsed since
+it was due.
+When there are overdue cards, no new cards will be presented.
 
 ### Scheduler API
 

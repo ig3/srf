@@ -543,10 +543,20 @@ t.test('express app', async t => {
       t.ok(data.front, 'front');
       t.ok(data.back, 'back');
       t.ok(data.intervals, 'intervals');
-      t.ok(data.statsPast24Hours, 'statsPast24Hours');
+      t.equal(data.timeSinceLastReview, 0, 'timeSinceLastReview');
+      t.deepEqual(
+        data.intervals,
+        { fail: 6, hard: 24, good: 30, easy: 86400 },
+        'intervals'
+      );
+      t.equal(data.theme, 'dark', 'theme');
+      t.equal(data.maxViewTime, 120, 'maxViewTime');
       t.equal(data.reviewsToNextNew, 0, 'reviewsToNextNew');
-      t.equal(data.studyTimeNext24Hours, 0, 'studyTimeNext24Hours');
-      t.ok(data.newCardsToday, 'newCardsToday');
+      t.equal(data.dueNow, 0, 'dueNow');
+      t.equal(data.reviewsToNextNew, 0, 'reviewsToNextNew');
+      t.equal(data.studyTimeToday, 10, 'studyTimeToday');
+      t.equal(data.studyTimeTarget, 1800, 'studyTimeTarget');
+      t.equal(data.averageStudyTimePerDay, 10, 'averageStudyTimePerDay');
       t.end();
     });
   });
