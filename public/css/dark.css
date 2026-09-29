@@ -138,3 +138,9 @@ a.default_action {
 .dim {
   opacity: 0.2;
 }
+.stop {
+  color: red;
+}
+.slow {
+  color: yellow;
+}
