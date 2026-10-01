@@ -25,23 +25,7 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
   </td>
 <td><span
   id="home_statsPast24Hours.time"
-  title="Actual study time in the past 24 hours">{{statsPast24Hours.time}}</tr>
-
-<tr><th>Next 24 Hours:</th>
-<td><span
-  id="home_statsNext24Hours.cardsDue"
-  title="Cards due in the next 24 hours"
-  >{{statsNext24Hours.cardsDue}}</span> / <span
-  id="home_statsNext24Hours.new"
-  title="Average new cards per day"
-  >{{statsNext24Hours.new}}</span> / <span
-  id="home_statsNext24Hours.count"
-  title="Estimated total cards to review in the next 24 hours"
-  >{{statsNext24Hours.count}}</span></td>
-<td><span
-  id="home_statsNext24Hours.time"
-  title="Estimated study time in the next 24 hours"
-  >{{statsNext24Hours.time}}</span></td></tr>
+  title="Study time in the past 24 hours">{{statsPast24Hours.time}}</tr>
 
 <tr><th>Study Time:</th>
 <td colspan=2><span
@@ -56,10 +40,10 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
   title="Today">{{newCardsToday}}</span> / <span
   id="home_averageNewCards"
   title="Average per day">{{averageNewCards}}</span> / <span
-  id="home_timeBetweenNewCards"
+  id="home_studyTimeBetweenNewCards"
   title="Study time between new cards">X</span> / <span
-  id="home_timeToNextNew"
-  title="Study time until next new card"></span>
+  id="home_studyTimeSinceLastNewCard"
+  title="Study time since last new card"></span>
   </td>
 </tr>
 
@@ -176,13 +160,11 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
   <td><span id="stats_cardsViewedToday" title="Cards reviewed today">{{cardsViewedToday}}</span> /
   <span id="stats_dueCount" title="Cards due later today">{{dueCount}}</span></td></tr>
   <tr><th>Reviews:</th>
-  <td><span id="stats_averageReviewsPerDay" title="Average reviews per day">{{averageReviewsPerDay}}</span> /
-  <span id="stats_averageReviewsPerCard" title="Average reviews per card">{{averageReviewsPerCard}}</span>
+  <td><span id="stats_averageReviewsPerDay" title="Average reviews per day">{{averageReviewsPerDay}}</span>
   </td></tr>
   <tr><th>Study time:</th>
   <td><span id="stats_studyTimeToday" title="Today">{{studyTimeToday}}</span> /
   <span id="stats_averageStudyTimePerDay" title="Average per day"></span> /
-  <span id="stats_averageStudyTimePerCard" title="Average per card">{{averageStudyTimePerCard}}</span> (sec) /
   <span id="stats_averageStudyTimePerReview" title="Average per review">{{averageStudyTimePerReview}}</span> (sec)</td></tr>
   <tr><th>Time to earliest due card:</th>
   <td><span id="stats_timeToNextDue">{{timeToNextDue}}</span></td></tr>
@@ -366,23 +348,14 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
           .textContent = data.averageNewCards.toFixed(2);
         document.getElementById('home_newCardsToday')
           .textContent = data.newCardsToday;
-        document.getElementById('home_timeBetweenNewCards')
-          .textContent = formatSeconds(data.timeBetweenNewCards);
-        document.getElementById('home_timeToNextNew')
-          .textContent = formatSeconds(data.timeToNextNew);
+        document.getElementById('home_studyTimeBetweenNewCards')
+          .textContent = formatSeconds(data.studyTimeBetweenNewCards);
+        document.getElementById('home_studyTimeSinceLastNewCard')
+          .textContent = formatSeconds(data.studyTimeSinceLastNewCard);
         document.getElementById('home_studyTimeToday')
           .textContent = formatSeconds(data.studyTimeToday);
         document.getElementById('home_averageStudyTimePerDay')
           .textContent = formatSeconds(data.averageStudyTimePerDay);
-        document.getElementById('home_statsNext24Hours.cardsDue')
-          .textContent = data.cardsDueNext24Hours;
-        document.getElementById('home_statsNext24Hours.new')
-          .textContent = Math.round(data.averageNewCards);
-        document.getElementById('home_statsNext24Hours.count')
-          .textContent =
-            Math.round(data.cardsDueNext24Hours + data.averageNewCards);
-        document.getElementById('home_statsNext24Hours.time')
-          .textContent = formatSeconds(data.studyTimeNext24Hours);
         document.getElementById('home_statsPast24Hours.due')
           .textContent = data.statsPast24Hours.count -
             data.statsPast24Hours.newCards;
@@ -477,14 +450,10 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
           .textContent = data.percentCorrect;
         document.getElementById('stats_averageStudyTimePerReview')
           .textContent = data.averageStudyTimePerReview;
-        document.getElementById('stats_averageStudyTimePerCard')
-          .textContent = data.averageStudyTimePerCard;
         document.getElementById('stats_cardsViewedToday')
           .textContent = data.cardsViewedToday;
         document.getElementById('stats_dueCount')
           .textContent = data.dueCount;
-        document.getElementById('stats_averageReviewsPerCard')
-          .textContent = (data.averageReviewsPerCard).toFixed(2);
         document.getElementById('stats_averageReviewsPerDay')
           .textContent = Math.round(data.averageReviewsPerDay);
         document.getElementById('stats_studyTimeToday')
