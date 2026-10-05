@@ -7,11 +7,8 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
 <div class="home">
 <h1><img onclick="clickHome()" src="img/logo.png">Spaced Repetition Flashcards</h1>
 <table>
-<thead>
-<tr><th></th><th>Cards</th><th>Time</th></tr>
-</thead>
 <tbody>
-<tr><th>Past 24 Hours:</th>
+<tr><th>Cards (past 24 hours):</th>
 <td><span
   id="home_statsPast24Hours.due"
   title="Cards due in the past 24 hours"
@@ -23,35 +20,34 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
   title="Total cards in the past 24 hours"
   >{{statsPast24Hours.count}}</span>
   </td>
-<td><span
-  id="home_statsPast24Hours.time"
-  title="Study time in the past 24 hours">{{statsPast24Hours.time}}</tr>
+  </tr>
 
 <tr><th>Study Time:</th>
-<td colspan=2><span
-  id="home_studyTimeToday" title="Today">{{studyTimeToday}}</span> / <span
+<td><span
+  id="home_statsPast24Hours.time"
+  title="Study time in the past 24 hours"></span> / <span
+  id="home_studyTimeToday"
+  title="Study time today"></span> / <span
   id="home_averageStudyTimePerDay"
-  title="Average per day"></span
+  title="Average study time per day"></span
   ></td></tr>
 
 <tr><th>New Cards:</th>
-  <td colspan=2><span
+  <td><span
   id="home_newCardsToday"
-  title="Today">{{newCardsToday}}</span> / <span
-  id="home_averageNewCards"
-  title="Average per day">{{averageNewCards}}</span> / <span
-  id="home_studyTimeBetweenNewCards"
-  title="Study time between new cards">X</span> / <span
-  id="home_studyTimeSinceLastNewCard"
-  title="Study time since last new card"></span>
+  title="New cards today">{{newCardsToday}}</span> / <span
+  id="home_newCardLimit"
+  title="Current limit on new cards"></span> / <span
+  id="home_averageNewCardsPerDay"
+  title="Average new cards per day"></span>
   </td>
 </tr>
 
 <tr><th>Percent correct:</th>
-<td colspan=2><span id="home_percentCorrect">{{percentCorrect}}</span>%</td></tr>
+<td><span id="home_percentCorrect">{{percentCorrect}}</span>%</td></tr>
 
 <tr><th>Cards due:</th>
-<td colspan=2><span
+<td><span
   id="home_due"
   title="Due now">{{dueNow}}</span> / <span
   id="home_overdue"
@@ -59,7 +55,7 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
   ></td></tr>
 
 <tr><th>Time to earliest due card:</th>
-<td colspan=2><span
+<td><span
  id="home_time_to_earliest_due_card"
  title="Time to earliest due card">{{timeToNextDue}}</span> / <span
  id="home_average_latency"
@@ -344,14 +340,12 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
           .textContent = data.overdue;
         document.getElementById('home_percentCorrect')
           .textContent = data.percentCorrect.toFixed(2);
-        document.getElementById('home_averageNewCards')
-          .textContent = data.averageNewCards.toFixed(2);
         document.getElementById('home_newCardsToday')
           .textContent = data.newCardsToday;
-        document.getElementById('home_studyTimeBetweenNewCards')
-          .textContent = formatSeconds(data.studyTimeBetweenNewCards);
-        document.getElementById('home_studyTimeSinceLastNewCard')
-          .textContent = formatSeconds(data.studyTimeSinceLastNewCard);
+        document.getElementById('home_newCardLimit')
+          .textContent = data.newCardLimit;
+        document.getElementById('home_averageNewCardsPerDay')
+          .textContent = data.averageNewCards.toFixed(2);
         document.getElementById('home_studyTimeToday')
           .textContent = formatSeconds(data.studyTimeToday);
         document.getElementById('home_averageStudyTimePerDay')
