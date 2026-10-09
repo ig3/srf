@@ -139,8 +139,11 @@ a.default_action {
   opacity: 0.2;
 }
 .stop {
-  color: red;
+  color: #a6312d;
 }
 .slow {
-  color: yellow;
+  color: #b3b538;
+}
+.go {
+  color: #1d7c45;
 }
