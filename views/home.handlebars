@@ -377,12 +377,12 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
         document.getElementById('home_studyTimeToday')
           .textContent = formatSeconds(data.studyTimeToday);
         if (data.studyTimeTarget) {
-          if (data.studyTimeToday > data.studyTimeTarget) {
+          if (data.studyTimeLimitTime > data.studyTimeTarget) {
             document.getElementById('home_studyTimeToday')
               .classList.add('stop');
             document.getElementById('home_studyTimeToday')
               .classList.remove('go', 'slow');
-          } else if (data.studyTimeToday > data.studyTimeTarget * 0.95) {
+          } else if (data.studyTimeLimitTime > data.studyTimeTarget * 0.95) {
             document.getElementById('home_studyTimeToday')
               .classList.add('slow');
             document.getElementById('home_studyTimeToday')
@@ -866,12 +866,12 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
     document.getElementById('signal_studyTimeToday')
       .textContent = formatSeconds(data.studyTimeToday);
     if (data.studyTimeTarget) {
-      if (data.studyTimeToday > data.studyTimeTarget) {
+      if (data.studyTimeLimitTime > data.studyTimeTarget) {
         document.getElementById('signal_studyTimeToday')
           .classList.add('stop');
         document.getElementById('signal_studyTimeToday')
           .classList.remove('go', 'slow');
-      } else if (data.studyTimeToday > data.studyTimeTarget * 0.95) {
+      } else if (data.studyTimeLimitTime > data.studyTimeTarget * 0.95) {
         document.getElementById('signal_studyTimeToday')
           .classList.add('slow');
         document.getElementById('signal_studyTimeToday')
