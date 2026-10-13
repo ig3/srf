@@ -551,12 +551,11 @@ t.test('express app', async t => {
       );
       t.equal(data.theme, 'dark', 'theme');
       t.equal(data.maxViewTime, 120, 'maxViewTime');
-      t.equal(data.reviewsToNextNew, 0, 'reviewsToNextNew');
       t.equal(data.dueNow, 0, 'dueNow');
-      t.equal(data.reviewsToNextNew, 0, 'reviewsToNextNew');
       t.equal(data.studyTimeToday, 10, 'studyTimeToday');
       t.equal(data.studyTimeTarget, 1800, 'studyTimeTarget');
       t.equal(data.averageStudyTimePerDay, 10, 'averageStudyTimePerDay');
+      t.equal(data.studyTimeLimitTime, 10, 'studyTimeLimitTime');
       t.end();
     });
   });
