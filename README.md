@@ -648,13 +648,16 @@ The data is in ~/.local/share/srf by default, including database (srf.db)
 and media files. The database is ~/.local/share/srf/srf.db. Media files
 are in ~/.local/share/srf/media.
 
-At the top right of the home page and front and back pages, there is a
-status indicator. Green, yellow or red depending on new card mode: Green if
-new cards will be presented interleaved with due cards and if there are no
-cards due; Yellow if new cards will be presented interleaved with due
-cards; and Red if no new cards will be presented. Below this are counts of
-cards due, minutes of study the past 24 hours and minutes of study the next
-24 hours (estimated). 
+At the top right of the home page and card front and back pages, there is a
+status summary showing:
+ * cards currently due
+ * study time in the current calendar day
+ * average study time per day
+
+The study time in the current day is coloured:
+ * green: study has not reached target and new cards are being presented
+ * yellow: study has not reached target but no new cards are being presented
+ * red: study has reached target
 
 #### Buttons
 
