@@ -365,11 +365,11 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
         // Cards (past 24 hours):
         document.getElementById('home_statsPast24Hours.due')
           .textContent = data.statsPast24Hours.count -
-            data.statsPast24Hours.newCards;
+            (data.statsPast24Hours.newCards || 0);
         document.getElementById('home_statsPast24Hours.new')
-          .textContent = data.statsPast24Hours.newCards;
+          .textContent = (data.statsPast24Hours.newCards || 0);
         document.getElementById('home_statsPast24Hours.count')
-          .textContent = data.statsPast24Hours.count;
+          .textContent = (data.statsPast24Hours.count || 0);
 
         // Study Time
         document.getElementById('home_statsPast24Hours.time')
@@ -381,11 +381,6 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
             .classList.add('stop');
           document.getElementById('home_studyTimeToday')
             .classList.remove('go', 'slow');
-        } else if (!data.newCardsAllowed) {
-          document.getElementById('home_studyTimeToday')
-            .classList.add('slow');
-          document.getElementById('home_studyTimeToday')
-            .classList.remove('go', 'stop');
         } else {
           document.getElementById('home_studyTimeToday')
             .classList.add('go');
@@ -397,11 +392,12 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
 
         // New Cards
         document.getElementById('home_newCardsPast24Hours')
-          .textContent = data.statsPast24Hours.newCards;
+          .textContent = (data.statsPast24Hours.newCards || 0);
         document.getElementById('home_newCardsToday')
           .textContent = data.newCardsToday;
         document.getElementById('home_newCardLimit')
           .textContent = data.newCardLimit;
+        console.log('new card limit: ', data.newCardLimit);
         document.getElementById('home_averageNewCardsPerDay')
           .textContent = data.averageNewCards.toFixed(2);
 
@@ -868,11 +864,6 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
         .classList.add('stop');
       document.getElementById('signal_studyTimeToday')
         .classList.remove('go', 'slow');
-    } else if (!data.newCardsAllowed) {
-      document.getElementById('signal_studyTimeToday')
-        .classList.add('slow');
-      document.getElementById('signal_studyTimeToday')
-        .classList.remove('go', 'stop');
     } else {
       document.getElementById('signal_studyTimeToday')
         .classList.add('go');
