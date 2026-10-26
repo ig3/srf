@@ -93,6 +93,7 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
   (<span id="front_lastinterval" title="original interval">{{card.lastinterval}}</span>
   <span id="front_interval" title="adjusted interval">{{card.interval}}</span>
   <span id="front_timeSinceLastReview" title="time since last review">{{timeSinceLastReview}}</span>
+  <span id="front_latency" title="time since due"></span>
   <span id="front_factor" title="card factor">{{card.factor}}</span>)
   </span>
 
@@ -114,6 +115,7 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
   (<span id="back_lastinterval" title="original interval">{{card.lastinterval}}</span>
   <span id="back_interval" title="adjusted interval">{{card.interval}}</span>
   <span id="back_timeSinceLastReview" title="time since last review">{{timeSinceLastReview}}</span>
+  <span id="back_latency" title="time since due"></span>
   <span id="back_factor" title="card factor">{{card.factor}}</span>)
   </span>
   </span>
@@ -893,6 +895,7 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
       response.json()
       .then(data => {
         currentCard = data;
+        const now = Math.floor(Date.now() / 1000);
 
         // First load the card front
         document.getElementById('front_face').classList.add('dim');
@@ -907,11 +910,13 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
           .textContent = formatSeconds(currentCard.interval);
         document.getElementById('front_timeSinceLastReview')
           .textContent = formatSeconds(currentCard.timeSinceLastReview);
+        document.getElementById('front_latency')
+          .textContent = formatSeconds(now - (currentCard.due || now));
         document.getElementById('front_factor')
           .textContent = currentCard.factor.toFixed(3);
         document.getElementById('front_face').classList.remove('dim');
         setSignal(currentCard);
-        currentCardStartTime = Math.floor(Date.now() / 1000);
+        currentCardStartTime = now;
         displaySection('front');
         playAudio('front');
 
@@ -925,6 +930,8 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
           .textContent = formatSeconds(currentCard.interval);
         document.getElementById('back_timeSinceLastReview')
           .textContent = formatSeconds(currentCard.timeSinceLastReview);
+        document.getElementById('back_latency')
+          .textContent = formatSeconds(now - (currentCard.due || now));
         document.getElementById('back_factor')
           .textContent = currentCard.factor.toFixed(3);
         document.getElementById('back_intervals.fail')
