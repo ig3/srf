@@ -246,6 +246,7 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
   let timerID;
   let overrideLimits;
   let overrideTimerID;
+  let timeSinceLastReview = 0;
 
   function clickStudy () {
     overrideLimits = 5;
@@ -417,8 +418,9 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
 
         // Times
         const now = Math.floor(Date.now() / 1000);
+        timeSinceLastReview = now - data.lastReviewTime;
         document.getElementById('home_time_since_last_review')
-          .textContent = formatSeconds(now - data.lastReviewTime);
+          .textContent = formatSeconds(timeSinceLastReview);
         document.getElementById('home_time_to_earliest_due_card')
           .textContent = formatSeconds(data.timeToNextDue);
         document.getElementById('home_average_latency')
@@ -1056,7 +1058,7 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
         if (e.key === ' ') { // space
           e.preventDefault();
           e.stopPropagation();
-          if (nextCardID) {
+          if (nextCardID && timeSinceLastReview > 300) {
             loadCard(nextCardID);
           } else {
             loadHome();
