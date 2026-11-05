@@ -57,8 +57,10 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
   title="Overdue">{{overdue}}</span
   ></td></tr>
 
-<tr><th>Time to earliest due card:</th>
+<tr><th>Times:</th>
 <td><span
+ id="home_time_since_last_review"
+ title="Time since last review"></span> | <span
  id="home_time_to_earliest_due_card"
  title="Time to earliest due card">{{timeToNextDue}}</span> | <span
  id="home_average_latency"
@@ -413,7 +415,10 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
         document.getElementById('home_overdue')
           .textContent = data.overdue;
 
-        // Time to earliest due:
+        // Times
+        const now = Math.floor(Date.now() / 1000);
+        document.getElementById('home_time_since_last_review')
+          .textContent = formatSeconds(now - data.lastReviewTime);
         document.getElementById('home_time_to_earliest_due_card')
           .textContent = formatSeconds(data.timeToNextDue);
         document.getElementById('home_average_latency')
