@@ -385,22 +385,6 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
           .textContent = formatSeconds(data.statsPast24Hours.time);
         document.getElementById('home_studyTimeToday')
           .textContent = formatSeconds(data.studyTimeToday);
-        if (data.studyTargetReached || !nextCardID) {
-          document.getElementById('home_studyTimeToday')
-            .classList.add('stop');
-          document.getElementById('home_studyTimeToday')
-            .classList.remove('go', 'slow');
-        } else if (timeSinceLastReview < 300) {
-          document.getElementById('home_studyTimeToday')
-            .classList.add('slow');
-          document.getElementById('home_studyTimeToday')
-            .classList.remove('go', 'stop');
-        } else {
-          document.getElementById('home_studyTimeToday')
-            .classList.add('go');
-          document.getElementById('home_studyTimeToday')
-            .classList.remove('slow', 'stop');
-        }
         document.getElementById('home_averageStudyTimePerDay')
           .textContent = formatSeconds(data.averageStudyTimePerDay);
 
@@ -880,22 +864,6 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
       .textContent = data.dueNow;
     document.getElementById('signal_studyTimeToday')
       .textContent = formatSeconds(data.studyTimeToday);
-    if (data.studyTargetReached || !nextCardID) {
-      document.getElementById('signal_studyTimeToday')
-        .classList.add('stop');
-      document.getElementById('signal_studyTimeToday')
-        .classList.remove('go', 'slow');
-    } else if (home && timeSinceLastReview < 300) {
-      document.getElementById('signal_studyTimeToday')
-        .classList.add('slow');
-      document.getElementById('signal_studyTimeToday')
-        .classList.remove('go', 'stop');
-    } else {
-      document.getElementById('signal_studyTimeToday')
-        .classList.add('go');
-      document.getElementById('signal_studyTimeToday')
-        .classList.remove('slow', 'stop');
-    }
     document.getElementById('signal_averageStudyTimePerDay')
       .textContent = formatSeconds(data.averageStudyTimePerDay);
   }
