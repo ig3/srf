@@ -418,17 +418,17 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
           .textContent = formatSeconds(data.averageLatency);
 
         // Buttons
-        if (nextCardID) {
-          if (timeSinceLastReview < 300) {
+        if (data.studyTargetReached) {
+          document.getElementById('study').classList.add('stop');
+          document.getElementById('study').classList.remove('go', 'slow');
+        } else {
+          if (timeSinceLastReview < 300 || !nextCardID) {
             document.getElementById('study').classList.add('slow');
             document.getElementById('study').classList.remove('go', 'stop');
           } else {
             document.getElementById('study').classList.add('go');
             document.getElementById('study').classList.remove('slow', 'stop');
           }
-        } else {
-          document.getElementById('study').classList.add('stop');
-          document.getElementById('study').classList.remove('go', 'slow');
         }
 
         setSignal(data, true);
