@@ -367,6 +367,10 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
     .then(response => {
       response.json()
       .then(data => {
+        const now = Math.floor(Date.now() / 1000);
+        timeSinceLastReview = now - data.lastReviewTime;
+        nextCardID = data.nextCardID || 0;
+
         // Cards (past 24 hours):
         document.getElementById('home_statsPast24Hours.due')
           .textContent = data.statsPast24Hours.count -
@@ -381,11 +385,16 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
           .textContent = formatSeconds(data.statsPast24Hours.time);
         document.getElementById('home_studyTimeToday')
           .textContent = formatSeconds(data.studyTimeToday);
-        if (data.studyTargetReached) {
+        if (data.studyTargetReached || !nextCardID) {
           document.getElementById('home_studyTimeToday')
             .classList.add('stop');
           document.getElementById('home_studyTimeToday')
             .classList.remove('go', 'slow');
+        } else if (timeSinceLastReview < 300) {
+          document.getElementById('home_studyTimeToday')
+            .classList.add('slow');
+          document.getElementById('home_studyTimeToday')
+            .classList.remove('go', 'stop');
         } else {
           document.getElementById('home_studyTimeToday')
             .classList.add('go');
@@ -417,8 +426,6 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
           .textContent = data.overdue;
 
         // Times
-        const now = Math.floor(Date.now() / 1000);
-        timeSinceLastReview = now - data.lastReviewTime;
         document.getElementById('home_time_since_last_review')
           .textContent = formatSeconds(timeSinceLastReview);
         document.getElementById('home_time_to_earliest_due_card')
@@ -427,15 +434,20 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
           .textContent = formatSeconds(data.averageLatency);
 
         // Buttons
-        if (data.nextCardID) {
-          nextCardID = data.nextCardID;
-          document.getElementById('study').classList.add('ready');
+        if (nextCardID) {
+          if (timeSinceLastReview < 300) {
+            document.getElementById('study').classList.add('slow');
+            document.getElementById('study').classList.remove('go', 'stop');
+          } else {
+            document.getElementById('study').classList.add('go');
+            document.getElementById('study').classList.remove('slow', 'stop');
+          }
         } else {
-          nextCardID = 0;
-          document.getElementById('study').classList.remove('ready');
+          document.getElementById('study').classList.add('stop');
+          document.getElementById('study').classList.remove('go', 'slow');
         }
 
-        setSignal(data);
+        setSignal(data, true);
         displaySection('home');
 
         // Update chart
@@ -863,16 +875,21 @@ id="signal_averageStudyTimePerDay" title="average study time per day"></span></d
     });
   }
 
-  function setSignal (data) {
+  function setSignal (data, home) {
     document.getElementById('signal_dueNow')
       .textContent = data.dueNow;
     document.getElementById('signal_studyTimeToday')
       .textContent = formatSeconds(data.studyTimeToday);
-    if (data.studyTargetReached) {
+    if (data.studyTargetReached || !nextCardID) {
       document.getElementById('signal_studyTimeToday')
         .classList.add('stop');
       document.getElementById('signal_studyTimeToday')
         .classList.remove('go', 'slow');
+    } else if (home && timeSinceLastReview < 300) {
+      document.getElementById('signal_studyTimeToday')
+        .classList.add('slow');
+      document.getElementById('signal_studyTimeToday')
+        .classList.remove('go', 'stop');
     } else {
       document.getElementById('signal_studyTimeToday')
         .classList.add('go');

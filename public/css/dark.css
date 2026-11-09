@@ -103,14 +103,6 @@ a.default_action {
   background-color: lightgray;
 }
 
-#study {
-  background-color: #ba5d50;
-}
-
-#study.ready {
-  background-color: #1c7a43;
-}
-
 .hidden {
   display: none;
 }
@@ -146,4 +138,19 @@ a.default_action {
 }
 .go {
   color: #26a25a;
+}
+
+button.go {
+  color: black;
+  background-color: #1c7a43;
+}
+
+button.slow {
+  color: black;
+  background-color: #b0b235;
+}
+
+button.stop {
+  color: black;
+  background-color: #aa4c40;
 }
